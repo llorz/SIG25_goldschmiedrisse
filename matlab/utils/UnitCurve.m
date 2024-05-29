@@ -23,9 +23,9 @@ classdef UnitCurve
         end
 
         function ref_mat = get_reflection_mat(obj)
-            p1 = obj.unit_controlledCurve.return_ground_point()';
-            p1 = p1/norm(p1);
-            ref_mat = eye(2) - 2 * (p1 * p1');
+            p = obj.unit_controlledCurve.return_ground_point()';
+            p = p/norm(p);
+            ref_mat = eye(2) - 2 * (p * p');
         end
 
 
@@ -44,7 +44,7 @@ classdef UnitCurve
                     ini_curve.anchor_constraints, ini_curve.anchor_label);
                 all_curves = [all_curves; rotated_curve];
                 if obj.reflection_symmetry
-                    reflected_curve = ControlledCurve(ini_curve.anchor * mat' * ref_mat', ...
+                    reflected_curve = ControlledCurve(ini_curve.anchor *  ref_mat' * mat', ...
                         ini_curve.anchor_constraints, ini_curve.anchor_label);
                     all_curves = [all_curves; reflected_curve];
                 end
