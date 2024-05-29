@@ -16,18 +16,40 @@ classdef CurveStructure < handle
       obj.unit_curves = [obj.unit_curves, curve];
     end
     
+    function obj = complete_curves(obj)
+        % complete the 2D projections w.r.t the input symmetry axis
+
+        for i = 1 : length(obj.unit_curves)
+            rot_sym = obj.unit_curves(i).rotational_symmetry;
+            ang = 2 * pi / rot_sym;
+            rot_mat = [cos(ang), -sin(ang);sin(ang), cos(ang)];
+            intersections = obj.unit_curves(i).calculate_intersections();
+            pts1 = obj.unit_curves(i).points(intersections(:,2),:)';
+            pts2 = obj.unit_curves(i).points(intersections(:,2) + 1,:)';
+            intersection_points = pts1 + (pts2 - pts1) .* intersections(:,1)';
+        
+            orig_points = obj.unit_curves(i).points';
+        end
+    end
+   
+
+
+
+    
     function obj = plot(obj, lifted)
       if ~exist('lifted', 'var')
         lifted = false;
       end
-      figure;
+      
       axis equal;
       hold on;
       for i = 1 : length(obj.unit_curves)
         rot_sym = obj.unit_curves(i).rotational_symmetry;
         ang = 2 * pi / rot_sym;
         rot_mat = [cos(ang), -sin(ang);sin(ang), cos(ang)];
-        p1 = normc(obj.unit_curves(i).points(1,:)');
+%         p1 = normc(obj.unit_curves(i).points(1,:)');
+        p1 = obj.unit_curves(i).points(1,:)';
+        p1 = p1/norm(p1);
         ref_mat = eye(2) - 2 * (p1 * p1');
         
         % Calculate intersections.
@@ -59,7 +81,7 @@ classdef CurveStructure < handle
           
           % Draw the intersections.
           inter = (rot_mat^j) * intersection_points;
-          scatter3(inter(1,:), inter(2,:), zeros(size(inter(2,:))));
+          scatter3(inter(1,:), inter(2,:), zeros(size(inter(2,:))),'filled');
         end
       end
     end
