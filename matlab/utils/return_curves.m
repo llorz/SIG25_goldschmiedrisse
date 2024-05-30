@@ -68,6 +68,50 @@ if strcmpi(name, 'tn-4')
     return;
 end
 
+if strcmpi(name, 'tn-5')
+    t1 = [-0.5, 0.5];
+    t2 = [0.8, 0.3];
+
+    anchor = [-t2; ...
+        t1;
+        t2];
+    anchor_label = [1,0,1];
+
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+
+    anchor(:,1) = -anchor(:,1);
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+if strcmpi(name, 'tn-6')
+
+    t1 = [-0.5, 0.5];
+    t2 = [0.2,0.8];
+
+    anchor = [-t2; ...
+        t1;
+        t2];
+    anchor_label = [1,0,1];
+
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+
+    anchor(:,1) = -anchor(:,1);
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
 
 if strcmpi(name, 'tn-7')
     anchor = [0, -0.4; ...
@@ -133,6 +177,33 @@ if strcmpi(name, 'tn-10')
     cs = CurveStructure(name);
     cs.add_unit_curve(uc);
     return
+end
+
+if strcmpi(name, 'tn-11')
+
+    p1 = [-0.2, -0.3];
+    p2 = [0.5, 0];
+    t = 0.45;
+
+
+
+    p3 = (1-t)*p1 + t*p2;
+    anchor = [p1; p3; p2];
+    anchor_label = [1,0,1];
+    reflect_pid = 3;
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true, reflect_pid);
+
+
+    p4 = [-0.35, 0];
+    anchor = [p4; p1];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
 end
 
 
