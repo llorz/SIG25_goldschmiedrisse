@@ -15,31 +15,24 @@ end
 
 %%
 
-t1 = [-0.5, 0.5];
+t1 = [-0.2, 0.5];
 t2 = [0.4,1];
-t3 = []
+
 anchor = [-t2; ...
    t1;
    t2];
 anchor_label = [1,0,1]; 
 
-% three ground points form an regular triangle with edge length sqrt(3)
 
-h = 1.7; 
+p1 = [-0.2, -0.3];
+p2 = [0.5, 0];
 t = 0.5;
-p1 = [0,-h]; % intersection at y axis 
-p2 = [h/sqrt(3), 0]; % intersection at x axis
-p3 = [h*sqrt(3)/4, -h/4]; % intersection with the refelection axis
-
-p = (1-t)*p1 + t*p2; % pick anothr point on p1--p2
-
-anchor = [-sqrt(3)/2, -0.5;
-    p;
-    p3];
-anchor_label = [0,1,1];
-
+p3 = (1-t)*p1 + t*p2;
+anchor = [p1; p3; p2];
+anchor_label = [1,0,1];
+reflect_pid = 3;
 uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-    3, true);
+    2, true, reflect_pid);
 
 
 % anchor = [-0.5, 0;

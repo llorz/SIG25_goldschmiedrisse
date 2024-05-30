@@ -44,9 +44,12 @@ classdef ControlledCurve
             end
         end
 
-        
+        function pid = return_ground_pid(obj)
+            pid = find(obj.anchor_label == 0);
+        end
+
         function p = return_ground_point(obj)
-            p = obj.anchor(find(obj.anchor_label == 0), :);
+            p = obj.anchor(obj.return_ground_pid(), :);
         end
 
         function [] = plot(obj)
