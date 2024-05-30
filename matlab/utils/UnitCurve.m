@@ -25,7 +25,7 @@ classdef UnitCurve
         function ref_mat = get_reflection_mat(obj)
             p = obj.unit_controlledCurve.return_ground_point()';
             p = p/norm(p);
-            ref_mat = eye(2) - 2 * (p * p');
+            ref_mat = 2 * (p * p') - eye(2);
         end
 
 

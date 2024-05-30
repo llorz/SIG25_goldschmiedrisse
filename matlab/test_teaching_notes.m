@@ -69,11 +69,11 @@ uc9 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
 %%
 p0 = [-0.3, -0.1];
 p = p0'/norm(p0);
-ref_mat = eye(2) - 2 * (p * p');
+ref_mat = 2 * (p * p') - eye(2);
 
 p1 = anchor;
 p2 = (p1-p0)*ref_mat'+p0;
-p2 = p1*ref_mat;
+p2 = p1*ref_mat';
 
 figure(2); clf
 plot(p1(:,1), p1(:,2)); hold on;
