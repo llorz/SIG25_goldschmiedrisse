@@ -1,7 +1,9 @@
 clc; clear; clf;
 addpath("utils/");
 %%
-group1 = {'tn-3', 'tn-4', 'tn-3.v1', 'tn-4.v1', 'tn-7', 'tn-9', 'U.XI.16', 'U.XI.21'};
+group1 = {'tn-3', 'tn-4', 'tn-3.v1', 'tn-4.v1', ...
+    'tn-7', 'tn-9', 'U.XI.16', 'U.XI.21',...
+    'U.XI.16.v1'};
 
 num = ceil(length(group1)/2);
 figure(3); clf;
@@ -13,8 +15,9 @@ end
 
 %%
 anchor = [0, -0.4; ...
-   0.8, 0];
-anchor_label = [0,1]; 
+   0.8, -0.1;
+   0.6,0.1];
+anchor_label = [0,1,1]; 
 uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
     2, true);
 
@@ -34,6 +37,6 @@ cs.plot_2D_projection();
 
 
 %%
-cs = return_curves('tn-9');
+cs = return_curves('U.XI.16.v1');
 figure(2); clf; 
 cs.plot_2D_projection();

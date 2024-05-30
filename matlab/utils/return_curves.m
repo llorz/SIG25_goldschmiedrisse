@@ -147,4 +147,27 @@ if strcmpi(name, 'u.xi.16')
     cs.add_unit_curve(uc2);
     return
 end
+
+
+if strcmpi(name, 'u.xi.16.v1')
+    anchor = [0, -0.4; ...
+        0.8, -0.1;
+        0.6,0.1];
+    anchor_label = [0,1,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true);
+
+
+    anchor = [-0.5, 0;
+        -0.3, -0.5;
+        0.1, -0.2];
+    anchor_label = [0,1,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
 end
