@@ -114,6 +114,39 @@ if strcmpi(name, 'tn-9')
     return
 end
 
+if strcmpi(name, 'tn-10')
+    h = 1.7;
+    t = 0.5;
+    p1 = [0,-h]; % intersection at y axis
+    p2 = [h/sqrt(3), 0]; % intersection at x axis
+    p3 = [h*sqrt(3)/4, -h/4]; % intersection with the refelection axis
+
+    p = (1-t)*p1 + t*p2; % pick anothr point on p1--p2
+
+    anchor = [-sqrt(3)/2, -0.5;
+        p;
+        p3];
+    anchor_label = [0,1,1];
+
+    uc = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        3, true);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc);
+    return
+end
+
+
+if strcmpi(name, 'tn-12')
+    anchor = [0,-1;
+        1,0];
+    anchor_label = [0,1];
+    uc = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        6, true);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc);
+    return
+
+end
 
 if strcmpi(name, 'u.xi.21')
     anchor = [-0.5, 0;
@@ -126,6 +159,8 @@ if strcmpi(name, 'u.xi.21')
     cs.add_unit_curve(uc);
     return
 end
+
+
 
 if strcmpi(name, 'u.xi.16')
     anchor = [0, -0.4; ...

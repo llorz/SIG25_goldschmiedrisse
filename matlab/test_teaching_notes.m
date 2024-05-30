@@ -14,29 +14,49 @@ for ii = 1:length(group1)
 end
 
 %%
-anchor = [0, -0.4; ...
-   0.8, -0.1;
-   0.6,0.1];
-anchor_label = [0,1,1]; 
-uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-    2, true);
 
+t1 = [-0.5, 0.5];
+t2 = [0.4,1];
+t3 = []
+anchor = [-t2; ...
+   t1;
+   t2];
+anchor_label = [1,0,1]; 
 
-anchor = [-0.5, 0;
-    -0.3, -0.5;
-    0.1, -0.2];
+% three ground points form an regular triangle with edge length sqrt(3)
+
+h = 1.7; 
+t = 0.5;
+p1 = [0,-h]; % intersection at y axis 
+p2 = [h/sqrt(3), 0]; % intersection at x axis
+p3 = [h*sqrt(3)/4, -h/4]; % intersection with the refelection axis
+
+p = (1-t)*p1 + t*p2; % pick anothr point on p1--p2
+
+anchor = [-sqrt(3)/2, -0.5;
+    p;
+    p3];
 anchor_label = [0,1,1];
-uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-    2, true);
+
+uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+    3, true);
+
+
+% anchor = [-0.5, 0;
+%     -0.3, -0.5;
+%     0.1, -0.2];
+% anchor_label = [0,1,1];
+% uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+%     2, true);
 
 cs = CurveStructure();
 cs.add_unit_curve(uc1);
-cs.add_unit_curve(uc2);
+% cs.add_unit_curve(uc2);
 figure(2); clf;
 cs.plot_2D_projection();
 
 
 %%
-cs = return_curves('U.XI.16.v1');
+cs = return_curves('tn-10');
 figure(2); clf; 
 cs.plot_2D_projection();
