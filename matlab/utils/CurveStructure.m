@@ -16,19 +16,10 @@ classdef CurveStructure < handle
       obj.unit_curves = [obj.unit_curves, curve];
     end
     
-    function obj = complete_curves(obj)
-        % complete the 2D projections w.r.t the input symmetry axis
-
-        for i = 1 : length(obj.unit_curves)
-            rot_sym = obj.unit_curves(i).rotational_symmetry;
-            ang = 2 * pi / rot_sym;
-            rot_mat = [cos(ang), -sin(ang);sin(ang), cos(ang)];
-            intersections = obj.unit_curves(i).calculate_intersections();
-            pts1 = obj.unit_curves(i).points(intersections(:,2),:)';
-            pts2 = obj.unit_curves(i).points(intersections(:,2) + 1,:)';
-            intersection_points = pts1 + (pts2 - pts1) .* intersections(:,1)';
-        
-            orig_points = obj.unit_curves(i).points';
+    
+    function [] = plot_2D_projection(obj)
+        for ii = 1:length(obj.unit_curves)
+            plot(obj.unit_curves(ii)); hold on;
         end
     end
    
