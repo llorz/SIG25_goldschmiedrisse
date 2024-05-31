@@ -22,27 +22,37 @@ end
 
 
 %%
-t1 = [1,0];
-t2 = [0.6, 1.2];
-anchor = [t1; t2];
-anchor_label = [0,1];
-uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-    8, false);
+p1 = [0,0.9];
+p2 = [-0.6,0.2];
+t1 = [-0.4,0];
+t2 = [0,0.2];
 
-anchor = [t3_reflect; t4; t1];
-anchor_label = [0,1,1];
-uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-    4, false);
+p3 = [-0.35, -0.35];
+
+anchor = [p1; p2];
+anchor_label = [0,1];
+anchor_constraints = [t1; t2];
+
+uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+    4, true);
+
+anchor = [p3; p2];
+anchor_label = [0,1];
+anchor_constraints = [0, 0.4;
+    0.05, 0];
+uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+    4, true);
 
 
 cs = CurveStructure();
 cs.add_unit_curve(uc1);
-% cs.add_unit_curve(uc2);
+cs.add_unit_curve(uc2);
+
 
 figure(3); clf;
 cs.plot_2D_projection();
 axis on; grid on;
 %%
-cs = return_curves('U.XI.27');
+cs = return_curves('U.XI.31.s');
 figure(4); clf;
 cs.plot_2D_projection();

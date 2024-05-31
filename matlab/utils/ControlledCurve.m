@@ -30,7 +30,11 @@ classdef ControlledCurve
                 % basically we get line segments
                 obj.fittedCurve = @(t)line_segments_with_arc_length(obj.anchor, t);
             else
-                % todo: make it curly
+               if size(obj.anchor,1)  == 2
+                   obj.fittedCurve = fit_bezier_curve(obj.anchor(1,:), obj.anchor(2,:), obj.anchor_constraints(1,:), obj.anchor_constraints(2,:));
+               else
+                   % todo: not clear how to parameterize using arc length
+               end
             end
         end
 
@@ -53,6 +57,9 @@ classdef ControlledCurve
         end
 
         function [] = plot(obj)
+            if isempty(obj.rasterizedCurve)
+                obj = obj.rasterize_the_curve(100);
+            end
             plot(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2), 'black', LineStyle='-', LineWidth=2); hold on;
             mycolor = lines(10);
             l = unique(obj.anchor_label);
@@ -88,6 +95,17 @@ for ii = 1:length(t)
     s = t - ratio(idx-1);
     y(ii, :) = (1-s)*p1 + s*p2;
 end
+
+end
+
+
+
+
+function bezier_curve = fit_bezier_curve(p_start, p_end, t_start, t_end)
+c1 = p_start + t_start;
+c2 = p_end + t_end;
+
+bezier_curve = @(t) ((1-t).^3 .* p_start' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* t.^2 .* c2' + t.^3 .* p_end')';
 
 end
 
