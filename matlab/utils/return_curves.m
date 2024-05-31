@@ -377,6 +377,37 @@ if strcmpi(name, 'u.xi.31.s')
     return;
 end
 
+
+if strcmpi(name, 'u.xi.31')
+    p1 = [0,0.9];
+    p2 = [-0.7,0.2];
+    t1 = [-0.4,0];
+    t2 = [0,0.2];
+
+    p3 = [-0.35, -0.35];
+
+    anchor = [p1; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [t1; t2];
+
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+    anchor = [p3; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [0, 0.6;
+        0, 0];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+end
+
+
+
 if strcmpi(name, 'u.xi.33.s')
     p1 = [0,1];
     p2 = [0.95,0.4];

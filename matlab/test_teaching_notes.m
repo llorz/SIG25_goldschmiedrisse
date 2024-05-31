@@ -23,7 +23,7 @@ end
 
 %%
 p1 = [0,0.9];
-p2 = [-0.6,0.2];
+p2 = [-0.7,0.2];
 t1 = [-0.4,0];
 t2 = [0,0.2];
 
@@ -38,8 +38,8 @@ uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
 
 anchor = [p3; p2];
 anchor_label = [0,1];
-anchor_constraints = [0, 0.4;
-    0.05, 0];
+anchor_constraints = [0, 0.6;
+    0, 0];
 uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
     4, true);
 
@@ -53,6 +53,6 @@ figure(3); clf;
 cs.plot_2D_projection();
 axis on; grid on;
 %%
-cs = return_curves('U.XI.31.s');
+cs = return_curves('U.XI.31');
 figure(4); clf;
 cs.plot_2D_projection();

@@ -56,11 +56,14 @@ classdef ControlledCurve
             p = obj.anchor(obj.return_ground_pid(), :);
         end
 
-        function [] = plot(obj)
+        function [] = plot(obj, rgbcol)
+            if nargin < 2
+                rgbcol = [0,0,0];
+            end
             if isempty(obj.rasterizedCurve)
                 obj = obj.rasterize_the_curve(100);
             end
-            plot(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2), 'black', LineStyle='-', LineWidth=2); hold on;
+            plot(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2),'Color', rgbcol, LineStyle='-', LineWidth=2); hold on;
             mycolor = lines(10);
             l = unique(obj.anchor_label);
             for i = 1

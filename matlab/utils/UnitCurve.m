@@ -72,9 +72,13 @@ classdef UnitCurve
 
 
 
-        function [] = plot(obj)
+        function [] = plot(obj, unit_col)
+            if nargin < 2
+                unit_col = [1,0,0];
+            end
             all_curves = obj.all_controlledCurve;
-            for ii = 1:length(all_curves)
+            plot(all_curves(1), unit_col); hold on;
+            for ii = 2:length(all_curves)
                 plot(all_curves(ii)); hold on;
             end
             axis equal; axis off;
