@@ -65,12 +65,11 @@ classdef ControlledCurve
             end
             plot(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2),'Color', rgbcol, LineStyle='-', LineWidth=2); hold on;
             mycolor = lines(10);
-            l = unique(obj.anchor_label);
-            for i = 1
-                pts = obj.anchor(obj.anchor_label == l(i), :);
-                scatter(pts(:,1), pts(:,2),60,repmat(mycolor(i,:), size(pts,1),1), 'filled');
+            pts = obj.return_ground_point();
+            if ~isempty(pts)
+                scatter(pts(:,1), pts(:,2),60,repmat(mycolor(1,:), size(pts,1),1), 'filled');
             end
-          
+   
         end
     end
 end

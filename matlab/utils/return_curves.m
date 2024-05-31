@@ -505,4 +505,61 @@ if strcmpi(name, 'u.xi.27')
 
 end
 
+if strcmpi(name, 'u.xi.35')
+    p1 = [0,1];
+    p2 = [sqrt(3)/2, -0.5];
+    p3 = [1.8,-0.8];
+    p4 = [0.4,h+0.2];
+    h = 3;
+    p5 = [0,h];
+    p6 = [3*sqrt(3)/2, 3/2];
+    p7 = [1, h-0.2];
+
+
+    anchor = [p1; p2];
+    anchor_label = [1,1];
+    anchor_constraints = [];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, false);
+
+
+    anchor = [p5; p6];
+    anchor_constraints = [0,-1; -0.8, 0];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, true);
+
+
+
+    anchor = [p1;p3;];
+    anchor_label = [1,1];
+    anchor_constraints = [1,0; 0,1;];
+    uc3 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, false);
+
+
+    anchor = [p3; p4];
+    anchor_label = [1,1];
+    anchor_constraints = [0,2; 0.2,0];
+    uc4 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, false);
+
+
+    anchor = [p5; p7];
+    anchor_label = [1,1];
+    anchor_constraints = [0.2,0; -0.2,0.2];
+    uc5 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, false);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    cs.add_unit_curve(uc3);
+    cs.add_unit_curve(uc4);
+    cs.add_unit_curve(uc5);
+    return;
+
+end
+
 end

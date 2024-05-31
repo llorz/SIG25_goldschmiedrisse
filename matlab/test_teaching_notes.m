@@ -23,49 +23,83 @@ end
 
 %%
 p1 = [0,1];
-p2 = [0.95,0.4];
-p3 = [0.7, 0];
+p2 = [sqrt(3)/2, -0.5];
+p3 = [1.8,-0.8];
+p4 = [0.4,h+0.2];
+h = 3;
+p5 = [0,h];
+p6 = [3*sqrt(3)/2, 3/2];
+p7 = [1, h-0.2];
+
 
 anchor = [p1; p2];
-anchor_label = [0,1];
-anchor_constraints = [0.1, -0.2; -0.5,0];
+anchor_label = [1,1];
+anchor_constraints = [];
 uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-    4, true);
+    3, false);
 
-anchor = [p3; p2];
+
+anchor = [p5; p6];
+anchor_constraints = [0,-1; -0.8, 0];
 anchor_label = [0,1];
-anchor_constraints = [0.1, 0; 0,-0.2];
 uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-    4, true);
+    3, true);
+
+
+
+anchor = [p1;p3;];
+anchor_label = [1,1];
+anchor_constraints = [1,0; 0,1;];
+uc3 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+    3, false);
+
+
+anchor = [p3; p4];
+anchor_label = [1,1];
+anchor_constraints = [0,2; 0.2,0];
+uc4 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+    3, false);
+
+
+anchor = [p5; p7];
+anchor_label = [1,1];
+anchor_constraints = [0.2,0; -0.2,0.2];
+uc5 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+    3, false);
 
 
 cs = CurveStructure();
 cs.add_unit_curve(uc1);
 cs.add_unit_curve(uc2);
+cs.add_unit_curve(uc3);
+cs.add_unit_curve(uc4);
+cs.add_unit_curve(uc5);
 
 
 figure(3); clf;
 cs.plot_2D_projection();
-axis on; grid on;
+axis on; grid on; axis equal;
 %%
-% for ii = 1:12
-%     cs = return_curves(['tn-',num2str(ii)]);
-%     % cs = return_curves('tn-1');
-%     figure(4); clf;
-%     cs.plot_2D_projection();
-% 
-%     filepath = '../2D_drawings/';
-%     write_2D_drawings([filepath, cs.name, '.uc'], cs);
-% end
-
-for name = {'tn-3.v1','tn-4.v1', 'U.XI.21', 'U.XI.16', 'U.XI.16.v1','U.XI.15',...
-        'U.XI.26', 'U.XI.23', 'U.XI.32', 'U.XI.31', 'U.XI.33','U.XI.19','U.XI.27'}
-    cs = return_curves(name{1});
-    figure(4); clf; 
+write_2D_drawings([filepath, cs.name, '.uc'], cs);
+%%
+for ii = 1:12
+    cs = return_curves(['tn-',num2str(ii)]);
+    % cs = return_curves('tn-1');
+    figure(4); clf;
     cs.plot_2D_projection();
-    write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
+    filepath = '../2D_drawings/';
+    write_2D_drawings([filepath, cs.name, '.uc'], cs);
 end
+
+% for name = {'tn-3.v1','tn-4.v1', 'U.XI.21', 'U.XI.16', 'U.XI.16.v1','U.XI.15',...
+%         'U.XI.26', 'U.XI.23', 'U.XI.32', 'U.XI.31', 'U.XI.33','U.XI.19','U.XI.27'}
+%     cs = return_curves(name{1});
+%     figure(4); clf; 
+%     cs.plot_2D_projection();
+%     write_2D_drawings([filepath, cs.name, '.uc'], cs);
+% 
+% end
 % fid = fopen([filepath, cs.name,'.uc'],'w');
 % fprintf(fid, 'numCurves\t%d\n',length(cs.unit_curves));
 % for ii = 1:length(cs.unit_curves)
@@ -84,7 +118,8 @@ end
 % end
 % fclose(fid);
 %%
-name = 'U.XI.33';
+filepath = '../2D_drawings/';
+name = 'U.XI.26';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
 cs.plot_2D_projection();
