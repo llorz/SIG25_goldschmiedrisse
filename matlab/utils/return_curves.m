@@ -276,4 +276,178 @@ if strcmpi(name, 'u.xi.16.v1')
     cs.add_unit_curve(uc2);
     return
 end
+
+if strcmpi(name, 'u.xi.15')
+    t1 = [0.5, 0.2];
+    t2 = [0.2, -0.5];
+
+    anchor = [-t2; ...
+        t1;
+        t2];
+    anchor_label = [1,0,1];
+
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+
+    anchor(:,1) = -anchor(:,1);
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, false);
+
+    t3 = [1,0];
+    anchor = [t3; t1;];
+    anchor_label = [0,1];
+    uc3 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    cs.add_unit_curve(uc3);
+    return
+end
+
+if strcmpi(name, 'u.xi.26')
+    t1 = [-1,0];
+    t2 = [-0.6, -0.9];
+
+    anchor = [t1; t2];
+    anchor_label = [0,1];
+
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+    t3 = [0.4, -0.4];
+    anchor = [t3; t2];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+
+if strcmpi(name, 'u.xi.23')
+    anchor = [-0.1,-0.6;
+        -1, -1;
+        0.5,-1.5;
+        -0.4,-0.55];
+    anchor_label = [1,0,1,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    return
+end
+
+if strcmpi(name, 'u.xi.32')
+    anchor = [-1, -1;
+        0.7,-1.5;
+        0.7,-0.5];
+    anchor_label = [0,1,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    return
+end
+
+if strcmpi(name, 'u.xi.31.s')
+    t1 = [0,1];
+    t2 = [-0.6,0.2];
+    t3 = [-0.35, -0.35];
+
+    anchor = [t1; t2];
+    anchor_label = [0,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+    anchor = [t3; t2];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+
+    return;
+end
+
+if strcmpi(name, 'u.xi.33.s')
+    t1 = [0,1];
+    t2 = [0.95,0.4];
+    t3 = [0.7, 0];
+
+    anchor = [t1; t2];
+    anchor_label = [0,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+    anchor = [t3; t2];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+
+    return;
+end
+
+if strcmpi(name, 'u.xi.19')
+    t1 = [0,1];
+    t2 = [0.7,0.7];
+    t3 = [0.5,0.5];
+    t4 = [0.5,1.2];
+
+    anchor = [t1; t2];
+    anchor_label = [0,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+    anchor = [t3; t4; t1];
+    anchor_label = [0,1,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+if strcmpi(name, 'u.xi.27')
+    a = 0.55;
+    t1 = [-0.2,1];
+    t2 = [-0.9,0.32];
+    t3 = [-a,-a];
+
+    t3_reflect = [a, -a];
+    t4 = [a,0.3];
+
+    anchor = [t1; t2; t3];
+    anchor_label = [0,1,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, false);
+
+    anchor = [t3_reflect; t4; t1];
+    anchor_label = [0,1,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, false);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+
+end
+
 end
