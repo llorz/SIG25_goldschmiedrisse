@@ -431,6 +431,30 @@ if strcmpi(name, 'u.xi.33.s')
     return;
 end
 
+if strcmpi(name, 'u.xi.33')
+    p1 = [0,1];
+    p2 = [0.95,0.4];
+    p3 = [0.7, 0];
+
+    anchor = [p1; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [0.1, -0.2; -0.5,0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+    anchor = [p3; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [0.1, 0; 0,-0.2];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+end
+
+
 if strcmpi(name, 'u.xi.19')
     p1 = [0,1];
     p2 = [0.7,0.7];
