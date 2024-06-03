@@ -5,8 +5,11 @@ for ii = 1:length(cs.unit_curves)
     uc = cs.unit_curves(ii);
     cc = uc.unit_controlledCurve;
     np = size(cc.anchor,1);
-    fprintf(fid, 'unitCurve\t%d\t%d\t%d\t%d\n', np, ...
-        uc.rotational_symmetry, uc.reflection_symmetry, uc.reflection_pid);
+    fprintf(fid, 'unitCurve\t%d\t%d\t%d\n', np, ...
+        uc.rotational_symmetry, uc.reflection_symmetry);
+    if uc.reflection_symmetry
+        fprintf(fid, 'reflectionPoint\t%f\t%f\n', uc.reflection_point(1), uc.reflection_point(2));
+    end
     for jj = 1:np
         fprintf(fid, 'ptPos\t%.12f\t%.12f\n', cc.anchor(jj,1), cc.anchor(jj,2));
         if ~isempty(cc.anchor_constraints)

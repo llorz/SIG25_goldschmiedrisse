@@ -1,5 +1,6 @@
 numCurves	1
-unitCurve	2	6	1	1
+unitCurve	2	6	1
+reflectionPoint	0.000000	-1.000000
 ptPos	0.000000000000	-1.000000000000
 ptLab	0
 ptPos	1.000000000000	0.000000000000
