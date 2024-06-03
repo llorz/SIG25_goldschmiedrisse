@@ -3,7 +3,7 @@ updated_curves = [];
 for i = 1 : length(unit_curves)
   intersections = calculate_intersections(unit_curves(i));
   intersections = sortrows(intersections, [1, 2]);
-  [a, b] = calc_beziers(2, intersections);
+  [a, b] = calc_beziers(unit_curves(i), intersections);
   updated_curves = [updated_curves, @() rasterize_3d_curve(unit_curves(i).unit_controlledCurve.anchor, a, b)];
 end
 end
@@ -22,8 +22,9 @@ function y = rasterize_3d_curve(pts, indices, bezier_coefs)
 end
   
 
-function [indices, bezier_coefs] = calc_beziers(n_anchors, intersections)
+function [indices, bezier_coefs] = calc_beziers(curve, intersections)
   ind = 1;
+  n_anchors = size(curve.unit_controlledCurve.anchor, 1);
   bezier_coefs = [];
   indices = [];
   for i = 2 : n_anchors
@@ -33,7 +34,8 @@ function [indices, bezier_coefs] = calc_beziers(n_anchors, intersections)
       ind = ind + 1;
     end
     ts = [ts; 1];
-    bezier_coefs = [bezier_coefs; fit_height(ts, 0, 4)];
+    bezier_coefs = [bezier_coefs; fit_height(ts, curve.unit_controlledCurve.anchor_label(i-1), ...
+      curve.unit_controlledCurve.anchor_label(i))];
     indices = [indices; repmat([i-1, i], [size(ts, 1) - 1, 1])];
   end
 end

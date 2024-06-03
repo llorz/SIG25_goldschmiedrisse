@@ -13,20 +13,22 @@ function bezier_curves = fit_height( ...
     end_height = 2;
   end
   if nargin < 4 || isempty(start_tangent)
+    tangent_len = abs(end_height - start_height) / 4;
     if end_height > start_height
-      start_tangent = [0, 1];
+      start_tangent = [0, 1] * tangent_len;
     else
-      start_tangent = [0, -1];
+      start_tangent = [0, -1] * tangent_len;
     end
   end
   if nargin < 5 || isempty(end_tangent)
     if mod(size(t_vals, 1), 2) == 0
       end_tangent = [1, 0];
     else
+      tangent_len = abs(end_height - start_height) / 4;
       if end_height > start_height
-        end_tangent = [0, 1];
+        end_tangent = [0, 1] * tangent_len;
       else
-        end_tangent = [0, -1];
+        end_tangent = [0, -1] * tangent_len;
       end
     end
   end
