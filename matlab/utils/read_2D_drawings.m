@@ -11,6 +11,8 @@ for ii = 1:numCurves
     reflection_symmetry = curve(3);
     if reflection_symmetry
         reflection_point = fscanf(fid, 'reflectionPoint\t%f\t%f\n', 2);
+    else 
+        reflection_point = [];
     end
 
     anchor = zeros(np, 2);
@@ -30,6 +32,7 @@ for ii = 1:numCurves
             end
         end
     end
+    
     cc = ControlledCurve(anchor, anchor_constraints, anchor_label);
     uc = UnitCurve(cc, rotational_symmetry, reflection_symmetry, reflection_point);
     cs.add_unit_curve(uc);
