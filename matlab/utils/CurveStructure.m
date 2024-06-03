@@ -39,6 +39,28 @@ classdef CurveStructure < handle
             title(notes, 'Interpreter','tex');
         end
 
+        function [] = plot_3D_structure(obj)
+          mycolor = lines(10);
+          notes = [obj.name, ' : '];
+          for ii = 1:length(obj.unit_curves)
+              uc = obj.unit_curves(ii);
+              curve_3d = embed_in_3D(uc);
+              pts = curve_3d();
+              ref_mat = uc.get_reflection_mat();
+              rot_mat = uc.get_rotation_mat(1);
+              for i = 1 : uc.rotational_symmetry
+                mat = rot_mat^i;
+                rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
+                plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:)); hold on;
+                if uc.reflection_symmetry
+                  mat = mat * ref_mat;
+                  rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
+                  plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:));
+                end
+              end
+          end
+        end
+
 
 
 

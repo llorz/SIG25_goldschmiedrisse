@@ -41,7 +41,7 @@ classdef ControlledCurve
 
         function obj = rasterize_the_curve(obj,num_samples)
             if isempty(obj.anchor_constraints)
-                obj.rasterizedCurve = [obj.anchor, zeros(size(obj.anchor,1),1)];
+                obj.rasterizedCurve = obj.anchor;
             else
                 t = linspace(0, 1, num_samples);
                 obj.rasterizedCurve = obj.fittedCurve(t);
