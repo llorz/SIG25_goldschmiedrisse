@@ -37,7 +37,7 @@ classdef ControlledCurve
 
         function obj = rasterize_the_curve(obj,num_samples)
             if isempty(obj.anchor_constraints)
-                obj.rasterizedCurve = obj.anchor;
+                obj.rasterizedCurve = [obj.anchor, zeros(size(obj.anchor,1),1)];
             else
                 t = linspace(0, 1, num_samples);
                 obj.rasterizedCurve = obj.fittedCurve(t);
@@ -53,7 +53,8 @@ classdef ControlledCurve
         end
 
         function [] = plot(obj)
-            plot(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2), 'black', LineStyle='-', LineWidth=2); hold on;
+            plot3(obj.rasterizedCurve(:,1), obj.rasterizedCurve(:,2), obj.rasterizedCurve(:,3), 'black', LineStyle='-', LineWidth=2); hold on;
+            view([0,90]);
             mycolor = lines(10);
             l = unique(obj.anchor_label);
             for i = 1
