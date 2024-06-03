@@ -24,9 +24,15 @@ end
 %%
 p1 = [0,1];
 p2 = [sqrt(3)/2, -0.5];
+h = 3;
 p3 = [1.8,-0.8];
+<<<<<<< Updated upstream
 h = 3;
 p4 = [0.4,h+0.2];
+=======
+p4 = [0.4,h+0.2];
+
+>>>>>>> Stashed changes
 p5 = [0,h];
 p6 = [3*sqrt(3)/2, 3/2];
 p7 = [1, h-0.2];
@@ -79,18 +85,20 @@ cs.add_unit_curve(uc5);
 figure(3); clf;
 cs.plot_2D_projection();
 axis on; grid on; axis equal;
+return
+
 %%
 write_2D_drawings([filepath, cs.name, '.uc'], cs);
 %%
-for ii = 1:12
-    cs = return_curves(['tn-',num2str(ii)]);
-    % cs = return_curves('tn-1');
-    figure(4); clf;
-    cs.plot_2D_projection();
-
-    filepath = '../2D_drawings/';
-    write_2D_drawings([filepath, cs.name, '.uc'], cs);
-end
+% for ii = 1:12
+%     cs = return_curves(['tn-',num2str(ii)]);
+%     % cs = return_curves('tn-1');
+%     figure(4); clf;
+%     cs.plot_2D_projection();
+% 
+%     filepath = '../2D_drawings/';
+%     write_2D_drawings([filepath, cs.name, '.uc'], cs);
+% end
 
 % for name = {'tn-3.v1','tn-4.v1', 'U.XI.21', 'U.XI.16', 'U.XI.16.v1','U.XI.15',...
 %         'U.XI.26', 'U.XI.23', 'U.XI.32', 'U.XI.31', 'U.XI.33','U.XI.19','U.XI.27'}
@@ -119,7 +127,7 @@ end
 % fclose(fid);
 %%
 filepath = '../2D_drawings/';
-name = 'U.XI.26';
+name = 'U.XI.35';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
 cs.plot_2D_projection();
