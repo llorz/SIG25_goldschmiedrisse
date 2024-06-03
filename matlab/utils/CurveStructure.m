@@ -23,10 +23,20 @@ classdef CurveStructure < handle
 
 
         function [] = plot_2D_projection(obj)
+            mycolor = lines(10);
+            notes = [obj.name, ' : '];
             for ii = 1:length(obj.unit_curves)
-                plot(obj.unit_curves(ii)); hold on;
+                uc = obj.unit_curves(ii);
+                plot(uc, mycolor(ii+1,:)); hold on;
+                notes = [notes, ...
+                    sprintf('%s{%f %f %f}{%s %d %s %d, %d}%s', '\color[rgb]', ...
+                    mycolor(ii+1,:), ...
+                    'uc', ...
+                    ii, '(', ...
+                    uc.rotational_symmetry, ...
+                    uc.reflection_symmetry, '); ')];
             end
-            title(obj.name);
+            title(notes, 'Interpreter','tex');
         end
 
 

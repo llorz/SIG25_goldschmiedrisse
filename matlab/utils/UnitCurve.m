@@ -21,7 +21,7 @@ classdef UnitCurve
                 obj.reflection_pid = reflect_pid;
             end
             obj = obj.complete_curves_wrt_symmetry();
-            
+
         end
 
         function mat = get_rotation_mat(obj, rot_rep)
@@ -47,12 +47,23 @@ classdef UnitCurve
 
             for ii = 1:obj.rotational_symmetry
                 mat = obj.get_rotation_mat(ii);
-                rotated_curve = ControlledCurve(ini_curve.anchor * mat', ...
-                    ini_curve.anchor_constraints, ini_curve.anchor_label);
+                if isempty(ini_curve.anchor_constraints)
+                    rotated_curve = ControlledCurve(ini_curve.anchor * mat', ...
+                        [], ini_curve.anchor_label);
+                else
+                    rotated_curve = ControlledCurve(ini_curve.anchor * mat', ...
+                        ini_curve.anchor_constraints * mat', ini_curve.anchor_label);
+                end
                 all_curves = [all_curves; rotated_curve];
+
                 if obj.reflection_symmetry
-                    reflected_curve = ControlledCurve(ini_curve.anchor *  ref_mat' * mat', ...
-                        ini_curve.anchor_constraints, ini_curve.anchor_label);
+                    if isempty(ini_curve.anchor_constraints)
+                        reflected_curve = ControlledCurve(ini_curve.anchor *  ref_mat' * mat', ...
+                            [], ini_curve.anchor_label);
+                    else
+                        reflected_curve = ControlledCurve(ini_curve.anchor *  ref_mat' * mat', ...
+                            ini_curve.anchor_constraints * ref_mat' * mat', ini_curve.anchor_label);
+                    end
                     all_curves = [all_curves; reflected_curve];
                 end
             end
@@ -61,9 +72,13 @@ classdef UnitCurve
 
 
 
-        function [] = plot(obj)
+        function [] = plot(obj, unit_col)
+            if nargin < 2
+                unit_col = [1,0,0];
+            end
             all_curves = obj.all_controlledCurve;
-            for ii = 1:length(all_curves)
+            plot(all_curves(1), unit_col); hold on;
+            for ii = 2:length(all_curves)
                 plot(all_curves(ii)); hold on;
             end
             axis equal; axis off;
