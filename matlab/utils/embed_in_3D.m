@@ -50,10 +50,10 @@ for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
   p2 = curve.unit_controlledCurve.anchor(i + 1, :)';
   p1_new = mat * p1;
   p2_new = mat * p2;
+  [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
   % Check if the line segments intersect (at the same time).
-  t = (p2_new - p2) ./ (p1 - p2 - p1_new + p2_new);
-  if (norm(t(1) - t(2)) < 1e-6) && (t(1) >= 0) && (t(1) <= 1) && norm(t(1)) > 1e-6 && norm(t(1)-1) > 1e-6
-    res = [res; i, t(1), p1' + t(1) * (p2' - p1')];
+  if norm(s-t) < 1e-6 && t > 0 && t < 1
+    res = [res; i, t, p1' + t * (p2' - p1')];
   end
 end
 end
@@ -64,7 +64,7 @@ ref_mat = curve.get_reflection_mat();
 rot_mat = curve.get_rotation_mat(1);
 for i = 1 : curve.rotational_symmetry
   mat = rot_mat^i;
-  res = [res; calculate_repeat_intersections(curve, mat)];
+  % res = [res; calculate_repeat_intersections(curve, mat)];
   if curve.reflection_symmetry
     mat = mat * ref_mat;
     res = [res; calculate_repeat_intersections(curve, mat)];

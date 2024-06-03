@@ -36,6 +36,15 @@ function bezier_curves = fit_height( ...
     ifplot = false;
   end
 
+  if (length(t_vals) == 2)
+    bezier_curves = zeros(1, 8);
+    bezier_curves(1, 1:2) = [t_vals(1), start_height];
+    bezier_curves(1, 3:4) = bezier_curves(1, 1:2) + start_tangent;
+
+    bezier_curves(1, 7:8) = [t_vals(2), end_height];
+    bezier_curves(1, 5:6) = bezier_curves(1, 7:8) - end_tangent;
+    return;
+  end
   if length(t_vals) ~= 3
     error('TODO: Fit more than 3 points');
   end
