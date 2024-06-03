@@ -6,7 +6,7 @@ classdef UnitCurve
         unit_controlledCurve;
         rotational_symmetry;
         reflection_symmetry;
-        reflection_pid;
+        reflection_point;
         all_controlledCurve;
     end
 
@@ -16,10 +16,14 @@ classdef UnitCurve
             obj.rotational_symmetry = sym;
             obj.reflection_symmetry = ref_sym;
             if nargin < 4
-                obj.reflection_pid = controlledCurve.return_ground_pid();
-            else
-                obj.reflection_pid = reflect_pid;
+                reflect_pid = controlledCurve.return_ground_pid();
             end
+            if length(reflect_pid) == 1 && reflect_pid <= size(controlledCurve.anchor,1)
+                obj.reflection_point = controlledCurve.anchor(reflect_pid, :)';
+            elseif length(reflect_pid) == 2
+                obj.reflection_point = reflect_pid;
+            end
+
             obj = obj.complete_curves_wrt_symmetry();
 
         end
@@ -30,7 +34,7 @@ classdef UnitCurve
         end
 
         function ref_mat = get_reflection_mat(obj)
-            p = obj.unit_controlledCurve.anchor(obj.reflection_pid, :)';
+            p = reshape(obj.reflection_point,[],1);
             p = p/norm(p);
             ref_mat = 2 * (p * p') - eye(2);
         end

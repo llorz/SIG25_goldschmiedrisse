@@ -505,12 +505,15 @@ if strcmpi(name, 'u.xi.27')
 
 end
 
+
+
+
 if strcmpi(name, 'u.xi.35')
     p1 = [0,1];
     p2 = [sqrt(3)/2, -0.5];
     p3 = [1.8,-0.8];
-    p4 = [0.4,h+0.2];
     h = 3;
+    p4 = [0.4,h+0.2];
     p5 = [0,h];
     p6 = [3*sqrt(3)/2, 3/2];
     p7 = [1, h-0.2];
@@ -562,4 +565,252 @@ if strcmpi(name, 'u.xi.35')
 
 end
 
+if strcmpi(name, 'u.xi.20')
+    p1 = [-0.15,1.1];
+
+    p2 = [1,0.6];
+    p3 = [0.7, 0];
+    p4 = [0, 0.5];
+    p5 = [1.2, 0];
+    p6 = [1,0.18];
+
+    figure(4); clf;
+    p = [p1; p2; p3];
+    scatter(p(:, 1), p(:, 2),'filled');
+
+    anchor = [p1; p2];
+    anchor_label = [1,1];
+    anchor_constraints = [0.1, -0.2; -0.5,0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true, [0,1]);
+
+    anchor = [p3; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [0.1, 0; 0,-0.2];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true,1);
+
+    anchor = [p3; p4];
+    anchor_label = [0,1];
+    uc3 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, true);
+
+
+    anchor = [p5; p6];
+    anchor_label = [0,1];
+    anchor_constraints = [-0.01, 0; 0.01, -0.1];
+    uc4 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true,1);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    cs.add_unit_curve(uc3);
+    cs.add_unit_curve(uc4);
+    return
+end
+
+if strcmpi(name, 'u.xi.18')
+    p1 = [0,-0.6];
+    p2 = [-sqrt(3)/2, 0.5];
+    p3 = [-1.3,-1.2];
+
+    anchor = [p1; p3];
+    anchor_label = [0,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        3, true);
+
+    anchor = [p2; p3];
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        3, true);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+if strcmpi(name, 'u.xi.37')
+    p1 = [0, -0.6];
+    p2 = [-0.8, 0];
+    t = [0, 0.1];
+
+
+
+    anchor = [-p1; -p2] - t;
+    anchor_label = [0,1];
+    uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        3, true,1);
+
+
+    anchor = [p1; p2] - t;
+    anchor_label = [0,1];
+    uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        3, true,1);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+if strcmpi(name, 'u.xi.25')
+    p1 = [-0.5, 0];
+    p2 = [0, -0.6];
+    p3 = [0, 0.3];
+
+    anchor = [p1; p2] ;
+    anchor_label = [0,1];
+    anchor_constraints = [0, -0.05; -0.05, 0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, true,2);
+
+
+    anchor = [p1; p3];
+    anchor_label = [1,0];
+    anchor_constraints = [0, 0.05; -0.05, 0];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, true);
+
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
+
+if strcmpi(name, 'u.xi.34')
+    p1 = [0,0.9];
+    p2 = [0.7,0];
+    p3 = [0.4, 0.5];
+    p4 = [-0.8, 0.4];
+    p5 = -p3;
+    p6 = [0.9,0];
+
+    anchor = [p1; p2];
+    anchor_label = [1,0];
+    anchor_constraints = [ 0, -0.3; -0.3, 0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        2, true);
+
+    anchor = [p3; p4];
+    anchor_label = [0,1];
+    anchor_constraints = [-0.5, 0.5;  0.1, 0.1];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        2, true, [0,1]);
+
+    anchor = [p4; p5];
+    anchor_label = [1,1];
+    anchor_constraints = [0.3, 0;  0, 0.1];
+    uc3 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        2, true, [0,1]);
+
+
+    anchor = [p6; p3];
+    anchor_label = [1,1];
+    uc4 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        2, true, [0,1]);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    cs.add_unit_curve(uc3);
+    cs.add_unit_curve(uc4);
+    return;
+end
+
+if strcmpi(name, 'u.xi.22')
+    p1 = [0.4, 0.4];
+    p2 = [0,1];
+    p3 = [1,0];
+    p4 = [1.3, -0.6];
+    p5 = [0,-1.1];
+
+    p6 = [2.5,0];
+    p7 = [1.8,0];
+    p8 = [1.3,0.4];
+
+    a = 0.25;
+    anchor = [p1; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [ -0.1, a; a, 0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, false);
+
+
+    anchor = [p1; p3];
+    anchor_label = [0,1];
+    anchor_constraints = [ 0.1, -a; -a, 0];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, false);
+
+    anchor = [0,0; p1];
+    anchor_label = [1,1];
+    uc3 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
+        4, false);
+
+    anchor = [p1; p4];
+    anchor_label = [0,1];
+    anchor_constraints = [ 0, -0.5; -0.5, 0];
+    uc4 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+
+    anchor = [p5; p4];
+    anchor_label = [0,1];
+    anchor_constraints = [ 0.4, 0;0, -0.2];
+    uc5 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true);
+
+
+    anchor = [p1; p6];
+    anchor_label = [0,0];
+    anchor_constraints = [];
+    uc6 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        2, true,2);
+
+    anchor = [p7; p8];
+    anchor_label = [1,1];
+    anchor_constraints = [];
+    uc7 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        2, true,1);
+
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    cs.add_unit_curve(uc3);
+    cs.add_unit_curve(uc4);
+    cs.add_unit_curve(uc5);
+    cs.add_unit_curve(uc6);
+    cs.add_unit_curve(uc7);
+    return
+end
+
+if strcmpi(name, 'u.xi.29')
+    p1 = [0,-a];
+    p2 = [1.1,-0.6];
+    p3 = [sqrt(2)/2, sqrt(2)/2] * a;
+
+
+    anchor = [p1; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [ 0.1, -0.1; -0.2, -0.4];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        8, false);
+
+    anchor = [p3; p2];
+    anchor_label = [0,1];
+    anchor_constraints = [ -0.2, -0.4; -0.4,0.2];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        8, false);
+
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
+    return
+end
 end

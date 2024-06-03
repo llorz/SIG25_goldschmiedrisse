@@ -67,7 +67,7 @@ classdef ControlledCurve
             mycolor = lines(10);
             pts = obj.return_ground_point();
             if ~isempty(pts)
-                scatter(pts(:,1), pts(:,2),60,repmat(mycolor(1,:), size(pts,1),1), 'filled');
+                scatter(pts(:,1), pts(:,2),100,repmat(mycolor(1,:), size(pts,1),1), 'filled');
             end
    
         end
