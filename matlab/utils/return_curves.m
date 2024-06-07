@@ -813,4 +813,24 @@ if strcmpi(name, 'u.xi.29')
     cs.add_unit_curve(uc2);
     return
 end
+
+if strcmpi(name, 'u.xi.28')
+    a = 1;
+    p1 = [0,a];
+    p2 = [-1.3,a];
+    p3 = [-1.7,-0.2];
+    p4 = [-0.2,-1.2];
+    p5 = [sqrt(2), -sqrt(2)]*a/2;
+
+
+    anchor = [p1; p2;p3;p4;p5];
+    anchor_label = [0,1,0,1,0];
+    anchor_constraints = [ ];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        4, true,1);
+    cs = CurveStructure(name);
+    cs.add_unit_curve(uc1);
+    return;
+end
+
 end

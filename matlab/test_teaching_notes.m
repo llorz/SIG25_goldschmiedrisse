@@ -23,26 +23,29 @@ end
 
 %%
 a = 1;
-p1 = [0,-a];
-p2 = [1.1,-0.6];
-p3 = [sqrt(2)/2, sqrt(2)/2] * a; 
+p1 = [0,a];
+p2 = [-1.3,a];
+p3 = [-1.7,-0.2];
+p4 = [-0.2,-1.2];
+p5 = [sqrt(2), -sqrt(2)]*a/2;
 
 
-anchor = [p1; p2];
-anchor_label = [0,1];
-anchor_constraints = [ 0.1, -0.1; -0.2, -0.4];
+anchor = [p1; p2;p3;p4;p5];
+anchor_label = [0,1,0,1,0];
+anchor_constraints = [ ];
 uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-    8, false);
+    4, true,1);
 
-anchor = [p3; p2];
-anchor_label = [0,1];
-anchor_constraints = [ -0.2, -0.4; -0.4,0.2];
-uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-    8, false);
+% anchor = [p1; p3];
+% anchor_label = [1,0];
+% anchor_constraints = [ 0.3, 0.2; -0.2, 0.2];
+% uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+%     3, true);
 
-cs = CurveStructure('U.XI.29');
+
+cs = CurveStructure('U.XI.28');
 cs.add_unit_curve(uc1);
-cs.add_unit_curve(uc2);
+% cs.add_unit_curve(uc2);
 % cs.add_unit_curve(uc3);
 % cs.add_unit_curve(uc4);
 % cs.add_unit_curve(uc5);
@@ -78,9 +81,12 @@ end
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'U.XI.29';
+name = 'tn-3';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
 cs.plot_2D_projection();
 
+
+figure(5);clf;
+cs.plot_3D_structure();
 

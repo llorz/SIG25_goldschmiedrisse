@@ -51,14 +51,15 @@ classdef CurveStructure < handle
               for i = 1 : uc.rotational_symmetry
                 mat = rot_mat^i;
                 rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
-                plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:)); hold on;
+                plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:),'LineWidth',2); hold on;
                 if uc.reflection_symmetry
                   mat = mat * ref_mat;
                   rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
-                  plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:));
+                  plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:), 'LineWidth',2);
                 end
               end
           end
+          axis equal; axis off;
         end
 
 
