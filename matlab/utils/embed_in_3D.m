@@ -3,6 +3,7 @@ updated_curves = [];
 for i = 1 : length(unit_curves)
   intersections = calculate_intersections(unit_curves(i));
   intersections = sortrows(intersections, [1, 2]);
+  intersections = intersections(1,:);
   [a, b] = calc_beziers(unit_curves(i), intersections);
   updated_curves = [updated_curves, @() rasterize_3d_curve(unit_curves(i).unit_controlledCurve.anchor, a, b)];
 end
@@ -52,7 +53,7 @@ for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
   p2_new = mat * p2;
   [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
   % Check if the line segments intersect (at the same time).
-  if norm(s-t) < 1e-6 && t > 0 && t < 1
+  if norm(s-t) < 1e-6 && t > 0 && norm(t-1) > 1e-6
     res = [res; i, t, p1' + t * (p2' - p1')];
   end
 end

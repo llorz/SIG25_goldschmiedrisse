@@ -78,9 +78,9 @@ end
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'U.XI.29';
+name = 'tn-1';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
-cs.plot_2D_projection();
+cs.plot_3D_structure;
 
 
