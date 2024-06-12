@@ -5,11 +5,13 @@ for i = 1 : length(unit_curves)
   intersections = sortrows(intersections, [1, 2]);
   intersections = intersections(1,:);
   [a, b] = calc_beziers(unit_curves(i), intersections);
-  updated_curves = [updated_curves, @() rasterize_3d_curve(unit_curves(i).unit_controlledCurve.anchor, a, b)];
+  updated_curves = [updated_curves, @() rasterize_3d_curve(unit_curves(i), a, b)];
 end
 end
 
-function y = rasterize_3d_curve(pts, indices, bezier_coefs)
+function y = rasterize_3d_curve(curve, indices, bezier_coefs)
+  pts = curve.unit_controlledCurve.anchor;
+  constraints = curve.unit_controlledCurve.anchor_constraints;
   num = size(pts, 1);
   t = linspace(0, 1, 100);
   y = [];
@@ -18,7 +20,16 @@ function y = rasterize_3d_curve(pts, indices, bezier_coefs)
       p2 = pts(indices(ii, 2), :);
       rast_pts = eval_cubic_bezier(t, bezier_coefs(ii, :));
       s = rast_pts(:, 1);
-      y = [y; (1-s)*p1 + s*p2, rast_pts(:, 2)];
+      if (isempty(constraints))
+        y = [y; (1-s)*p1 + s*p2, rast_pts(:, 2)];
+      else
+        tangent_i = constraints(indices(ii, 1), :);
+        tangent_j = constraints(indices(ii, 2), :);
+        c1 = p1 + tangent_i;
+        c2 = p2 + tangent_j;
+        bezier_curve = @(t) ((1-t).^3 .* p1' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* t.^2 .* c2' + t.^3 .* p2')';
+        y = [y; bezier_curve(s'), rast_pts(:, 2)];
+      end
   end
 end
   
@@ -47,14 +58,38 @@ function res = calculate_repeat_intersections(curve, mat)
 % and mat * pts.
 res = [];
 for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
-  p1 = curve.unit_controlledCurve.anchor(i, :)';
-  p2 = curve.unit_controlledCurve.anchor(i + 1, :)';
-  p1_new = mat * p1;
-  p2_new = mat * p2;
-  [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
-  % Check if the line segments intersect (at the same time).
-  if norm(s-t) < 1e-6 && t > 0 && norm(t-1) > 1e-6
-    res = [res; i, t, p1' + t * (p2' - p1')];
+  if isempty(curve.unit_controlledCurve.anchor_constraints)
+    p1 = curve.unit_controlledCurve.anchor(i, :)';
+    p2 = curve.unit_controlledCurve.anchor(i + 1, :)';
+    p1_new = mat * p1;
+    p2_new = mat * p2;
+    [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
+    % Check if the line segments intersect (at the same time).
+    if norm(s-t) < 1e-6 && norm(t) > 1e-6 && norm(t-1) > 1e-6
+      res = [res; i, t, p1' + t * (p2' - p1')];
+    end
+  else
+    anchor_i = curve.unit_controlledCurve.anchor(i, :);
+    anchor_j = curve.unit_controlledCurve.anchor(i + 1, :);
+    tangent_i = curve.unit_controlledCurve.anchor_constraints(i, :);
+    tangent_j = curve.unit_controlledCurve.anchor_constraints(i + 1, :);
+    c1 = anchor_i + tangent_i;
+    c2 = anchor_j + tangent_j;
+    bezier_curve = @(t) ((1-t).^3 .* anchor_i' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* t.^2 .* c2' + t.^3 .* anchor_j');
+    bt = linspace(0, 1, 100);
+    for j = 1 : length(bt) - 1
+      p1 = bezier_curve(bt(j));
+      p2 = bezier_curve(bt(j+1));
+      p1_new = mat * p1;
+      p2_new = mat * p2;
+      [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
+      % Check if the line segments intersect (at the same time).
+      if norm(s-t) < 1e-6 &&  norm(t-1) > 1e-6 && t > 0 &&  t < 1
+        tt = bt(j) + t * (bt(j+1) - bt(j));
+        res = [res; i, tt, p1' + t * (p2' - p1')];
+      end
+    end
+    
   end
 end
 end

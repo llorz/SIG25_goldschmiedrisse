@@ -60,10 +60,10 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'tn-1';
+name = 'U.XI.30';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
-cs.plot_3D_structure;
+cs.plot_2D_projection;
 
 
 figure(5);clf;
