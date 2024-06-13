@@ -22,17 +22,36 @@ end
 
 
 %%
-anchor = [-0.7, 0;
-    0, -0.3];
-anchor_constraints = [0,-0.3; -0.4,-0.4];
-anchor_label = [0,1];
-uc = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-    4, true);
-cs = CurveStructure('U.XI.30');
-cs.add_unit_curve(uc);
+ p1 = [-0.5, 0];
+    p2 = [0, -0.6];
+    p3 = [0, 0.3];
+
+    anchor = [p1; p2] ;
+    anchor_label = [0,1];
+    anchor_constraints = [0, -0.05; -0.05, 0];
+    uc1 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, true,2);
+
+
+    anchor = [p1; p3];
+    anchor_label = [1,1];
+    anchor_constraints = [0, 0.05; -0.05, 0];
+    uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
+        3, true,2);
+
+
+
+    cs = CurveStructure('U.XI.25');
+    cs.add_unit_curve(uc1);
+    cs.add_unit_curve(uc2);
 figure(3); clf;
 cs.plot_2D_projection();
-axis on; grid on; axis equal;
+% axis on; grid on; axis equal;
+
+
+figure(5);clf;
+cs.plot_3D_structure();
+
 return
 
 %%
@@ -60,7 +79,7 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'U.XI.30';
+name = 'U.XI.25';
 cs = read_2D_drawings([filepath, name, '.uc']);
 figure(4); clf;
 cs.plot_2D_projection;
