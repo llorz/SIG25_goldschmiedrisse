@@ -27,9 +27,8 @@ if ifplot
     % Evaluate the Bézier curve
     t = linspace(0, 1, 100);
     curve_points = bezier_curve(t);
-    figure(5);clf;
     hold on;
-    plot(curve_points(:, 1), curve_points(:,1), 'b-', 'LineWidth', 2); % Bézier curve
+    plot(curve_points(:, 1), curve_points(:,2), 'b-', 'LineWidth', 2); % Bézier curve
     plot([p_start(1), c1(1), c2(1), p_end(1)], [p_start(2), c1(2), c2(2), p_end(2)], 'ro-'); % Control points
     quiver(p_start(1), p_start(2), t_start(1), t_start(2), 0.1, 'r', 'LineWidth', 1.5); % Tangent at P0
     quiver(p_end(1), p_end(2), t_end(1), t_end(2), 0.1, 'r', 'LineWidth', 1.5); % Tangent at P3

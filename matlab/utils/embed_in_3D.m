@@ -57,6 +57,7 @@ function res = calculate_repeat_intersections(curve, mat)
 % Check whether there's an intersection between pts
 % and mat * pts.
 res = [];
+eps = 1e-6;
 for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
   if isempty(curve.unit_controlledCurve.anchor_constraints)
     p1 = curve.unit_controlledCurve.anchor(i, :)';
@@ -65,7 +66,7 @@ for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
     p2_new = mat * p2;
     [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
     % Check if the line segments intersect (at the same time).
-    if norm(s-t) < 1e-6 && norm(t) > 1e-6 && norm(t-1) > 1e-6
+    if norm(s-t) < eps && norm(t) > eps && norm(t-1) > eps
       res = [res; i, t, p1' + t * (p2' - p1')];
     end
   else
@@ -84,7 +85,7 @@ for i = 1 : size(curve.unit_controlledCurve.anchor, 1) - 1
       p2_new = mat * p2;
       [t, s] = find_intersections_2d(p1, p2, p1_new, p2_new);
       % Check if the line segments intersect (at the same time).
-      if norm(s-t) < 1e-6 &&  norm(t-1) > 1e-6 && t > 0 &&  t < 1
+      if norm(s-t) < eps &&  norm(t-1) > eps && t > 0 &&  t < 1
         tt = bt(j) + t * (bt(j+1) - bt(j));
         res = [res; i, tt, p1' + t * (p2' - p1')];
       end
