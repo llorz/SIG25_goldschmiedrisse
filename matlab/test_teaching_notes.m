@@ -71,7 +71,7 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'tn-8';
+name = 'U.XI.18';
 cs = read_2D_drawings([filepath, name, '.uc']);
 % cs = rescale_curve_structure(cs, 2)
 figure(4); clf;

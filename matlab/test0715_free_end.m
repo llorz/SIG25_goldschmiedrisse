@@ -38,3 +38,5 @@ c2 = fit_bezier_curve(p3,p4,t3,t4,true);
 
 p = c1(t);
 scatter(p(1),p(2))
+%%
+

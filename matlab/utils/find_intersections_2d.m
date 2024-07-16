@@ -1,6 +1,6 @@
 function [t, s, flag1, flag2] = find_intersections_2d(p1, p2, p3, p4, eps)
 
-if nargin < 5, eps = 1e-6/norm(p2-p1); end
+if nargin < 5, eps = 1e-8/norm(p2-p1); end
 
   % Solve p1 + t(p2 - p1) == p3 + s(p4 - p3).
   [t, s] = unpack([p1(:) - p2(:), p4(:) - p3(:)] \ (p1(:) - p3(:)));

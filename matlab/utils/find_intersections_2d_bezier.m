@@ -1,5 +1,5 @@
 function [t,s,flag1, flag2] = find_intersections_2d_bezier(c1_func, c2_func, eps)
-if nargin < 3, eps = 1e-6/norm(c1_func(0)- c1_func(1)); end
+if nargin < 3, eps = 1e-8/norm(c1_func(0)- c1_func(1)); end
 
 [t0, s0, ~, tmp_flag2] = find_intersections_2d( ...
     c1_func(0), c1_func(1), ...

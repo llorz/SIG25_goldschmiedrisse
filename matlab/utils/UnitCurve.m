@@ -8,6 +8,8 @@ classdef UnitCurve
         reflection_symmetry;
         reflection_point;
         all_controlledCurve;
+        p_intersect
+        p_label
     end
 
     methods
@@ -25,6 +27,7 @@ classdef UnitCurve
             end
 
             obj = obj.complete_curves_wrt_symmetry();
+            obj = obj.find_self_intersections();
 
         end
 
@@ -49,7 +52,7 @@ classdef UnitCurve
                 ref_mat = obj.get_reflection_mat();
             end
 
-            for ii = 1:obj.rotational_symmetry
+            for ii = obj.rotational_symmetry:-1:1 % the first one in all_curves is the unit
                 mat = obj.get_rotation_mat(ii);
                 if isempty(ini_curve.anchor_constraints)
                     rotated_curve = ControlledCurve(ini_curve.anchor * mat', ...
@@ -74,17 +77,38 @@ classdef UnitCurve
             obj.all_controlledCurve = all_curves;
         end
 
+        function obj = find_self_intersections(obj)
+
+            pts = []; label = [];
+
+            uc1 = obj.all_controlledCurve(1);
+            for ii = 2:length(obj.all_controlledCurve)
+                uc2 = obj.all_controlledCurve(ii);
+                [tmp_p_intersect, tmp_p_label] = find_intersections_controlled_curves(uc1, uc2);
+                pts = [pts; tmp_p_intersect];
+                label = [label(:); tmp_p_label(:)];
+            end
+            obj.p_intersect = pts;
+            obj.p_label = label;
+        end
 
 
         function [] = plot(obj, unit_col)
             if nargin < 2
                 unit_col = [1,0,0];
             end
+            mycolor = lines(100);
             all_curves = obj.all_controlledCurve;
             plot(all_curves(1), unit_col); hold on;
             for ii = 2:length(all_curves)
                 plot(all_curves(ii)); hold on;
             end
+
+            pts = [obj.unit_controlledCurve.anchor; obj.p_intersect];
+            label = [obj.unit_controlledCurve.anchor_label(:); obj.p_label(:)];
+            
+            scatter(pts(:,1), pts(:,2),100, mycolor(label+1,:),'filled');
+            
             axis equal; axis off;
         end
 

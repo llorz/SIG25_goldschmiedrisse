@@ -672,7 +672,7 @@ if strcmpi(name, 'u.xi.25')
     anchor_label = [1,0];
     anchor_constraints = [0, 0.05; -0.05, 0];
     uc2 = UnitCurve(ControlledCurve(anchor, anchor_constraints, anchor_label), ...
-        3, true);
+        3, true, 2);
 
 
 
