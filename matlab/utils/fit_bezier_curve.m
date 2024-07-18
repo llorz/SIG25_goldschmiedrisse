@@ -1,4 +1,4 @@
-function bezier_curve = fit_bezier_curve( ...
+function [bezier_curve, bezier_tangent] = fit_bezier_curve( ...
     p_start, ... % position of the starting point
     p_end, ... % position of the end point
     t_start, ... % tangent vector at p_start
@@ -22,6 +22,13 @@ c2 = p_end + t_end;
 
 % Define the Bézier curve function
 bezier_curve = @(t) ((1-t).^3 .* p_start' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* t.^2 .* c2' + t.^3 .* p_end')';
+
+% Define the derivative of the Bézier curve function
+bezier_tangent = @(t) ( ...
+    3 * (1-t).^2 .* (c1' - p_start') + ...
+    6 * (1-t) .* t .* (c2' - c1') + ...
+    3 * t.^2 .* (p_end' - c2') ...
+);
 
 if ifplot
     % Evaluate the Bézier curve

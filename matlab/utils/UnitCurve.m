@@ -1,6 +1,5 @@
 classdef UnitCurve
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %unit curve in the 2D drawing
 
     properties
         unit_controlledCurve;
@@ -8,7 +7,7 @@ classdef UnitCurve
         reflection_symmetry;
         reflection_point;
         all_controlledCurve;
-        p_intersect
+        p_t % time step of the intersecting point
         p_label
     end
 
@@ -79,16 +78,18 @@ classdef UnitCurve
 
         function obj = find_self_intersections(obj)
 
-            pts = []; label = [];
+            pts_t = []; label = [];
 
             uc1 = obj.all_controlledCurve(1);
             for ii = 2:length(obj.all_controlledCurve)
                 uc2 = obj.all_controlledCurve(ii);
-                [tmp_p_intersect, tmp_p_label] = find_intersections_controlled_curves(uc1, uc2);
-                pts = [pts; tmp_p_intersect];
-                label = [label(:); tmp_p_label(:)];
+                [tmp_t, tmp_p_label] = find_intersections_controlled_curves(uc1, uc2);
+                if ~isempty(tmp_t)
+                    pts_t = [pts_t; tmp_t];
+                    label = [label(:); tmp_p_label(:)];
+                end
             end
-            obj.p_intersect = pts;
+            obj.p_t = pts_t;
             obj.p_label = label;
         end
 
@@ -104,11 +105,16 @@ classdef UnitCurve
                 plot(all_curves(ii)); hold on;
             end
 
-            pts = [obj.unit_controlledCurve.anchor; obj.p_intersect];
-            label = [obj.unit_controlledCurve.anchor_label(:); obj.p_label(:)];
-            
+            if isempty(obj.p_t)
+                pts = obj.unit_controlledCurve.anchor;
+                label = obj.unit_controlledCurve.anchor_label(:);
+            else
+                pts = [obj.unit_controlledCurve.anchor;
+                    obj.unit_controlledCurve.fittedCurve(obj.p_t)];
+                label = [obj.unit_controlledCurve.anchor_label(:); obj.p_label(:)];
+            end
             scatter(pts(:,1), pts(:,2),100, mycolor(label+1,:),'filled');
-            
+
             axis equal; axis off;
         end
 
