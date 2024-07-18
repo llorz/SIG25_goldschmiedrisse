@@ -76,52 +76,63 @@ classdef CurveStructure < handle
                 num = size(obj.controlPts,1);
 
                 % split the original curve into two
+                %
+                % input curve is a line segment
+
+                % curve1: first anchor <-> intersecting point
+                c1 = c_init;
+                c1.pid = [pid1,num];
+
+                % curve2: intersecting point <-> second anchor
+                c2 = c_init;
+                c2.pid = [num, pid2];
+
                 if isempty(curve.unit_controlledCurve.anchor_constraints)
-                    % input curve is a line segment
-
-                    % curve1: first anchor <-> intersecting point
-                    c1 = c_init;
-                    c1.pid = [pid1,num];
                     c1.constr_2d = []; % for line segments no tangent constraints
-
-
-                    % curve2: intersecting point <-> second anchor
-                    c2 = c_init;
-                    c2.pid = [num, pid2];
                     c2.constr_2d = [];
-                    p = obj.controlPts;
-                    % initialize the tangents for the height curve
-                    if obj.controlPts_label(pid1) == 0 && obj.controlPts_label(pid2) == 1
-                        c1.constr_3d = [0, 2*a;
-                            -a, 0];
-
-                        c2.constr_3d = [a, 0;
-                            0, -a];
-                    end
-
-                    if obj.controlPts_label(pid1) == 1 && obj.controlPts_label(pid2) == 0
-                        c1.constr_3d = [0,-a;
-                            a, 0];
-                        c2.constr_3d = [-a,0;
-                            0, 2];
-                    end
-
-
-                    obj.curves = [obj.curves; c1; c2];
-
-
-
-                else % there is no intersection
-                    c = c_init;
-                    c.pid = [pid1, pid2];
-                    c.constr_2d = curve.unit_controlledCurve.anchor_constraints;
-                    c.constr_3d = []; % TODO: need to check here
-                    obj.curves = [obj.curves; c];
+                else
+                    bz_cont = [curve.unit_controlledCurve.anchor; 
+                        curve.unit_controlledCurve.anchor_constraints];
+                    [split1_cont, split2_cont] = split_bezier_curve(bz_cont, curve.p_t, true);
+                    c1.constr_2d = split1_cont(3:4,:);
+                    c2.constr_2d = split2_cont(3:4,:);
                 end
 
-            else
+                p = obj.controlPts;
+                % initialize the tangents for the height curve
+                if obj.controlPts_label(pid1) == 0 && obj.controlPts_label(pid2) == 1
+                    c1.constr_3d = [0, 2*a;
+                        -a, 0];
 
+        
+
+                    c2.constr_3d = [a, 0;
+                        0, -a];
+                end
+
+                if obj.controlPts_label(pid1) == 1 && obj.controlPts_label(pid2) == 0
+                    c1.constr_3d = [0,-a;
+                        a, 0];
+                    c2.constr_3d = [-a,0;
+                        0, 2];
+                end
+
+
+                obj.curves = [obj.curves; c1; c2];
+
+                %                 else
+                %
+                %                 end
+
+
+            else % there is no intersection
+                c = c_init;
+                c.pid = [pid1, pid2];
+                c.constr_2d = curve.unit_controlledCurve.anchor_constraints;
+                c.constr_3d = []; % TODO: need to check here
+                obj.curves = [obj.curves; c];
             end
+
         end
 
 

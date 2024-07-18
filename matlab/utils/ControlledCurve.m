@@ -8,6 +8,7 @@ classdef ControlledCurve
         anchor_label
         anchor_constraints % two points per anchor to specify the left/right curvatures
         fittedCurve
+        fittedCurveTangent
         rasterizedCurve
     end
 
@@ -24,8 +25,9 @@ classdef ControlledCurve
             if isempty(obj.anchor_constraints)
                 % basically we get line segments
                 obj.fittedCurve = @(t) obj.anchor(1,:) + t'*(obj.anchor(2,:) - obj.anchor(1,:));
+                obj.fittedCurveTangent = obj.anchor(2,:) - obj.anchor(1,:);
             else
-                obj.fittedCurve = fit_bezier_curve(obj.anchor(1,:), obj.anchor(2,:), obj.anchor_constraints(1,:), obj.anchor_constraints(2,:));
+                [obj.fittedCurve, obj.fittedCurveTangent] = fit_bezier_curve(obj.anchor(1,:), obj.anchor(2,:), obj.anchor_constraints(1,:), obj.anchor_constraints(2,:));
             end
         end
 
@@ -75,13 +77,4 @@ classdef ControlledCurve
 end
 
 
-
-
-function bezier_curve = fit_bezier_curve(p_start, p_end, t_start, t_end)
-c1 = p_start + t_start;
-c2 = p_end + t_end;
-
-bezier_curve = @(t) ((1-t).^3 .* p_start' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* t.^2 .* c2' + t.^3 .* p_end')';
-
-end
 
