@@ -37,6 +37,7 @@ cs.add_unit_curve(uc2);
 %%
 anchor = [0.8, 0;
     0, 0.6];
+
 anchor_label = [0,1];
 anchor_constr = [0, 0.5; 0.5,0];
 % anchor_constr = [];
@@ -58,6 +59,7 @@ for i = 1:length(cs.curves)
     constr_2d = curve.constr_2d;
     constr_3d = curve.constr_3d;
     
+   
     plot_curve_from_projections(Pos3D, constr_2d, constr_3d, PosLabel, params);
 
 

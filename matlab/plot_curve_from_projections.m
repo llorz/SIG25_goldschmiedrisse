@@ -1,10 +1,11 @@
 function [] = plot_curve_from_projections(Pos3D, ...
     constr_2d, ...
     constr_3d, ...
+    ifplot, ...
     PosLabel, ...
     params)
 
-if nargin < 5, params = load_parameters(); end;
+if nargin < 6, params = load_parameters(); end
 
 
 uc_2d = ControlledCurve(Pos3D(:,1:2), ...
@@ -14,10 +15,17 @@ uc_height = ControlledCurve([[0;1], Pos3D(:, 3)], ...
     constr_3d,...
     []);
 
+
+
 t = linspace(0,1,params.num_samples);
 x = uc_2d.fittedCurve(t);
 y = uc_height.fittedCurve(t);
 p = [x, y(:,2)];
+
+% compute curve length
+xs = x(1:end-1,:);
+xe = x(2:end,:);
+curve_2d_len = sum(sqrt(sum((xe - xs).^2,2)));
 
 % plot the 3D curve (rasterized)
 plot3(p(:,1), p(:,2), p(:,3), ...
@@ -53,8 +61,16 @@ scatter3(cp(:,1), cp(:,2), cp(:,3), ...
 % plot control handles on 3D
 for kk = 1:2
     p_start = Pos3D(kk, :);
-    t_start = [constr_3d(kk,:), p_start(3)];
+    u = [constr_2d(kk,:),0];
+    u = u/norm(u);
+    u = u*curve_2d_len;
 
+    if constr_2d(kk,:)*(Pos3D(2,1:2)-Pos3D(1,1:2))' < 0
+        u = -u;
+    end
+
+    v = [0,0,1];
+    t_start = constr_3d(kk,1)*u + constr_3d(kk,2)*v;
     p_end = p_start + t_start;
     handle = [p_start; p_end];
     plot3(handle(:,1), handle(:,2), handle(:,3), ...
@@ -85,4 +101,7 @@ for kk = 1:2
     scatter3(p_end(1), p_end(2), -params.project_offset, ...
         params.size_point*0.8, params.col_handle(kk,:), 'filled')
 end
+
+% figure(11); clf;
+% plot(uc_height); axis equal
 end

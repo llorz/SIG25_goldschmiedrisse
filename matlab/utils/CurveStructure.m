@@ -107,7 +107,7 @@ classdef CurveStructure < handle
                 p = obj.controlPts;
                 % initialize the tangents for the height curve
                 if obj.controlPts_label(pid1) == 0 && obj.controlPts_label(pid2) == 1
-                    c1.constr_3d = [0, 2*a;
+                    c1.constr_3d = [0, a;
                         -a, 0];
 
                     c2.constr_3d = [a, 0;
@@ -118,7 +118,7 @@ classdef CurveStructure < handle
                     c1.constr_3d = [0,-a;
                         a, 0];
                     c2.constr_3d = [-a,0;
-                        0, 2];
+                        0, -2*a];
                 end
 
 
