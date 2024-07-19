@@ -45,59 +45,27 @@ uc3 = UnitCurve(ControlledCurve(anchor, anchor_constr, anchor_label), ...
 cs = CurveStructure('');
 cs.add_unit_curve(uc3);
 
-plane_height = 1;
-project_offset = 0.1;
-col_curve = [0,0,0];
-col_plane = [162,210,255]/255;
-col_point = [239,35,60]/255;
-alpha_plane = 0.2;
-size_line = 2;
-size_point = 50;
-num_samples = 100;
-
+%%
+params = load_parameters();
 
 
 figure(7); clf;
 for i = 1:length(cs.curves)
     curve = cs.curves(i);
-    uc_2d = ControlledCurve(cs.controlPts(curve.pid,1:2), ...
-        curve.constr_2d,...
-        cs.controlPts_label(curve.pid));
-    uc_height = ControlledCurve([[0;1], cs.controlPts(curve.pid, 3)], ...
-        curve.constr_3d,...
-        cs.controlPts_label(curve.pid));
+    
+    Pos3D = cs.controlPts(curve.pid, :);
+    PosLabel = cs.controlPts_label(curve.pid);
+    constr_2d = curve.constr_2d;
+    constr_3d = curve.constr_3d;
+    
+    plot_curve_from_projections(Pos3D, constr_2d, constr_3d, PosLabel, params);
 
-    t = linspace(0,1,num_samples);
-    x = uc_2d.fittedCurve(t);
-    y = uc_height.fittedCurve(t);
-    p = [x, y(:,2)];
 
-    % plot the 3D curve (rasterized)
-    plot3(p(:,1), p(:,2), p(:,3),'Color',col_curve, 'LineWidth',size_line); axis equal; hold on
-
-    % plot the 2D projection (rasterized);
-    plot3(p(:,1), p(:,2), -project_offset*ones(num_samples,1), 'Color', col_curve, 'LineStyle','--', 'LineWidth', size_line);
-
-    % plot the curve plane
-    x1 = [x, zeros(size(x,1),1)];
-    x2 = [x, plane_height*ones(size(x,1),1)];
-    for jj = 1:size(x1,1) - 1
-        rect = [x1(jj:jj+1,:);
-            x2(jj+1:-1:jj,:)];
-        fill3(rect(:,1), rect(:,2), rect(:,3),col_plane, 'FaceAlpha', alpha_plane,'EdgeColor','none');  hold on;
-    end
-
-    % plot the control points
-    cp = [p(1,:); p(end,:)];
-    scatter3(cp(:,1), cp(:,2), cp(:,3),size_point, col_point,'filled');
-
-    % plot the constraint
     
 
-    
 end
 
-axis on;
+axis on; axis equal;
 %%
 
 figure(4); clf;

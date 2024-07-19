@@ -88,10 +88,16 @@ classdef CurveStructure < handle
                 c2.pid = [num, pid2];
 
                 if isempty(curve.unit_controlledCurve.anchor_constraints)
-                    c1.constr_2d = []; % for line segments no tangent constraints
-                    c2.constr_2d = [];
+                    p1 = obj.controlPts(pid1,1:2);
+                    p2 = obj.controlPts(pid2,1:2);
+                    pmid = obj.controlPts(num, 1:2);
+                    % use line segment directions as tangent
+                    c1.constr_2d = 0.2*[pmid-p1;
+                        p1-pmid];
+                    c2.constr_2d = 0.2*[p2-pmid;
+                        pmid-p2];
                 else
-                    bz_cont = [curve.unit_controlledCurve.anchor; 
+                    bz_cont = [curve.unit_controlledCurve.anchor;
                         curve.unit_controlledCurve.anchor_constraints];
                     [split1_cont, split2_cont] = split_bezier_curve(bz_cont, curve.p_t, true);
                     c1.constr_2d = split1_cont(3:4,:);
@@ -103,8 +109,6 @@ classdef CurveStructure < handle
                 if obj.controlPts_label(pid1) == 0 && obj.controlPts_label(pid2) == 1
                     c1.constr_3d = [0, 2*a;
                         -a, 0];
-
-        
 
                     c2.constr_3d = [a, 0;
                         0, -a];
@@ -137,7 +141,21 @@ classdef CurveStructure < handle
 
 
         function [] = plot_curves(obj)
-            c = obj.curves(1)
+            % parameters
+            plane_height = 1;
+            project_offset = 0.1;
+            col_curve = [0,0,0];
+            col_plane = [162,210,255]/255;
+            col_point = [239,35,60]/255;
+            alpha_plane = 0.2;
+            size_line = 2;
+            size_point = 50;
+            num_samples = 100;
+
+
+
+
+
         end
 
 
