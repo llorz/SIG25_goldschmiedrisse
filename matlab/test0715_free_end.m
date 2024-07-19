@@ -40,11 +40,15 @@ anchor = [0.8, 0;
 
 anchor_label = [0,1];
 anchor_constr = [0, 0.5; 0.5,0];
-% anchor_constr = [];
+anchor_constr = [];
 uc3 = UnitCurve(ControlledCurve(anchor, anchor_constr, anchor_label), ...
     4, true);
 cs = CurveStructure('');
 cs.add_unit_curve(uc3);
+
+figure(11); clf;
+cs.plot_curves();
+legend off; axis off;
 
 %%
 params = load_parameters();
@@ -60,10 +64,8 @@ for i = 1:length(cs.curves)
     constr_3d = curve.constr_3d;
     
    
-    plot_curve_from_projections(Pos3D, constr_2d, constr_3d, PosLabel, params);
-
-
-    
+    plot_curve_from_projections(Pos3D, constr_2d, constr_3d, ...
+        params, true);
 
 end
 

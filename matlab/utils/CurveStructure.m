@@ -140,17 +140,36 @@ classdef CurveStructure < handle
         end
 
 
-        function [] = plot_curves(obj)
-            % parameters
-            plane_height = 1;
-            project_offset = 0.1;
-            col_curve = [0,0,0];
-            col_plane = [162,210,255]/255;
-            col_point = [239,35,60]/255;
-            alpha_plane = 0.2;
-            size_line = 2;
-            size_point = 50;
-            num_samples = 100;
+        function [] = plot_curves(obj,params)
+            if nargin < 2, params = load_parameters(); end
+
+            for i = 1:length(obj.curves)
+                curve = obj.curves(i);
+
+                Pos3D = obj.controlPts(curve.pid, :);
+                constr_2d = curve.constr_2d;
+                constr_3d = curve.constr_3d;
+                pts = plot_curve_from_projections(Pos3D, constr_2d, constr_3d, ...
+                    params, true);
+
+                all_P = compute_all_replicas(pts, ...
+                    curve.rotational_symmetry, ...
+                    curve.reflection_symmetry, ...
+                    curve.reflection_point);
+
+                all_P = all_P(:);
+                for jj = 2:length(all_P)
+                    p = all_P{jj};
+                    plot3(p(:,1), p(:,2), p(:,3), ...
+                        'Color', 'k', ...
+                        'LineWidth',params.size_line);
+
+                    plot3(p(:,1), p(:,2), -params.project_offset*ones(size(p,1),1), ... ...
+                        'Color', [0.5,0.5,0.5], ...
+                        'LineWidth',params.size_line);
+                end
+
+            end
 
 
 
