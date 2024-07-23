@@ -1,13 +1,69 @@
-function [split1_cont, split2_cont] = split_bezier_curve(bz_ori, t_split, ifplot)
+function splited_curve = split_bezier_curve(bz_ori, in_t_split, ifplot)
 
 if nargin < 3, ifplot = false; end
 
+if ~isequal(in_t_split, sort(in_t_split))
+    error('Error: the t_spilt is not sorted');
+end
+
+
+num_t = length(in_t_split);
+
+splited_curve = cell(num_t+1, 1);
+
+for ii = 1:num_t
+    if ii == 1
+        bz_split2 = bz_ori;
+        t_prev = 0;
+        len = 1;
+    else
+        t_prev = in_t_split(ii-1);
+        len = 1 - t_prev;
+    end
+    t_split = (in_t_split(ii) - t_prev)/len;
+    [bz_split1, bz_split2] = split_curve_into_two(bz_split2, t_split);
+
+    splited_curve{ii} = bz_split1;
+end
+% add the last segment
+splited_curve{num_t+1} = bz_split2;
+
+
+if ifplot
+
+    t_values = linspace(0, 1, 100);
+
+    curve_points = cell2mat( ...
+        arrayfun(fit_bezier_curve(bz_ori), ...
+        t_values, 'UniformOutput', false)' ...
+        );
+
+    plot(curve_points(:, 1), curve_points(:, 2), 'k', 'LineWidth', 10); hold on;
+
+    for ii = 1:length(splited_curve)
+        curve_points = cell2mat( ...
+            arrayfun(fit_bezier_curve(splited_curve{ii}), ...
+            t_values, 'UniformOutput', false)' ...
+            );
+        plot(curve_points(:, 1), curve_points(:, 2), 'LineWidth', 2); hold on;
+    end
+end
+
+
+end
+
+
+function [bz_split1, bz_split2] = split_curve_into_two(bz_ori, t_split)
 p_start = bz_ori(1,:);
 p_end = bz_ori(2,:);
-t_start = bz_ori(3,:);
-t_end = bz_ori(4,:);
+if size(bz_ori,1) == 4
 
-
+    t_start = bz_ori(3,:);
+    t_end = bz_ori(4,:);
+else
+    t_start = [0,0];
+    t_end = [0,0];
+end
 
 % Compute control points based on tangents
 c1 = p_start + t_start;
@@ -23,31 +79,8 @@ E = (1 - t_split) * B + t_split * C;
 p_split = (1 - t_split) * D + t_split * E;
 
 % points + tanget for the first split
-split1_cont = [p_start; p_split; A - p_start; D - p_split];
-split2_cont = [p_split; p_end; E - p_split; C - p_end];
 
-if ifplot
-    bc_ori = fit_bezier_curve(p_start, p_end, t_start, t_end);
-    bc_split1 = fit_bezier_curve(p_start,  p_split, A - p_start, D - p_split, false);
-    bc_split2 = fit_bezier_curve(p_split, p_end, E - p_split, C - p_end, false);
-
-    t_values = linspace(0, 1, 100);
-    curve_points = arrayfun(bc_ori, t_values, 'UniformOutput', false);
-    curve_points = cell2mat(curve_points');
-
-    curve_points1 = arrayfun(bc_split1, t_values,'UniformOutput',false);
-    curve_points1 = cell2mat(curve_points1');
-
-    curve_points2 = arrayfun(bc_split2, t_values,'UniformOutput',false);
-    curve_points2 = cell2mat(curve_points2');
-
-
-
-    figure(11); clf;
-    plot(curve_points(:, 1), curve_points(:, 2), 'k', 'LineWidth', 10); hold on;
-    plot(curve_points1(:, 1), curve_points1(:, 2), 'g-', 'LineWidth', 2);hold on;
-    plot(curve_points2(:, 1), curve_points2(:, 2), 'r-', 'LineWidth', 2);
-    legend('original', 'split1', 'split2')
-end
+bz_split1 = [p_start; p_split; A - p_start; D - p_split];
+bz_split2 = [p_split; p_end; E - p_split; C - p_end];
 
 end

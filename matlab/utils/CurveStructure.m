@@ -70,64 +70,38 @@ classdef CurveStructure < handle
 
 
             if ~isempty(curve.p_t)
-                % add the intersecting point to the control points
-                obj.controlPts(end+1, :) = [curve.unit_controlledCurve.fittedCurve(curve.p_t), curve.p_t*height];
-                obj.controlPts_label(end+1) = curve.p_label;
-                num = size(obj.controlPts,1);
 
-                % split the original curve into two
-                %
-                % input curve is a line segment
+                [~,idx] = sort(curve.p_t);
+                curve.p_t = curve.p_t(idx);
+                curve.p_label = curve.p_label(idx);
 
-                % curve1: first anchor <-> intersecting point
-                c1 = c_init;
-                c1.pid = [pid1,num];
+                constr_2d = curve.unit_controlledCurve.anchor_constraints;
+                constr_3d = [0, height/2; 0,-height/2];
 
-                % curve2: intersecting point <-> second anchor
-                c2 = c_init;
-                c2.pid = [num, pid2];
+                % original curve
+                bc_2d = [obj.controlPts([pid1, pid2],1:2); constr_2d];
+                tmp = [[0;1], obj.controlPts([pid1, pid2], 3)];
+                bc_3d = [tmp; constr_3d];
 
-                if isempty(curve.unit_controlledCurve.anchor_constraints)
-                    p1 = obj.controlPts(pid1,1:2);
-                    p2 = obj.controlPts(pid2,1:2);
-                    pmid = obj.controlPts(num, 1:2);
-                    % use line segment directions as tangent
-                    c1.constr_2d = 0.2*[pmid-p1;
-                        p1-pmid];
-                    c2.constr_2d = 0.2*[p2-pmid;
-                        pmid-p2];
-                else
-                    bz_cont = [curve.unit_controlledCurve.anchor;
-                        curve.unit_controlledCurve.anchor_constraints];
-                    [split1_cont, split2_cont] = split_bezier_curve(bz_cont, curve.p_t, true);
-                    c1.constr_2d = split1_cont(3:4,:);
-                    c2.constr_2d = split2_cont(3:4,:);
+                splited_curve_2d = split_bezier_curve(bc_2d, curve.p_t, false);
+                splited_curve_3d = split_bezier_curve(bc_3d, curve.p_t, false);
+
+                for ii = 1:length(splited_curve_2d)
+                    c2d = splited_curve_2d{ii};
+                    c3d = splited_curve_3d{ii};
+
+                    p1 = [c2d(1,:), c3d(1,2)];
+                    p2 = [c2d(2,:), c3d(2,2)];
+                    [p1_id, obj.controlPts] = return_pid(p1, obj.controlPts);
+                    [p2_id, obj.controlPts] = return_pid(p2, obj.controlPts);
+
+                    c = c_init;
+                    c.pid = [p1_id, p2_id];
+                    c.constr_2d = c2d(3:4,:);
+                    c.constr_3d = c3d(3:4,:);
+                    obj.curves = [obj.curves; c];
+
                 end
-
-                p = obj.controlPts;
-                % initialize the tangents for the height curve
-                if obj.controlPts_label(pid1) == 0 && obj.controlPts_label(pid2) == 1
-                    c1.constr_3d = [0, a;
-                        -a, 0];
-
-                    c2.constr_3d = [a, 0;
-                        0, -a];
-                end
-
-                if obj.controlPts_label(pid1) == 1 && obj.controlPts_label(pid2) == 0
-                    c1.constr_3d = [0,-a;
-                        a, 0];
-                    c2.constr_3d = [-a,0;
-                        0, -2*a];
-                end
-
-
-                obj.curves = [obj.curves; c1; c2];
-
-                %                 else
-                %
-                %                 end
-
 
             else % there is no intersection
                 c = c_init;
@@ -136,15 +110,16 @@ classdef CurveStructure < handle
                 c.constr_3d = []; % TODO: need to check here
                 obj.curves = [obj.curves; c];
             end
-
         end
+
+
 
 
         function [] = plot_curves(obj,params)
             if nargin < 2, params = load_parameters(); end
 
-            for i = 1:length(obj.curves)
-                curve = obj.curves(i);
+            for ii = 1:length(obj.curves)
+                curve = obj.curves(ii);
 
                 Pos3D = obj.controlPts(curve.pid, :);
                 constr_2d = curve.constr_2d;
@@ -168,13 +143,7 @@ classdef CurveStructure < handle
                         'Color', [0.5,0.5,0.5], ...
                         'LineWidth',params.size_line);
                 end
-
             end
-
-
-
-
-
         end
 
 
@@ -271,5 +240,17 @@ classdef CurveStructure < handle
         end
 
     end
+end
+
+
+function [pid, P_new] = return_pid(pos, P)
+[id, dis] = knnsearch(P, pos);
+if dis < 1e-6
+    pid = id; P_new = P;
+else
+    P_new = [P; pos];
+    pid = size(P_new, 1);
+end
+
 end
 

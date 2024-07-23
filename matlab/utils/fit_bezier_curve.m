@@ -1,9 +1,10 @@
 function [bezier_curve, bezier_tangent] = fit_bezier_curve( ...
-    p_start, ... % position of the starting point
+    p_start_in, ... % position of the starting point
     p_end, ... % position of the end point
     t_start, ... % tangent vector at p_start
     t_end, ... % tangent vector at p_end
     ifplot) % plot the curve for debugging
+
 
 if nargin < 3 || isempty(t_start)
     t_start = [0,0.5];
@@ -12,6 +13,18 @@ end
 if nargin < 4 || isempty(t_end)
     t_end = [-0.5,0];
 end
+
+if size(p_start_in,1) == 4
+
+    p_start = p_start_in(1,:);
+    p_end = p_start_in(2,:);
+    t_start = p_start_in(3,:);
+    t_end = p_start_in(4,:);
+else
+    p_start = p_start_in(1,:);
+
+end
+
 
 if nargin < 5
     ifplot = false;
@@ -25,10 +38,10 @@ bezier_curve = @(t) ((1-t).^3 .* p_start' + 3*(1-t).^2 .* t .* c1' + 3*(1-t) .* 
 
 % Define the derivative of the Bézier curve function
 bezier_tangent = @(t) reshape(( ...
-     (1-t).^2 .* (c1' - p_start') + ...
+    (1-t).^2 .* (c1' - p_start') + ...
     2 * (1-t) .* t .* (c2' - c1') + ...
-     t.^2 .* (p_end' - c2') ...
-),2,[])';
+    t.^2 .* (p_end' - c2') ...
+    ),2,[])';
 
 if ifplot
     % Evaluate the Bézier curve

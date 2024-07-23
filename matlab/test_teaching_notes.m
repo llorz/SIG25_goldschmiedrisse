@@ -71,9 +71,10 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'U.XI.18';
+name = 'tn-3';
 cs = read_2D_drawings([filepath, name, '.uc']);
 % cs = rescale_curve_structure(cs, 2)
+%%
 figure(4); clf;
 cs.plot_2D_projection;
 
@@ -81,4 +82,15 @@ cs.plot_2D_projection;
 figure(5);clf;
 cs.plot_3D_structure();
 
+%%
+figure(6); clf
+cs.plot_curves(); axis off;
 
+%%
+p_start = [0,0];
+p_end = [1,1];
+t_start = [0,1];
+t_end = [0,-1];
+
+figure(3); clf
+fit_bezier_curve(p_start, p_end, t_start, t_end, true);

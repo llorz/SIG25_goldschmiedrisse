@@ -35,8 +35,8 @@ cs = CurveStructure('u.xi.18');
 %     cs.add_unit_curve(uc1);
 cs.add_unit_curve(uc2);
 %%
-anchor = [0.8, 0;
-    0, 0.6];
+anchor = [-1, 0;
+    0.7,0.7];
 
 anchor_label = [0,1];
 anchor_constr = [0, 0.5; 0.5,0];
