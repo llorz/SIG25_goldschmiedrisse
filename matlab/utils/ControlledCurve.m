@@ -15,6 +15,10 @@ classdef ControlledCurve
     methods
         function obj = ControlledCurve(anchor, anchor_constraints, anchor_label)
             obj.anchor = anchor;
+            if isempty(anchor_constraints)
+                anchor_constraints = 0.2*[anchor(2,:) - anchor(1, :);
+                    anchor(1,:) - anchor(2, :)];
+            end
             obj.anchor_constraints = anchor_constraints;
             obj.anchor_label = anchor_label;
             obj = obj.fit_the_curve();
@@ -27,7 +31,9 @@ classdef ControlledCurve
                 obj.fittedCurve = @(t) obj.anchor(1,:) + t'*(obj.anchor(2,:) - obj.anchor(1,:));
                 obj.fittedCurveTangent = obj.anchor(2,:) - obj.anchor(1,:);
             else
-                [obj.fittedCurve, obj.fittedCurveTangent] = fit_bezier_curve(obj.anchor(1,:), obj.anchor(2,:), obj.anchor_constraints(1,:), obj.anchor_constraints(2,:));
+                [obj.fittedCurve, obj.fittedCurveTangent] = fit_bezier_curve( ...
+                    [obj.anchor;
+                    obj.anchor_constraints]);
             end
         end
 

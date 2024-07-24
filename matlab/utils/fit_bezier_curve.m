@@ -1,28 +1,21 @@
 function [bezier_curve, bezier_tangent] = fit_bezier_curve( ...
-    p_start_in, ... % position of the starting point
-    p_end, ... % position of the end point
-    t_start, ... % tangent vector at p_start
-    t_end, ... % tangent vector at p_end
+    constr,...
     ifplot) % plot the curve for debugging
 
 
-if nargin < 3 || isempty(t_start)
-    t_start = [0,0.5];
+if nargin < 2
+    ifplot = false;
 end
 
-if nargin < 4 || isempty(t_end)
-    t_end = [-0.5,0];
-end
+p_start = constr(1,:);
+p_end = constr(2,:);
+if size(constr,1) == 4
 
-if size(p_start_in,1) == 4
-
-    p_start = p_start_in(1,:);
-    p_end = p_start_in(2,:);
-    t_start = p_start_in(3,:);
-    t_end = p_start_in(4,:);
+    t_start = constr(3,:);
+    t_end = constr(4,:);
 else
-    p_start = p_start_in(1,:);
-
+    t_start = 0.2*(p_end - p_start);
+    t_end = 0.2*(p_start - p_end);
 end
 
 

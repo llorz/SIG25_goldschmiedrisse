@@ -52,8 +52,6 @@ classdef CurveStructure < handle
             c_init.reflection_symmetry = curve.reflection_symmetry;
             c_init.reflection_point = curve.reflection_point;
 
-
-
             if isempty(obj.controlPts)
                 % initialize the height to zero
                 obj.controlPts = [anchor, zeros(2,1)];
@@ -67,8 +65,6 @@ classdef CurveStructure < handle
                 pid2 = 2;
 
             end
-
-
             if ~isempty(curve.p_t)
 
                 [~,idx] = sort(curve.p_t);
@@ -76,7 +72,7 @@ classdef CurveStructure < handle
                 curve.p_label = curve.p_label(idx);
 
                 constr_2d = curve.unit_controlledCurve.anchor_constraints;
-                constr_3d = [0, height/2; 0,-height/2];
+                constr_3d = [0, 0.5*height; 0,-0.75*height];
 
                 % original curve
                 bc_2d = [obj.controlPts([pid1, pid2],1:2); constr_2d];
@@ -97,8 +93,21 @@ classdef CurveStructure < handle
 
                     c = c_init;
                     c.pid = [p1_id, p2_id];
-                    c.constr_2d = c2d(3:4,:);
-                    c.constr_3d = c3d(3:4,:);
+
+                    if size(c2d,1) == 4
+                        c.constr_2d = c2d(3:4,:);
+                    else
+                        c.constr_2d = 0.2*[c2d(2,:) - c2d(1,:);
+                            c2d(1,:) - c2d(2,:)];
+                    end
+
+                    if size(c3d,1) == 4
+                        c.constr_3d = c3d(3:4,:);
+                    else
+                        c.constr_3d = 0.2*[c3d(2,:) - c3d(1,:);
+                            c3d(1,:) - c3d(2,:)];
+                    end
+
                     obj.curves = [obj.curves; c];
 
                 end
@@ -125,7 +134,7 @@ classdef CurveStructure < handle
                 constr_2d = curve.constr_2d;
                 constr_3d = curve.constr_3d;
                 pts = plot_curve_from_projections(Pos3D, constr_2d, constr_3d, ...
-                    params, true);
+                    params, true); hold on;
 
                 all_P = compute_all_replicas(pts, ...
                     curve.rotational_symmetry, ...
@@ -244,7 +253,7 @@ end
 
 
 function [pid, P_new] = return_pid(pos, P)
-[id, dis] = knnsearch(P, pos);
+[id, dis] = knnsearch(P(:, 1:length(pos)), pos);
 if dis < 1e-6
     pid = id; P_new = P;
 else

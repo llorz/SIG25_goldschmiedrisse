@@ -56,31 +56,45 @@ end
 function [bz_split1, bz_split2] = split_curve_into_two(bz_ori, t_split)
 p_start = bz_ori(1,:);
 p_end = bz_ori(2,:);
-if size(bz_ori,1) == 4
 
-    t_start = bz_ori(3,:);
-    t_end = bz_ori(4,:);
+% check if the original curve is a line segment (false) or not (true)
+if size(bz_ori,1) == 4
+    if any(reshape(bz_ori(3:4,:),[],1))
+        flag = true;
+    else
+        flag = false;
+    end
 else
-    t_start = [0,0];
-    t_end = [0,0];
+    flag = false;
 end
 
-% Compute control points based on tangents
-c1 = p_start + t_start;
-c2 = p_end + t_end;
+if flag
+    t_start = bz_ori(3,:);
+    t_end = bz_ori(4,:);
 
-% Compute the intermediate points
-A = (1 - t_split) * p_start + t_split * c1;
-B = (1 - t_split) * c1 + t_split * c2;
-C = (1 - t_split) * c2 + t_split * p_end;
-D = (1 - t_split) * A + t_split * B;
-E = (1 - t_split) * B + t_split * C;
-% This is the point on the curve at t_split
-p_split = (1 - t_split) * D + t_split * E;
+    % Compute control points based on tangents
+    c1 = p_start + t_start;
+    c2 = p_end + t_end;
 
-% points + tanget for the first split
+    % Compute the intermediate points
+    A = (1 - t_split) * p_start + t_split * c1;
+    B = (1 - t_split) * c1 + t_split * c2;
+    C = (1 - t_split) * c2 + t_split * p_end;
+    D = (1 - t_split) * A + t_split * B;
+    E = (1 - t_split) * B + t_split * C;
+    % This is the point on the curve at t_split
+    p_split = (1 - t_split) * D + t_split * E;
 
-bz_split1 = [p_start; p_split; A - p_start; D - p_split];
-bz_split2 = [p_split; p_end; E - p_split; C - p_end];
+    % points + tanget for the two splitted curves
+    bz_split1 = [p_start; p_split; A - p_start; D - p_split];
+    bz_split2 = [p_split; p_end; E - p_split; C - p_end];
+
+else % line segment
+    p_split = (1 - t_split)*p_start + t_split*p_end;
+
+    bz_split1 = [p_start; p_split; 0.2*(p_split-p_start); 0.2*(p_start - p_split)];
+    bz_split2 = [p_split; p_end; 0.2*(p_end - p_split); 0.2*(p_split - p_end)];
+
+end
 
 end

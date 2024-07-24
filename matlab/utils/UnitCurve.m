@@ -111,6 +111,7 @@ classdef UnitCurve
             else
                 pts = [obj.unit_controlledCurve.anchor;
                     obj.unit_controlledCurve.fittedCurve(obj.p_t)];
+                pts % debug
                 label = [obj.unit_controlledCurve.anchor_label(:); obj.p_label(:)];
             end
             scatter(pts(:,1), pts(:,2),100, mycolor(label+1,:),'filled');
