@@ -71,13 +71,17 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'tn-1';
+name = 'tn-2';
 cs = read_2D_drawings([filepath, name, '.uc']);
 % cs = rescale_curve_structure(cs, 2)
-
+    
 figure(6); clf
 cs.plot_curves(); axis off;
-
+%%
+pos = cs.uniform_sample_unit_curve(1);
+%%
+figure(6); hold on;
+scatter3(pos(:,1), pos(:,2), pos(:,3), 'filled')
 %%
 p_start = [0,0];
 p_end = [1,1];

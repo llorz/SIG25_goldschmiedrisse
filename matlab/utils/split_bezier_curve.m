@@ -1,4 +1,4 @@
-function splited_curve = split_bezier_curve(bz_ori, in_t_split, ifplot)
+function [splited_curve, t_range] = split_bezier_curve(bz_ori, in_t_split, ifplot)
 
 if nargin < 3, ifplot = false; end
 
@@ -27,7 +27,7 @@ for ii = 1:num_t
 end
 % add the last segment
 splited_curve{num_t+1} = bz_split2;
-
+t_range = [0; in_t_split(:); 1];
 
 if ifplot
 

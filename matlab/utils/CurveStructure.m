@@ -23,9 +23,11 @@ classdef CurveStructure < handle
         % pid: point ID from controlPts
         % constr_2d: the tangent constraints for each vertex in 2D (top view)
         % constr_3d: the tangent constraints in 3D
+        % fitted_curve
+        % curve_length
         curves
 
-        weight_curly
+        height
     end
 
     methods
@@ -37,34 +39,54 @@ classdef CurveStructure < handle
             obj.controlPts = [];
             obj.controlPts_label = [];
             obj.curves = [];
-            obj.weight_curly = 0.3;
-
+            obj.height = 0;
         end
+
+
 
 
         function obj = add_unit_curve(obj,curve)
             obj.unit_curves = [obj.unit_curves, curve];
-            anchor = curve.unit_controlledCurve.anchor;
-            height = norm(anchor(1,:) - anchor(2,:));
-            a = obj.weight_curly*height;
+            obj.height = max(obj.height, ...
+                norm(curve.unit_controlledCurve.anchor(1,:) - ...
+                curve.unit_controlledCurve.anchor(2,:)));
+            uid = length(obj.unit_curves);
+
+            if size(curve.unit_controlledCurve,2) < 3
+                % initialize the height by label
+                anchor = [curve.unit_controlledCurve.anchor, zeros(2,1)];
+                % peak point
+                anchor(curve.unit_controlledCurve.anchor_label == 1, 3) = obj.height;
+                % free end
+                anchor(curve.unit_controlledCurve.anchor_label == 2, 3) = obj.height/2;
+            else
+                % input already put the height information
+                anchor = curve.unit_controlledCurve.anchor;
+            end
+
+            if isempty(obj.controlPts)
+                obj.controlPts = anchor;
+                pid1 = 1;
+                pid2 = 2;
+            else
+                % add anchor points to control points
+                [pid1, obj.controlPts] = return_pid(anchor(1,:), obj.controlPts);
+                [pid2, obj.controlPts] = return_pid(anchor(2,:), obj.controlPts);
+            end
+
+            % update the control points labels
+            label = nan(size(obj.controlPts,1),1);
+            label(1:length(obj.controlPts_label)) = obj.controlPts_label;
+            label(pid1) = curve.unit_controlledCurve.anchor_label(1);
+            label(pid2) = curve.unit_controlledCurve.anchor_label(2);
+            obj.controlPts_label = label;
+
             c_init = struct();
             c_init.rotational_symmetry = curve.rotational_symmetry;
             c_init.reflection_symmetry = curve.reflection_symmetry;
             c_init.reflection_point = curve.reflection_point;
+            c_init.uid = uid; % unit curve id
 
-            if isempty(obj.controlPts)
-                % initialize the height to zero
-                obj.controlPts = [anchor, zeros(2,1)];
-                obj.controlPts_label = [curve.unit_controlledCurve.anchor_label];
-                % set height of the peak point
-                obj.controlPts(obj.controlPts_label == 1,3) = height;
-                pid1 = 1; % vtxID of the anchors in controlPts
-                pid2 = 2;
-            else
-                pid1 = 1;
-                pid2 = 2;
-
-            end
             if ~isempty(curve.p_t)
 
                 [~,idx] = sort(curve.p_t);
@@ -72,14 +94,18 @@ classdef CurveStructure < handle
                 curve.p_label = curve.p_label(idx);
 
                 constr_2d = curve.unit_controlledCurve.anchor_constraints;
-                constr_3d = [0, 0.5*height; 0,-0.75*height];
+                constr_3d = obj.height/2*[
+                    initialize_constr_3d(label(pid1));
+                    initialize_constr_3d(label(pid2));
+                    ];
+
 
                 % original curve
                 bc_2d = [obj.controlPts([pid1, pid2],1:2); constr_2d];
                 tmp = [[0;1], obj.controlPts([pid1, pid2], 3)];
                 bc_3d = [tmp; constr_3d];
 
-                splited_curve_2d = split_bezier_curve(bc_2d, curve.p_t, false);
+                [splited_curve_2d, t_range] = split_bezier_curve(bc_2d, curve.p_t, false);
                 splited_curve_3d = split_bezier_curve(bc_3d, curve.p_t, false);
 
                 for ii = 1:length(splited_curve_2d)
@@ -93,7 +119,7 @@ classdef CurveStructure < handle
 
                     c = c_init;
                     c.pid = [p1_id, p2_id];
-
+                    c.t_range = [t_range(ii), t_range(ii+1)];
                     if size(c2d,1) == 4
                         c.constr_2d = c2d(3:4,:);
                     else
@@ -108,6 +134,12 @@ classdef CurveStructure < handle
                             c3d(1,:) - c3d(2,:)];
                     end
 
+
+                    c.fittedCurve = fit_one_3d_curve(obj.controlPts(c.pid, :), ...
+                        c.constr_2d, ...
+                        c.constr_3d);
+
+                    c.curve_length = compute_curve_length(c.fittedCurve);
                     obj.curves = [obj.curves; c];
 
                 end
@@ -117,15 +149,60 @@ classdef CurveStructure < handle
                 c.pid = [pid1, pid2];
                 c.constr_2d = curve.unit_controlledCurve.anchor_constraints;
                 c.constr_3d = []; % TODO: need to check here
+
+                c.fittedCurve = fit_one_3d_curve(obj.controlPts(c.pid, :), ...
+                    c.constr_2d, ...
+                    c.constr_3d);
+                c.curve_length = compute_curve_length(c.fittedCurve);
                 obj.curves = [obj.curves; c];
+
             end
         end
 
+        function curve_length = return_unit_curve_length(obj, uid)
+            if uid > length(obj.unit_curves)
+                error('ERROR: exceed the number of unit curves')
+            end
 
+            % find the curves belong to this unit curve
+            cids = [obj.curves.uid] == uid;
+            curve_length = sum([obj.curves(cids).curve_length]);
+        end
+
+        function pos = sample_unit_curve(obj, uid, num_samples)
+            if nargin < 3, num_samples = 100; end
+            cids = find([obj.curves.uid] == uid);
+
+            % make sure the sub-curves are sorted w.r.t. unit curve
+            tmp = cell2mat({obj.curves(cids).t_range}');
+            [~,idx] = sort(tmp(:,2));
+            cids = cids(idx);
+
+            pos = [] ;
+            t = linspace(0,1,num_samples);
+            for cid = reshape(cids, 1, [])
+                pos = [pos;
+                    obj.curves(cid).fittedCurve(t)];
+            end
+        end
+
+        function pos = uniform_sample_unit_curve(obj, uid, num_samples)
+            if nargin < 3, num_samples = 7; end
+            x = obj.sample_unit_curve(uid);
+            xs = x(1:end-1,:);
+            xe = x(2:end,:);
+            cum_length = cumsum(sqrt(sum((xe - xs).^2,2)));
+            pid = zeros(num_samples, 1);
+            for ii = 1:num_samples
+                pid(ii) = find(cum_length > cum_length(end)*ii/(num_samples+1),1);
+            end
+            pos = x(pid,:);
+        end
 
 
         function [] = plot_curves(obj,params)
             if nargin < 2, params = load_parameters(); end
+            params.plane_height = obj.height;
 
             for ii = 1:length(obj.curves)
                 curve = obj.curves(ii);
@@ -133,8 +210,11 @@ classdef CurveStructure < handle
                 Pos3D = obj.controlPts(curve.pid, :);
                 constr_2d = curve.constr_2d;
                 constr_3d = curve.constr_3d;
-                pts = plot_curve_from_projections(Pos3D, constr_2d, constr_3d, ...
-                    params, true); hold on;
+                pts = plot_curve_from_projections( ...
+                    Pos3D, ...
+                    constr_2d, ...
+                    constr_3d, ...
+                    params); hold on;
 
                 all_P = compute_all_replicas(pts, ...
                     curve.rotational_symmetry, ...
@@ -148,104 +228,37 @@ classdef CurveStructure < handle
                         'Color', 'k', ...
                         'LineWidth',params.size_line);
 
-                    plot3(p(:,1), p(:,2), -params.project_offset*ones(size(p,1),1), ... ...
-                        'Color', [0.5,0.5,0.5], ...
-                        'LineWidth',params.size_line);
-                end
-            end
-        end
-
-
-        function [] = plot_2D_projection(obj)
-            mycolor = lines(10);
-            notes = [obj.name, ' : '];
-            for ii = 1:length(obj.unit_curves)
-                uc = obj.unit_curves(ii);
-                plot(uc, mycolor(ii+1,:)); hold on;
-                notes = [notes, ...
-                    sprintf('%s{%f %f %f}{%s %d %s %d, %d}%s', '\color[rgb]', ...
-                    mycolor(ii+1,:), ...
-                    'uc', ...
-                    ii, '(', ...
-                    uc.rotational_symmetry, ...
-                    uc.reflection_symmetry, '); ')];
-            end
-            title(notes, 'Interpreter','tex');
-        end
-
-        function [] = plot_3D_structure(obj)
-            mycolor = lines(10);
-            notes = [obj.name, ' : '];
-            for ii = 1:length(obj.unit_curves)
-                uc = obj.unit_curves(ii);
-                curve_3d = embed_in_3D(uc);
-                pts = curve_3d();
-                ref_mat = uc.get_reflection_mat();
-                rot_mat = uc.get_rotation_mat(1);
-                for i = 1 : uc.rotational_symmetry
-                    mat = rot_mat^i;
-                    rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
-                    plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:),'LineWidth',2); hold on;
-                    if uc.reflection_symmetry
-                        mat = mat * ref_mat;
-                        rot_pts = [pts(:, 1:2) * mat', pts(:, 3)];
-                        plot3(rot_pts(:, 1), rot_pts(:, 2), rot_pts(:, 3), 'Color', mycolor(ii+1,:), 'LineWidth',2);
+                    if params.ifplot.projection
+                        plot3(p(:,1), p(:,2), -params.project_offset*ones(size(p,1),1), ... ...
+                            'Color', [0.5,0.5,0.5], ...
+                            'LineWidth',params.size_line);
                     end
                 end
             end
-            axis equal; axis off;
-        end
 
 
+            if params.ifplot.decoration
+                for jj = 1:length(obj.unit_curves)
 
-        function obj = plot(obj, lifted)
-            if ~exist('lifted', 'var')
-                lifted = false;
-            end
+                    % smaple the decorations
+                    pos = obj.uniform_sample_unit_curve(jj);
 
-            axis equal;
-            hold on;
-            for i = 1 : length(obj.unit_curves)
-                rot_sym = obj.unit_curves(i).rotational_symmetry;
-                ang = 2 * pi / rot_sym;
-                rot_mat = [cos(ang), -sin(ang);sin(ang), cos(ang)];
-                %         p1 = normc(obj.unit_curves(i).points(1,:)');
-                p1 = obj.unit_curves(i).points(1,:)';
-                p1 = p1/norm(p1);
-                ref_mat = eye(2) - 2 * (p1 * p1');
+                    all_P = compute_all_replicas(pos, ...
+                        obj.unit_curves(jj).rotational_symmetry, ...
+                        obj.unit_curves(jj).reflection_symmetry, ...
+                        obj.unit_curves(jj).reflection_point);
+                    all_P = all_P(:);
 
-                % Calculate intersections.
-                intersections = obj.unit_curves(i).calculate_intersections();
-                pts1 = obj.unit_curves(i).points(intersections(:,2),:)';
-                pts2 = obj.unit_curves(i).points(intersections(:,2) + 1,:)';
-                intersection_points = pts1 + (pts2 - pts1) .* intersections(:,1)';
-
-                orig_points = obj.unit_curves(i).points';
-                if lifted
-                    coefs = obj.unit_curves(i).get_lift_poly_coefficients();
-                    t = linspace(0, 1, 100);
-                    y = coefs(1) * t.^2 + coefs(2) * t.^3 + coefs(3) * t.^4;
-                    orig_points = orig_points(:,1) * y + orig_points(:, 2) * (1 - y);
-                else
-                    t = zeros(1, size(orig_points, 2));
-                end
-
-                for j = 0 : rot_sym - 1
-                    pts = (rot_mat^j) * orig_points;
-                    plot3(pts(1,:), pts(2,:), t);
-                    scatter3(pts(1,1), pts(2,1), 0);
-                    % Draw reflection if reflection symmetry is enabled.
-                    if obj.unit_curves(i).reflection_symmetry
-                        pts = (rot_mat^j) * ref_mat * orig_points;
-
-                        plot3(pts(1,:), pts(2,:), t);
+                    for kk = 1:length(all_P)
+                        p = all_P{kk};
+                        scatter3(p(:,1), p(:,2), p(:,3), ...
+                            params.size_point, ...
+                            params.col_decor, ...
+                            'filled');
                     end
-
-                    % Draw the intersections.
-                    inter = (rot_mat^j) * intersection_points;
-                    scatter3(inter(1,:), inter(2,:), zeros(size(inter(2,:))),'filled');
                 end
             end
+
         end
 
     end
@@ -253,6 +266,7 @@ end
 
 
 function [pid, P_new] = return_pid(pos, P)
+
 [id, dis] = knnsearch(P(:, 1:length(pos)), pos);
 if dis < 1e-6
     pid = id; P_new = P;
@@ -262,4 +276,49 @@ else
 end
 
 end
+
+function t = initialize_constr_3d(label)
+if label == 0
+    t = [0, 1];
+elseif label == 1
+    t = [0, -2];
+elseif label == 2
+    t = [0.5,-0.5];
+else % need to check
+    t = [0,0];
+end
+end
+
+
+
+function func = fit_one_3d_curve(Pos3D, constr_2d, constr_3d)
+func = @(t)  tmp_fit_one_3d_curve(Pos3D, constr_2d, constr_3d, t);
+end
+
+
+function p = tmp_fit_one_3d_curve(Pos3D, constr_2d, constr_3d, t)
+uc_2d = ControlledCurve(Pos3D(:,1:2), ...
+    constr_2d,...
+    []);
+uc_height = ControlledCurve([[0;1], Pos3D(:, 3)], ...
+    constr_3d,...
+    []);
+
+x = uc_2d.fittedCurve(t);
+y = uc_height.fittedCurve(t);
+p = [x, y(:,2)];
+end
+
+
+function curve_length = compute_curve_length(func, num_samples)
+if nargin < 2, num_samples = 100; end
+t = linspace(0,1,num_samples);
+x = func(t);
+xs = x(1:end-1,:);
+xe = x(2:end,:);
+curve_length = sum(sqrt(sum((xe - xs).^2,2)));
+end
+
+
+
 
