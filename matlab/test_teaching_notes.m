@@ -71,17 +71,39 @@ write_2D_drawings([filepath, cs.name, '.uc'], cs);
 
 %%
 filepath = '../data_2D_drawings/';
-name = 'tn-2';
+name = 'tn-1';
 cs = read_2D_drawings([filepath, name, '.uc']);
 % cs = rescale_curve_structure(cs, 2)
     
 figure(6); clf
 cs.plot_curves(); axis off;
 %%
-pos = cs.uniform_sample_unit_curve(1);
+func_normv = @(vec) vec/norm(vec);
+curve = cs.curves(1);
+t = 0.5;
+eps = 0.1;
+p1 = curve.fittedCurve(t);
+p2 = curve.fittedCurve(t+eps);
+
+
+
+n = func_normv(cross([p2(1:2) - p1(1:2),0], [0,0,1]));
+
+u = func_normv(cross(n,curve.fittedCurveTangent(t)));
+
+
+
+
+pos = p1 + 0.1*[1,1;
+    1,-1;
+    -1,-1;
+    -1,1]*[u; n];
+
 %%
 figure(6); hold on;
-scatter3(pos(:,1), pos(:,2), pos(:,3), 'filled')
+fill3(pos(:,1), pos(:,2), pos(:,3),'red')
+
+
 %%
 p_start = [0,0];
 p_end = [1,1];

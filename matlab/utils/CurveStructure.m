@@ -23,7 +23,7 @@ classdef CurveStructure < handle
         % pid: point ID from controlPts
         % constr_2d: the tangent constraints for each vertex in 2D (top view)
         % constr_3d: the tangent constraints in 3D
-        % fitted_curve
+        % fitted_curve and its tangent
         % curve_length
         curves
 
@@ -139,6 +139,11 @@ classdef CurveStructure < handle
                         c.constr_2d, ...
                         c.constr_3d);
 
+                    c.fittedCurveTangent = fit_one_3d_curve_tangent( ...
+                        obj.controlPts(c.pid, :), ...
+                        c.constr_2d, ...
+                        c.constr_3d);
+
                     c.curve_length = compute_curve_length(c.fittedCurve);
                     obj.curves = [obj.curves; c];
 
@@ -153,6 +158,12 @@ classdef CurveStructure < handle
                 c.fittedCurve = fit_one_3d_curve(obj.controlPts(c.pid, :), ...
                     c.constr_2d, ...
                     c.constr_3d);
+
+                c.fittedCurveTangent = fit_one_3d_curve_tangent( ...
+                    obj.controlPts(c.pid, :), ...
+                    c.constr_2d, ...
+                    c.constr_3d);
+
                 c.curve_length = compute_curve_length(c.fittedCurve);
                 obj.curves = [obj.curves; c];
 
@@ -169,7 +180,7 @@ classdef CurveStructure < handle
             curve_length = sum([obj.curves(cids).curve_length]);
         end
 
-        function pos = sample_unit_curve(obj, uid, num_samples)
+        function [pos, info] = sample_unit_curve(obj, uid, num_samples)
             if nargin < 3, num_samples = 100; end
             cids = find([obj.curves.uid] == uid);
 
@@ -179,16 +190,19 @@ classdef CurveStructure < handle
             cids = cids(idx);
 
             pos = [] ;
+            info = [];
             t = linspace(0,1,num_samples);
             for cid = reshape(cids, 1, [])
                 pos = [pos;
                     obj.curves(cid).fittedCurve(t)];
+                info = [info;
+                    repmat(cid, length(t),1), t(:)];
             end
         end
 
-        function pos = uniform_sample_unit_curve(obj, uid, num_samples)
+        function [pos, pos_info] = uniform_sample_unit_curve(obj, uid, num_samples)
             if nargin < 3, num_samples = 7; end
-            x = obj.sample_unit_curve(uid);
+            [x, info] = obj.sample_unit_curve(uid);
             xs = x(1:end-1,:);
             xe = x(2:end,:);
             cum_length = cumsum(sqrt(sum((xe - xs).^2,2)));
@@ -197,6 +211,26 @@ classdef CurveStructure < handle
                 pid(ii) = find(cum_length > cum_length(end)*ii/(num_samples+1),1);
             end
             pos = x(pid,:);
+            pos_info = info(pid, :);
+        end
+
+
+        function n_3d = compute_normal_of_3D_curve(obj, cid, t)
+            curve = obj.curves(cid);
+            if det(curve.constr_2d) < 1e-9 %line segment
+                tangent_2d = curve.constr_2d(1,:);
+            else
+                uc_2d = ControlledCurve( ...
+                    obj.controlPts(curve.pid,1:2), ...
+                    curve.constr_2d,...
+                    []);
+                tangent_2d = uc_2d(t);
+            end
+            tangent_2d = reshape( ...
+                tangent_2d/norm(tangent_2d), ...
+                1,[]);
+
+            n_3d = cross([tangent_2d, 0], [0,0,1]);
         end
 
 
@@ -241,21 +275,58 @@ classdef CurveStructure < handle
                 for jj = 1:length(obj.unit_curves)
 
                     % smaple the decorations
-                    pos = obj.uniform_sample_unit_curve(jj);
+                    [pos, pos_info] = obj.uniform_sample_unit_curve(jj);
 
-                    all_P = compute_all_replicas(pos, ...
+
+                    % for each sample, find the decoration plane
+                    rect = [];
+                    for ii = 1:size(pos,1)
+                        p = pos(ii,:);
+                        cid = pos_info(ii,1);
+                        t = pos_info(ii,2);
+                        n = obj.compute_normal_of_3D_curve(cid, t);
+                        v = obj.curves(cid).fittedCurveTangent(t);
+                        u = cross(n,v); u = u/norm(u);
+
+                        rect_new = p + params.size_decor*[1,1;
+                            1,-1;
+                            -1,-1;
+                            -1,1]*[u; n];
+                        rect = [rect; rect_new];
+                    end
+
+
+                    all_P = compute_all_replicas(rect, ...
                         obj.unit_curves(jj).rotational_symmetry, ...
                         obj.unit_curves(jj).reflection_symmetry, ...
                         obj.unit_curves(jj).reflection_point);
                     all_P = all_P(:);
 
-                    for kk = 1:length(all_P)
+                    for kk = 1%:length(all_P)
                         p = all_P{kk};
-                        scatter3(p(:,1), p(:,2), p(:,3), ...
-                            params.size_point, ...
-                            params.col_decor, ...
-                            'filled');
+                        for ii = 1:4:size(p,1)
+                            fill3(p(ii:ii+3,1), p(ii:ii+3,2), p(ii:ii+3,3), ...
+                                params.col_decor,...
+                                'FaceAlpha',params.alpha_decor, ...
+                                'EdgeColor',params.col_decor,'LineWidth',2);
+                        end
                     end
+
+
+
+                    %                     all_P = compute_all_replicas(pos, ...
+                    %                         obj.unit_curves(jj).rotational_symmetry, ...
+                    %                         obj.unit_curves(jj).reflection_symmetry, ...
+                    %                         obj.unit_curves(jj).reflection_point);
+                    %                     all_P = all_P(:);
+                    %
+                    %                     for kk = 1:length(all_P)
+                    %                         p = all_P{kk};
+                    %                         scatter3(p(:,1), p(:,2), p(:,3), ...
+                    %                             params.size_point/2, ...
+                    %                             params.col_decor, ...
+                    %                             'filled');
+                    %                     end
                 end
             end
 
@@ -296,6 +367,7 @@ func = @(t)  tmp_fit_one_3d_curve(Pos3D, constr_2d, constr_3d, t);
 end
 
 
+% it is quite dumb I think
 function p = tmp_fit_one_3d_curve(Pos3D, constr_2d, constr_3d, t)
 uc_2d = ControlledCurve(Pos3D(:,1:2), ...
     constr_2d,...
@@ -309,6 +381,33 @@ y = uc_height.fittedCurve(t);
 p = [x, y(:,2)];
 end
 
+
+function func = fit_one_3d_curve_tangent(Pos3D, constr_2d, constr_3d)
+func = @(t)  tmp_fit_one_3d_curve_tangent(Pos3D, constr_2d, constr_3d, t);
+end
+
+% it is quite dumb I think
+function tangent = tmp_fit_one_3d_curve_tangent(Pos3D, constr_2d, constr_3d, t)
+uc_2d = ControlledCurve(Pos3D(:,1:2), ...
+    constr_2d,...
+    []);
+uc_height = ControlledCurve([[0;1], Pos3D(:, 3)], ...
+    constr_3d,...
+    []);
+
+x = uc_2d.fittedCurve(t);
+y = uc_height.fittedCurve(t);
+p = [x, y(:,2)];
+
+curve_2d_len = compute_curve_length(uc_2d.fittedCurve, 100);
+tx = uc_2d.fittedCurveTangent(t);
+ty = uc_height.fittedCurveTangent(t);
+u = [tx(:); 0];
+u = u/norm(u)*curve_2d_len;
+v = [0;0;1];
+tangent = ty(1)*u + ty(2)*v;
+tangent = reshape(tangent,1,[]);
+end
 
 function curve_length = compute_curve_length(func, num_samples)
 if nargin < 2, num_samples = 100; end

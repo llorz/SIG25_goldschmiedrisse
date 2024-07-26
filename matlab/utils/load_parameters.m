@@ -14,9 +14,11 @@ params.col_decor = [78,49,100]/100;
 
 params.linestyle_2D = '-';
 params.alpha_plane = 0.2;
+params.alpha_decor = 0.5;
 params.size_line = 2;
 params.size_handle = 1;
 params.size_point = 50;
+params.size_decor = 0.05;
 params.num_samples = 100;
 
 
