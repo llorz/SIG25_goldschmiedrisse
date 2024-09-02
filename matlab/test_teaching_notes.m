@@ -74,7 +74,7 @@ filepath = '../data_2D_drawings/';
 name = 'tn-11';
 name = 'U.XI.30';
 
-name = 'tn-2'
+name = 'tn-9'
 cs = read_2D_drawings([filepath, name, '.uc']);
 cs = rescale_curve_structure(cs, 1)
 

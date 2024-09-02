@@ -58,7 +58,7 @@ classdef CurveStructure < handle
                 % peak point
                 anchor(curve.unit_controlledCurve.anchor_label == 1, 3) = obj.height;
                 % free end
-                anchor(curve.unit_controlledCurve.anchor_label == 2, 3) = obj.height/2;
+                anchor(curve.unit_controlledCurve.anchor_label == 2, 3) = obj.height/3;
             else
                 % input already put the height information
                 anchor = curve.unit_controlledCurve.anchor;
@@ -94,10 +94,12 @@ classdef CurveStructure < handle
                 curve.p_label = curve.p_label(idx);
 
                 constr_2d = curve.unit_controlledCurve.anchor_constraints;
-                constr_3d = obj.height/2*[
-                    initialize_constr_3d(label(pid1));
-                    initialize_constr_3d(label(pid2));
-                    ];
+%                                 constr_3d = obj.height/2*[
+%                                     initialize_constr_3d(label(pid1));
+%                                     initialize_constr_3d(label(pid2));
+%                                     ];
+
+                constr_3d = obj.height/2*initialize_constr_3d_seg([label(pid1); label(pid2)]);
 
 
                 % original curve
@@ -165,6 +167,7 @@ classdef CurveStructure < handle
 
             else % there is no intersection
                 c = c_init;
+                c.t_range = [0,1];
                 c.pid = [pid1, pid2];
                 c.constr_2d = curve.unit_controlledCurve.anchor_constraints;
                 c.constr_3d = []; % TODO: need to check here
@@ -356,7 +359,7 @@ function [pid, P_new] = return_pid(pos, P)
 if dis < 1e-6
     pid = id; P_new = P;
 else
-    
+
     P_new = [P; pos];
     pid = size(P_new, 1);
 end
@@ -370,8 +373,29 @@ elseif label == 1
     t = [0, -2];
 elseif label == 2
     t = [0.5,-0.5];
+    t = [-1,0];
+
 else % need to check
     t = [0,0];
+end
+end
+
+function t = initialize_constr_3d_seg(labels)
+t = zeros(2,2);
+if isempty(find(labels == 2,1))
+    if ~isempty(find(labels == 0, 1))
+        t(labels == 0, :) = [0,1];
+    end
+    if ~isempty(find(labels == 1, 1))
+        t(labels == 1, :) = [0,-2];
+    end
+else
+    if ~isempty(find(labels == 1, 1))
+        t(labels == 1, :) = [0,-0.8];
+    end
+    if ~isempty(find(labels == 2, 1))
+        t(labels == 2, :) = [-0.5,0];
+    end
 end
 end
 
