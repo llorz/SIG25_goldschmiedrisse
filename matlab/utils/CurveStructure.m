@@ -108,14 +108,28 @@ classdef CurveStructure < handle
                 [splited_curve_2d, t_range] = split_bezier_curve(bc_2d, curve.p_t, false);
                 splited_curve_3d = split_bezier_curve(bc_3d, curve.p_t, false);
 
+                % find 3D positions of the intersecting points
+                c2d_ori = cell2mat( ...
+                    arrayfun(fit_bezier_curve(bc_2d), ...
+                    curve.p_t', 'UniformOutput', false)' ...
+                    );
+                c3d_ori = cell2mat( ...
+                    arrayfun(fit_bezier_curve(bc_3d), ...
+                    curve.p_t', 'UniformOutput', false)' ...
+                    );
+                obj.controlPts = [obj.controlPts;...
+                    c2d_ori, c3d_ori(:,2)];
+                obj.controlPts_label = [obj.controlPts_label(:); curve.p_label];
+
+
                 for ii = 1:length(splited_curve_2d)
                     c2d = splited_curve_2d{ii};
                     c3d = splited_curve_3d{ii};
 
                     p1 = [c2d(1,:), c3d(1,2)];
                     p2 = [c2d(2,:), c3d(2,2)];
-                    [p1_id, obj.controlPts] = return_pid(p1, obj.controlPts);
-                    [p2_id, obj.controlPts] = return_pid(p2, obj.controlPts);
+                    p1_id = return_pid(p1, obj.controlPts);
+                    p2_id = return_pid(p2, obj.controlPts);
 
                     c = c_init;
                     c.pid = [p1_id, p2_id];
@@ -342,6 +356,7 @@ function [pid, P_new] = return_pid(pos, P)
 if dis < 1e-6
     pid = id; P_new = P;
 else
+    
     P_new = [P; pos];
     pid = size(P_new, 1);
 end

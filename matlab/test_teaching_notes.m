@@ -74,10 +74,10 @@ filepath = '../data_2D_drawings/';
 name = 'tn-11';
 name = 'U.XI.30';
 
-name = 'tn-9'
+name = 'tn-2'
 cs = read_2D_drawings([filepath, name, '.uc']);
-% cs = rescale_curve_structure(cs, 2)
-  
+cs = rescale_curve_structure(cs, 1)
+
 figure(6); clf
 cs.plot_curves(); axis off;
 %%
