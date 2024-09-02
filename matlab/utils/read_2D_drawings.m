@@ -11,7 +11,7 @@ for ii = 1:numCurves
     reflection_symmetry = curve(3);
     if reflection_symmetry
         reflection_point = fscanf(fid, 'reflectionPoint\t%f\t%f\n', 2);
-    else 
+    else
         reflection_point = [];
     end
 
@@ -32,10 +32,23 @@ for ii = 1:numCurves
             end
         end
     end
-    
-    cc = ControlledCurve(anchor, anchor_constraints, anchor_label);
-    uc = UnitCurve(cc, rotational_symmetry, reflection_symmetry, reflection_point);
-    cs.add_unit_curve(uc);
+
+    if size(anchor,1) == 2
+        cc = ControlledCurve(anchor, anchor_constraints, anchor_label);
+        uc = UnitCurve(cc, rotational_symmetry, reflection_symmetry, reflection_point);
+        cs.add_unit_curve(uc);
+    else
+
+        for kk = 1:size(anchor,1)-1
+            if isempty(anchor_constraints)
+                cc = ControlledCurve(anchor(kk:kk+1,:), [], anchor_label(kk:kk+1));
+            else
+                cc = ControlledCurve(anchor(kk:kk+1,:), anchor_constraints(kk:kk+1,:), anchor_label(kk:kk+1));
+            end
+            uc = UnitCurve(cc, rotational_symmetry, reflection_symmetry, reflection_point);
+            cs.add_unit_curve(uc);
+        end
+    end
 end
 fclose(fid);
 end
