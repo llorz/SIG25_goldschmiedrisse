@@ -26,7 +26,7 @@ params.num_samples = 100;
 ifplot.curve = true;
 ifplot.projection = true;
 
-ifplot.handles = false;
+ifplot.handles = true;
 ifplot.intersection = false;
 ifplot.decoration = false;
 

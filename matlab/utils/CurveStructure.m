@@ -39,7 +39,7 @@ classdef CurveStructure < handle
             obj.controlPts = [];
             obj.controlPts_label = [];
             obj.curves = [];
-            obj.height = 0;
+            obj.height = 1.4;
         end
 
 
