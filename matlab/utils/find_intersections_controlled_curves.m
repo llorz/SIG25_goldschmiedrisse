@@ -19,7 +19,7 @@ else
             p3 = cc2.anchor(ii,:);
             p4 = cc2.anchor(ii+1,:);
 
-            [t, ~, flag1, flag2] = find_intersections_2d(p1, p2, p3, p4, eps);
+            [t, s, flag1, flag2] = find_intersections_2d(p1, p2, p3, p4, eps);
 
             if flag2
                 p_intersect(end+1,:) = t;
@@ -33,7 +33,7 @@ else
     else % controlled curves are curved
         c1_func = cc1.fittedCurve;
         c2_func = cc2.fittedCurve;
-        [t, ~, flag1, flag2] = find_intersections_2d_bezier(c1_func, c2_func, eps);
+        [t, s, flag1, flag2] = find_intersections_2d_bezier(c1_func, c2_func, eps);
 
         if flag2
             p_intersect(end+1,:) = t;

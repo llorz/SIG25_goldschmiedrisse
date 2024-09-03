@@ -31,21 +31,197 @@ classdef CurveStructure < handle
     end
 
     methods
-        function obj = CurveStructure(name)
+        function obj = CurveStructure(name, ini_height)
             if nargin < 1
                 name = '';
             end
+
+            if nargin < 2
+                ini_height = 1;
+            end
+
             obj.name = name;
             obj.controlPts = [];
             obj.controlPts_label = [];
             obj.curves = [];
-            obj.height = 1.4;
+            obj.height = ini_height;
+        end
+
+        function obj = add_unit_curve(obj,curve)
+            obj.unit_curves = [obj.unit_curves, curve];
         end
 
 
 
+        function [intersection_info, intersection_point] = find_intersections(obj)
+            % find the intersections from 2D projections/drawings among all
+            % the unit curves
+            intersection_info = [];
+            intersection_point = [];
 
-        function obj = add_unit_curve(obj,curve)
+            nc = length(obj.unit_curves);
+            % find the intersecting points between every pair of unit curves
+            for ii = 1:nc
+                uc1 = obj.unit_curves(ii);
+                for jj = ii:nc
+                    uc2 = obj.unit_curves(jj);
+                    res = find_intersection_unit_curves(uc1, uc2);
+                    if ~isempty(res)
+                        if ii ~= jj
+                            % two different unit curves cannot intersect at the same
+                            % time (is this true? need to check)
+                            res(3) = 0;
+                        end
+                        intersection_info(end+1, :) = [ii, jj, res];
+                        num = size(intersection_info, 1);
+                        if ii == jj
+                            intersection_point(end+1, :) = [ii, res(1), res(3), num];
+                            if res(3) == 0
+                                intersection_point(end+1, :) = [jj, res(2), res(3), num];
+                            end
+                        else
+                            intersection_point(end+1, :) = [ii, res(1), res(3), num];
+                            intersection_point(end+1, :) = [jj, res(2), res(3), num];
+                        end
+                    end
+                end
+            end
+        end
+
+
+        function obj = update_height(obj)
+            for ii = 1:length(obj.unit_curves)
+                curve = obj.unit_curves(ii);
+                obj.height = max(obj.height, ...
+                    norm(curve.unit_controlledCurve.anchor(1,:) - ...
+                    curve.unit_controlledCurve.anchor(2,:)));
+            end
+        end
+
+
+        function [bc_2d, bc_3d] = reconstruct_one_unit_curve(obj, uc_id)
+            % original curve
+            curve = obj.unit_curves(uc_id);
+            pid1 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(1,:));
+            pid2 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(2,:));
+            constr_2d = curve.unit_controlledCurve.anchor_constraints;
+            constr_3d = obj.height/2*obj.initialize_constr_3d_seg( ...
+                [obj.controlPts_label(pid1); obj.controlPts_label(pid2)]);
+
+            % floor projection curve: 2D pos + constraints
+            bc_2d = [obj.controlPts([pid1, pid2],1:2); constr_2d];
+            % side projection curve: [curve-length param, height] + constraints
+            tmp = [[0;1], obj.controlPts([pid1, pid2], 3)];
+            bc_3d = [tmp; constr_3d];
+        end
+
+
+        function obj = add_intersections_to_control_points(obj, intersection_point)
+
+            for uc_id = 1:length(obj.unit_curves)
+                [bc_2d, bc_3d] = obj.reconstruct_one_unit_curve(uc_id);
+
+                % find the intersection
+                pid = find(intersection_point(:,1) == uc_id);
+                if ~isempty(pid)
+                    [~, idx] = sort(intersection_point(pid, 2));
+                    p_t = intersection_point(pid(idx), 2);
+                    p_label = intersection_point(pid(idx), 3);
+
+
+                    % find 3D positions of the intersecting points
+                    c2d_ori = cell2mat( ...
+                        arrayfun(fit_bezier_curve(bc_2d), ...
+                        p_t', 'UniformOutput', false)' ...
+                        );
+                    c3d_ori = cell2mat( ...
+                        arrayfun(fit_bezier_curve(bc_3d), ...
+                        p_t', 'UniformOutput', false)' ...
+                        );
+                    p_pos = [c2d_ori, c3d_ori(:,2)];
+
+                    % add to control points
+                    obj.controlPts = [obj.controlPts; p_pos];
+                    % a bit dumb here
+                    obj.controlPts_label = [obj.controlPts_label; 4 - p_label];
+                end
+
+            end
+        end
+
+        function obj = add_anchors_to_control_points(obj)
+            for uc_id = 1:length(obj.unit_curves)
+                curve = obj.unit_curves(uc_id);
+
+                % initalize the height for the unit curve
+                if size(curve.unit_controlledCurve,2) < 3
+                    % initialize the height by label
+                    anchor = [curve.unit_controlledCurve.anchor, zeros(2,1)];
+                    % peak point
+                    anchor(curve.unit_controlledCurve.anchor_label == 1, 3) = obj.height;
+                    % free end
+                    anchor(curve.unit_controlledCurve.anchor_label == 2, 3) = obj.height/3;
+                else
+                    % input already put the height information
+                    anchor = curve.unit_controlledCurve.anchor;
+                end
+
+                if isempty(obj.controlPts)
+                    obj.controlPts = anchor;
+                    pid1 = 1;
+                    pid2 = 2;
+                else
+                    % add anchor points to control points
+                    [pid1, obj.controlPts] = return_pid(anchor(1,:), obj.controlPts);
+                    [pid2, obj.controlPts] = return_pid(anchor(2,:), obj.controlPts);
+                end
+
+                % update the control points labels
+                label = nan(size(obj.controlPts,1),1);
+                label(1:length(obj.controlPts_label)) = obj.controlPts_label;
+                label(pid1) = curve.unit_controlledCurve.anchor_label(1);
+                label(pid2) = curve.unit_controlledCurve.anchor_label(2);
+                obj.controlPts_label = label;
+            end
+        end
+
+
+        function t = initialize_constr_3d_seg(obj, labels)
+            t = zeros(2,2);
+            if isempty(find(labels == 2,1))
+                if ~isempty(find(labels == 0, 1))
+                    t(labels == 0, :) = [0,1];
+                end
+                if ~isempty(find(labels == 1, 1))
+                    t(labels == 1, :) = [0,-2];
+                end
+            else
+                if ~isempty(find(labels == 1, 1))
+                    t(labels == 1, :) = [0,-0.8];
+                end
+                if ~isempty(find(labels == 2, 1))
+                    t(labels == 2, :) = [-0.5,0];
+                end
+            end
+        end
+
+
+        function obj = prepare_control_points(obj)
+            obj.update_height();
+            [intersection_info, intersection_point] = obj.find_intersections();
+
+
+            % step 01: add the endpoints of the curve to the control points
+            obj = obj.add_anchors_to_control_points();
+
+            % step 02: add the intersection ponits to the control points
+            obj = obj.add_intersections_to_control_points(intersection_point);
+
+            % step 03: split the unit curves via the intersection points
+        end
+
+
+        function obj = add_unit_curve_old(obj,curve)
             obj.unit_curves = [obj.unit_curves, curve];
             obj.height = max(obj.height, ...
                 norm(curve.unit_controlledCurve.anchor(1,:) - ...
@@ -94,10 +270,10 @@ classdef CurveStructure < handle
                 curve.p_label = curve.p_label(idx);
 
                 constr_2d = curve.unit_controlledCurve.anchor_constraints;
-%                                 constr_3d = obj.height/2*[
-%                                     initialize_constr_3d(label(pid1));
-%                                     initialize_constr_3d(label(pid2));
-%                                     ];
+                %                                 constr_3d = obj.height/2*[
+                %                                     initialize_constr_3d(label(pid1));
+                %                                     initialize_constr_3d(label(pid2));
+                %                                     ];
 
                 constr_3d = obj.height/2*initialize_constr_3d_seg([label(pid1); label(pid2)]);
 

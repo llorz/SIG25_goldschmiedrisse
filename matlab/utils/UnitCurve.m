@@ -4,30 +4,37 @@ classdef UnitCurve
     properties
         unit_controlledCurve;
         rotational_symmetry;
+        rotational_center;
+
         reflection_symmetry;
-        reflection_point;
+        reflection_axis;
         all_controlledCurve;
-        p_t % time step of the intersecting point
-        p_label
     end
 
     methods
-        function obj = UnitCurve(controlledCurve, sym, ref_sym, reflect_pid)
+        function obj = UnitCurve(controlledCurve, sym, ref_sym, ref_axis, rot_center)
+            
+            if nargin < 4
+                ref_axis = controlledCurve.return_ground_pid();
+            end
+            if nargin < 5
+                rot_center = [0,0];
+            end
+
             obj.unit_controlledCurve = controlledCurve;
             obj.rotational_symmetry = sym;
+            obj.rotational_center = rot_center;
+
             obj.reflection_symmetry = ref_sym;
-            if nargin < 4
-                reflect_pid = controlledCurve.return_ground_pid();
+            % if the input is the id
+            if length(ref_axis) == 1 && ref_axis <= size(controlledCurve.anchor,1)
+                obj.reflection_axis = controlledCurve.anchor(ref_axis, :)';
+            elseif length(ref_axis) == 2 % if the input is the axis as 2D vector
+                obj.reflection_axis = ref_axis;
             end
-            if length(reflect_pid) == 1 && reflect_pid <= size(controlledCurve.anchor,1)
-                obj.reflection_point = controlledCurve.anchor(reflect_pid, :)';
-            elseif length(reflect_pid) == 2
-                obj.reflection_point = reflect_pid;
-            end
-
+                
+            % find all the replicas
             obj = obj.complete_curves_wrt_symmetry();
-            obj = obj.find_self_intersections();
-
         end
 
         function mat = get_rotation_mat(obj, rot_rep)
@@ -36,7 +43,7 @@ classdef UnitCurve
         end
 
         function ref_mat = get_reflection_mat(obj)
-            p = reshape(obj.reflection_point,[],1);
+            p = reshape(obj.reflection_axis,[],1);
             p = p/norm(p);
             ref_mat = 2 * (p * p') - eye(2);
         end
@@ -76,45 +83,18 @@ classdef UnitCurve
             obj.all_controlledCurve = all_curves;
         end
 
-        function obj = find_self_intersections(obj)
-
-            pts_t = []; label = [];
-
-            uc1 = obj.all_controlledCurve(1);
-            for ii = 2:length(obj.all_controlledCurve)
-                uc2 = obj.all_controlledCurve(ii);
-                [tmp_t, tmp_p_label] = find_intersections_controlled_curves(uc1, uc2);
-                if ~isempty(tmp_t)
-                    pts_t = [pts_t; tmp_t];
-                    label = [label(:); tmp_p_label(:)];
-                end
-            end
-            obj.p_t = pts_t;
-            obj.p_label = label;
-        end
 
 
         function [] = plot(obj, unit_col)
             if nargin < 2
                 unit_col = [1,0,0];
             end
-            mycolor = lines(100);
+            
             all_curves = obj.all_controlledCurve;
             plot(all_curves(1), unit_col); hold on;
             for ii = 2:length(all_curves)
                 plot(all_curves(ii)); hold on;
             end
-
-            if isempty(obj.p_t)
-                pts = obj.unit_controlledCurve.anchor;
-                label = obj.unit_controlledCurve.anchor_label(:);
-            else
-                pts = [obj.unit_controlledCurve.anchor;
-                    obj.unit_controlledCurve.fittedCurve(obj.p_t)];
-                pts % debug
-                label = [obj.unit_controlledCurve.anchor_label(:); obj.p_label(:)];
-            end
-            scatter(pts(:,1), pts(:,2),100, mycolor(label+1,:),'filled');
 
             axis equal; axis off;
         end
