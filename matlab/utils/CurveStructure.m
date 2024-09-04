@@ -28,6 +28,8 @@ classdef CurveStructure < handle
         curves
 
         height
+        intersection_info
+        intersection_point
     end
 
     methods
@@ -53,11 +55,11 @@ classdef CurveStructure < handle
 
 
 
-        function [intersection_info, intersection_point] = find_intersections(obj)
+        function obj = find_intersections(obj)
             % find the intersections from 2D projections/drawings among all
             % the unit curves
-            intersection_info = [];
-            intersection_point = [];
+            tmp_info = [];
+            tmp_point = [];
 
             nc = length(obj.unit_curves);
             % find the intersecting points between every pair of unit curves
@@ -72,20 +74,22 @@ classdef CurveStructure < handle
                             % time (is this true? need to check)
                             res(3) = 0;
                         end
-                        intersection_info(end+1, :) = [ii, jj, res];
-                        num = size(intersection_info, 1);
+                        tmp_info(end+1, :) = [ii, jj, res];
+                        num = size(tmp_info, 1);
                         if ii == jj
-                            intersection_point(end+1, :) = [ii, res(1), res(3), num];
+                            tmp_point(end+1, :) = [ii, res(1), res(3), num];
                             if res(3) == 0
-                                intersection_point(end+1, :) = [jj, res(2), res(3), num];
+                                tmp_point(end+1, :) = [jj, res(2), res(3), num];
                             end
                         else
-                            intersection_point(end+1, :) = [ii, res(1), res(3), num];
-                            intersection_point(end+1, :) = [jj, res(2), res(3), num];
+                            tmp_point(end+1, :) = [ii, res(1), res(3), num];
+                            tmp_point(end+1, :) = [jj, res(2), res(3), num];
                         end
                     end
                 end
             end
+            obj.intersection_info = tmp_info;
+            obj.intersection_point = tmp_point;
         end
 
 
@@ -116,30 +120,126 @@ classdef CurveStructure < handle
         end
 
 
-        function obj = add_intersections_to_control_points(obj, intersection_point)
 
+
+        function [p_t, p_label] = return_intersection_at_one_unit_curve(obj, uc_id)
+            pid = find(obj.intersection_point(:,1) == uc_id);
+            if ~isempty(pid)
+                [~, idx] = sort(obj.intersection_point(pid, 2));
+                p_t = obj.intersection_point(pid(idx), 2);
+                p_label = obj.intersection_point(pid(idx), 3);
+            else % there is no intersection point at this curve
+                p_t = [];
+                p_label = [];
+            end
+        end
+
+
+
+
+        function obj = split_one_unit_curve_at_intersections(obj, uc_id)
+
+            curve = obj.unit_curves(uc_id);
+
+            p_t = obj.return_intersection_at_one_unit_curve(uc_id);
+            [bc_2d, bc_3d] = obj.reconstruct_one_unit_curve(uc_id);
+
+
+            c_init = struct();
+            c_init.rotational_symmetry = curve.rotational_symmetry;
+            c_init.rotational_center = curve.rotational_center;
+
+            c_init.reflection_symmetry = curve.reflection_symmetry;
+            c_init.reflection_axis = curve.reflection_axis;
+            c_init.uid = uc_id; % unit curve id
+
+
+            % split the curve
+
+            if ~isempty(p_t) % if there are intersecting points
+                [splited_curve_2d, t_range] = split_bezier_curve(bc_2d, p_t, false);
+                splited_curve_3d = split_bezier_curve(bc_3d, p_t, false);
+
+                for ii = 1:length(splited_curve_2d)
+                    % for each splited curve
+                    c2d = splited_curve_2d{ii};
+                    c3d = splited_curve_3d{ii};
+
+                    % two endpoints
+                    p1 = [c2d(1,:), c3d(1,2)];
+                    p2 = [c2d(2,:), c3d(2,2)];
+
+
+                    p1_id = return_pid(p1, obj.controlPts);
+                    p2_id = return_pid(p2, obj.controlPts);
+
+                    c = c_init;
+                    c.pid = [p1_id, p2_id];
+                    c.t_range = [t_range(ii), t_range(ii+1)];
+
+                    % copy the tangents from the original curve to the
+                    % current curve segment
+                    if size(c2d,1) == 4
+                        c.constr_2d = c2d(3:4,:);
+                    else % by default this is a line segment
+                        c.constr_2d = 0.2*[c2d(2,:) - c2d(1,:);
+                            c2d(1,:) - c2d(2,:)];
+                    end
+
+                    if size(c3d,1) == 4
+                        c.constr_3d = c3d(3:4,:);
+                    else
+                        c.constr_3d = 0.2*[c3d(2,:) - c3d(1,:);
+                            c3d(1,:) - c3d(2,:)];
+                    end
+
+
+                    c.fittedCurve = fit_one_3d_curve(obj.controlPts(c.pid, :), ...
+                        c.constr_2d, ...
+                        c.constr_3d);
+
+                    c.fittedCurveTangent = fit_one_3d_curve_tangent( ...
+                        obj.controlPts(c.pid, :), ...
+                        c.constr_2d, ...
+                        c.constr_3d);
+
+                    c.curve_length = compute_curve_length(c.fittedCurve);
+                    obj.curves = [obj.curves; c];
+
+                end
+            else % there is no intersecting point, we add the original curve
+                pid1 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(1,:));
+                pid2 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(2,:));
+
+                c = c_init;
+                c.t_range = [0,1];
+                c.pid = [pid1, pid2];
+                c.constr_2d = curve.unit_controlledCurve.anchor_constraints;
+                c.constr_3d = []; % TODO: need to check here
+
+                c.fittedCurve = fit_one_3d_curve(obj.controlPts(c.pid, :), ...
+                    c.constr_2d, ...
+                    c.constr_3d);
+
+                c.fittedCurveTangent = fit_one_3d_curve_tangent( ...
+                    obj.controlPts(c.pid, :), ...
+                    c.constr_2d, ...
+                    c.constr_3d);
+
+                c.curve_length = compute_curve_length(c.fittedCurve);
+                obj.curves = [obj.curves; c];
+            end
+        end
+
+
+        function obj = add_intersections_to_control_points(obj)
             for uc_id = 1:length(obj.unit_curves)
                 [bc_2d, bc_3d] = obj.reconstruct_one_unit_curve(uc_id);
 
-                % find the intersection
-                pid = find(intersection_point(:,1) == uc_id);
-                if ~isempty(pid)
-                    [~, idx] = sort(intersection_point(pid, 2));
-                    p_t = intersection_point(pid(idx), 2);
-                    p_label = intersection_point(pid(idx), 3);
+                [p_t, p_label] = obj.return_intersection_at_one_unit_curve(uc_id);
 
-
-                    % find 3D positions of the intersecting points
-                    c2d_ori = cell2mat( ...
-                        arrayfun(fit_bezier_curve(bc_2d), ...
-                        p_t', 'UniformOutput', false)' ...
-                        );
-                    c3d_ori = cell2mat( ...
-                        arrayfun(fit_bezier_curve(bc_3d), ...
-                        p_t', 'UniformOutput', false)' ...
-                        );
-                    p_pos = [c2d_ori, c3d_ori(:,2)];
-
+                if ~isempty(p_t)
+                    p_pos = get_pos_from_2D_projections(bc_2d, bc_3d, p_t);
                     % add to control points
                     obj.controlPts = [obj.controlPts; p_pos];
                     % a bit dumb here
@@ -148,6 +248,8 @@ classdef CurveStructure < handle
 
             end
         end
+
+
 
         function obj = add_anchors_to_control_points(obj)
             for uc_id = 1:length(obj.unit_curves)
@@ -207,18 +309,23 @@ classdef CurveStructure < handle
 
 
         function obj = prepare_control_points(obj)
-            obj.update_height();
-            [intersection_info, intersection_point] = obj.find_intersections();
+            obj = obj.update_height();
+            obj = obj.find_intersections();
 
 
             % step 01: add the endpoints of the curve to the control points
             obj = obj.add_anchors_to_control_points();
 
             % step 02: add the intersection ponits to the control points
-            obj = obj.add_intersections_to_control_points(intersection_point);
+            obj = obj.add_intersections_to_control_points();
 
             % step 03: split the unit curves via the intersection points
+            for uc_id = 1:length(obj.unit_curves)
+                obj = obj.split_one_unit_curve_at_intersections(uc_id);
+            end
         end
+
+
 
 
         function obj = add_unit_curve_old(obj,curve)
@@ -373,6 +480,9 @@ classdef CurveStructure < handle
             curve_length = sum([obj.curves(cids).curve_length]);
         end
 
+
+
+
         function [pos, info] = sample_unit_curve(obj, uid, num_samples)
             if nargin < 3, num_samples = 100; end
             cids = find([obj.curves.uid] == uid);
@@ -392,6 +502,9 @@ classdef CurveStructure < handle
                     repmat(cid, length(t),1), t(:)];
             end
         end
+
+
+
 
         function [pos, pos_info] = uniform_sample_unit_curve(obj, uid, num_samples)
             if nargin < 3, num_samples = 7; end
@@ -446,7 +559,7 @@ classdef CurveStructure < handle
                 all_P = compute_all_replicas(pts, ...
                     curve.rotational_symmetry, ...
                     curve.reflection_symmetry, ...
-                    curve.reflection_point);
+                    curve.reflection_axis);
 
                 all_P = all_P(:);
                 for jj = 2:length(all_P)
@@ -492,7 +605,7 @@ classdef CurveStructure < handle
                     all_P = compute_all_replicas(rect, ...
                         obj.unit_curves(jj).rotational_symmetry, ...
                         obj.unit_curves(jj).reflection_symmetry, ...
-                        obj.unit_curves(jj).reflection_point);
+                        obj.unit_curves(jj).reflection_axis);
                     all_P = all_P(:);
 
                     for kk = 1%:length(all_P)
