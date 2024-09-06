@@ -131,6 +131,13 @@ classdef CurveStructure < handle
                 [~, idx] = sort(obj.intersection_point(pid, 2));
                 p_t = obj.intersection_point(pid(idx), 2);
                 p_label = obj.intersection_point(pid(idx), 3);
+
+                
+                [~, idx] = uniquetol(p_t, 1e-9);
+                p_t = p_t(idx);
+                p_label = p_label(idx);
+    
+                
             else % there is no intersection point at this curve
                 p_t = [];
                 p_label = [];

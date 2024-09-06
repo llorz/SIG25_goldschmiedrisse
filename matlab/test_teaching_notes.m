@@ -76,7 +76,8 @@ name = 'U.XI.30';
 
 name = 'tn-8';
 
-name = 'U.XI.15'
+name = 'U.XI.15';
+name = 'tn-1'
 cs = read_2D_drawings([filepath, name, '.uc']);
 cs = rescale_curve_structure(cs, 1.5);
 cs.prepare_control_points();

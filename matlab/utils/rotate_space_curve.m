@@ -1,0 +1,6 @@
+function new_curve = rotate_space_curve(obj, rot_mat)
+new_pos = [obj.Pos3D(:, 1:2) * rot_mat', obj.Pos3D(:,3)];
+new_curve = SpaceCurve(new_pos,...
+    obj.tangent_floor * rot_mat',...
+    obj.tangent_side);
+end
