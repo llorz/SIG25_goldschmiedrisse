@@ -10,6 +10,7 @@
   "description": "",
   "dependencies": {
     "@tweakpane/plugin-essentials": "^0.2.1",
+    "bezier-js": "^6.1.4",
     "three": "^0.168.0",
     "tweakpane": "^4.0.4",
     "vite": "^5.4.3"
