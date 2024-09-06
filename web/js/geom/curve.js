@@ -24,6 +24,8 @@ export class Curve {
     this.three_control_points_lines = [];
     this.rotation_symmetry = rot_symmetry;
     this.reflection_symmetry = ref_symmetry;
+
+    this.bezy_curve = null;
   }
 
   add_control_point(loc) {
@@ -39,6 +41,7 @@ export class Curve {
   init(start_loc) {
     for (let i = 0; i < 4; i++)
       this.add_control_point(start_loc);
+    this.bezy_curve = new BezierSegmentsCurve(this.control_points);
   }
 
   set_control_point_pos(idx, new_loc) {
@@ -80,6 +83,41 @@ export class Curve {
     this.update_curve();
   }
 
+  closest_point(loc) {
+    let ref_mat = this.get_reflection_mat();
+    let rot_mat = this.get_rotation_mat();
+    let min_dist = 1000;
+    let closest_p = new THREE.Vector3();
+    for (let t = 0.0; t < 1.0; t += 0.02) {
+      let p = this.bezy_curve.getPoint(t);
+      let dist = p.distanceTo(loc);
+      if (dist < min_dist && t < 0.9) {
+        min_dist = dist;
+        closest_p.set(p.x, p.y, p.z);
+      }
+      let p_rot = p.clone();
+      for (let i = 0; i < this.rotation_symmetry - 1; i++) {
+        p_rot.applyMatrix4(rot_mat);
+        let dist = p_rot.distanceTo(loc);
+        if (dist < min_dist) {
+          min_dist = dist;
+          closest_p.set(p_rot.x, p_rot.y, p_rot.z);
+        }
+      }
+    }
+
+    return closest_p;
+  }
+
+  /**
+   * Returns a 4x4 matrix that reflects a 3D point across the plane
+   * perpendicular to the first control point.
+   *
+   * This matrix is used to generate the reflections of the curve
+   * necessary to implement rotational symmetry.
+   *
+   * @return {THREE.Matrix4} - The reflection matrix.
+   */
   get_reflection_mat() {
     let x = this.control_points[0].x, y = this.control_points[0].y, z = this.control_points[0].z;
     let norm = Math.sqrt(x * x + y * y + z * z);
@@ -91,14 +129,25 @@ export class Curve {
         0, 0, 0, 1);
     return mat;
   }
+  /**
+   * Returns a 4x4 matrix that rotates a 3D point by 1 unit of rotation symmetry
+   * around the y-axis.
+   *
+   * @return {THREE.Matrix4} - The rotation matrix.
+   */
+  get_rotation_mat() {
+    let mat = new THREE.Matrix4();
+    mat.makeRotationY(2 * Math.PI / this.rotation_symmetry);
+    return mat;
+  }
   update_curve() {
     for (let curve of this.three_curves) {
       curve.geometry.dispose();
       scene.remove(curve);
     }
-    let c = new BezierSegmentsCurve(this.control_points);
+    this.bezy_curve = new BezierSegmentsCurve(this.control_points);
     let curve_points = this.control_points.length * 16;
-    let tube_geom = new THREE.TubeGeometry(c, curve_points, 0.005, 8, false);
+    let tube_geom = new THREE.TubeGeometry(this.bezy_curve, curve_points, 0.005, 8, false);
     let ref_mat = this.get_reflection_mat();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,

@@ -84,12 +84,21 @@ canvas.onpointermove = (e) => {
     }
   }
 
+  let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
+
   if (edit_mode == EditMode.new_curve) {
-    pending_curve.move_last_point(new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z));
-  } else if (edit_mode == EditMode.move_control_point) {
-    if (selected_obj && selected_obj.type == "control_point") {
-      selected_obj.userData.move_control_point(selected_obj, new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z));
+    let p = pending_curve.closest_point(flat_point);
+    if (p.distanceTo(flat_point) < 0.02) {
+      flat_point = p;
     }
+    pending_curve.move_last_point(flat_point);
+  } else if (edit_mode == EditMode.move_control_point
+    && selected_obj && selected_obj.type == "control_point") {
+    let p = selected_obj.userData.closest_point(flat_point);
+    if (p.distanceTo(flat_point) < 0.02) {
+      flat_point = p;
+    }
+    selected_obj.userData.move_control_point(selected_obj, flat_point);
   }
 
 };
