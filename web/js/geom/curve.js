@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 
 import { scene } from '../view/visual';
-import { BezierSegmentsCurve } from './bezier_segments_curve';
+import { BezierSegmentsCurve, bezy } from './bezier_segments_curve';
+import { sync_module } from '../native/native';
 
 const sphere_geom = new THREE.SphereGeometry(0.013, 32, 32);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
+let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
 let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff00ff, side: THREE.DoubleSide });
 let symmetry_curve_material = new THREE.MeshLambertMaterial({
@@ -25,6 +27,7 @@ export class Curve {
     this.rotation_symmetry = rot_symmetry;
     this.reflection_symmetry = ref_symmetry;
 
+    this.three_intersections = [];
     this.bezy_curve = null;
   }
 
@@ -88,7 +91,7 @@ export class Curve {
     let rot_mat = this.get_rotation_mat();
     let min_dist = 1000;
     let closest_p = new THREE.Vector3();
-    for (let t = 0.0; t < 1.0; t += 0.02) {
+    for (let t = 0.0; t < 1.0; t += 0.01) {
       let p = this.bezy_curve.getPoint(t);
       let dist = p.distanceTo(loc);
       if (dist < min_dist && t < 0.9) {
@@ -96,6 +99,7 @@ export class Curve {
         closest_p.set(p.x, p.y, p.z);
       }
       let p_rot = p.clone();
+      let p_ref_rot = p.clone().applyMatrix4(ref_mat);
       for (let i = 0; i < this.rotation_symmetry - 1; i++) {
         p_rot.applyMatrix4(rot_mat);
         let dist = p_rot.distanceTo(loc);
@@ -188,6 +192,23 @@ export class Curve {
       scene.add(mesh2);
       this.three_control_points_lines.push(mesh1);
       this.three_control_points_lines.push(mesh2);
+    }
+
+    this.show_intersections();
+  }
+
+  show_intersections() {
+    for (let inter of this.three_intersections) {
+      inter.geometry.dispose();
+      scene.remove(inter);
+    }
+    let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry);
+    for (let inter of intersections) {
+      let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
+      let p = bezy(inter[0], this.bezy_curve.points[0], this.bezy_curve.points[1], this.bezy_curve.points[2], this.bezy_curve.points[3]);
+      sphere.position.set(p.x, p.y, p.z);
+      scene.add(sphere);
+      this.three_intersections.push(sphere);
     }
   }
 
