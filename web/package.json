@@ -1,0 +1,17 @@
+{
+  "name": "goldschmiederisse",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "serve": "vite"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@tweakpane/plugin-essentials": "^0.2.1",
+    "three": "^0.168.0",
+    "tweakpane": "^4.0.4",
+    "vite": "^5.4.3"
+  }
+}

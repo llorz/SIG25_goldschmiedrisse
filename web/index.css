@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+
+#canvas {
+  width: 100vw;
+  height: 100vh;
+  color: #eb9090;
+}
+
+
+.tooltiptext {
+  visibility: hidden;
+/* width: 120px; */
+background-color: rgb(198, 198, 198);
+color: #000000;
+text-align: left;
+border-radius: 6px;
+padding: 5px 5px;
+
+/* Position the tooltip */
+position: absolute;
+z-index: 1;
+}
+
+#help:hover .tooltiptext {
+  visibility: visible;
+}
