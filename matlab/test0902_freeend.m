@@ -41,7 +41,7 @@ cs_new = cs;
 cs_new.curves(4).constr_3d(2,:) = [-1,0];
 pid = cs_new.curves(4).pid(2);
 cs_new.controlPts(pid,3) = cs.controlPts(pid,3) - 0.25;
-cs_new.curves(5).constr_3d(1,:) = [-20,0.4];
+cs_new.curves(5).constr_3d(1,:) = [-1,0.4];
 
 figure(4); clf;
 cs_new.plot_curves(); axis off;
