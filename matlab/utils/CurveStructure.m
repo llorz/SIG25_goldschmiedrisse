@@ -67,23 +67,26 @@ classdef CurveStructure < handle
                 uc1 = obj.unit_curves(ii);
                 for jj = ii:nc
                     uc2 = obj.unit_curves(jj);
-                    res = find_intersection_unit_curves(uc1, uc2);
-                    if ~isempty(res)
-                        if ii ~= jj
-                            % two different unit curves cannot intersect at the same
-                            % time (is this true? need to check)
-                            res(3) = 0;
-                        end
-                        tmp_info(end+1, :) = [ii, jj, res];
-                        num = size(tmp_info, 1);
-                        if ii == jj
-                            tmp_point(end+1, :) = [ii, res(1), res(3), num];
-                            if res(3) == 0
+                    res_all = find_intersection_unit_curves(uc1, uc2);
+                    if ~isempty(res_all)
+                        for p_id = 1:size(res_all,1)
+                            res = res_all(p_id,:);
+                            if ii ~= jj
+                                % two different unit curves cannot intersect at the same
+                                % time (is this true? need to check)
+                                res(3) = 0;
+                            end
+                            tmp_info(end+1, :) = [ii, jj, res];
+                            num = size(tmp_info, 1);
+                            if ii == jj
+                                tmp_point(end+1, :) = [ii, res(1), res(3), num];
+                                if res(3) == 0
+                                    tmp_point(end+1, :) = [jj, res(2), res(3), num];
+                                end
+                            else
+                                tmp_point(end+1, :) = [ii, res(1), res(3), num];
                                 tmp_point(end+1, :) = [jj, res(2), res(3), num];
                             end
-                        else
-                            tmp_point(end+1, :) = [ii, res(1), res(3), num];
-                            tmp_point(end+1, :) = [jj, res(2), res(3), num];
                         end
                     end
                 end
@@ -109,7 +112,7 @@ classdef CurveStructure < handle
             pid1 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(1,:));
             pid2 = knnsearch(obj.controlPts(:,1:2), curve.unit_controlledCurve.anchor(2,:));
             constr_2d = curve.unit_controlledCurve.anchor_constraints;
-            constr_3d = obj.height/2*obj.initialize_constr_3d_seg( ...
+            constr_3d = obj.height/2*initialize_constr_3d_seg( ...
                 [obj.controlPts_label(pid1); obj.controlPts_label(pid2)]);
 
             % floor projection curve: 2D pos + constraints
@@ -288,24 +291,7 @@ classdef CurveStructure < handle
         end
 
 
-        function t = initialize_constr_3d_seg(obj, labels)
-            t = zeros(2,2);
-            if isempty(find(labels == 2,1))
-                if ~isempty(find(labels == 0, 1))
-                    t(labels == 0, :) = [0,1];
-                end
-                if ~isempty(find(labels == 1, 1))
-                    t(labels == 1, :) = [0,-2];
-                end
-            else
-                if ~isempty(find(labels == 1, 1))
-                    t(labels == 1, :) = [0,-0.8];
-                end
-                if ~isempty(find(labels == 2, 1))
-                    t(labels == 2, :) = [-0.5,0];
-                end
-            end
-        end
+
 
 
         function obj = prepare_control_points(obj)
@@ -669,24 +655,6 @@ else % need to check
 end
 end
 
-function t = initialize_constr_3d_seg(labels)
-t = zeros(2,2);
-if isempty(find(labels == 2,1))
-    if ~isempty(find(labels == 0, 1))
-        t(labels == 0, :) = [0,1];
-    end
-    if ~isempty(find(labels == 1, 1))
-        t(labels == 1, :) = [0,-2];
-    end
-else
-    if ~isempty(find(labels == 1, 1))
-        t(labels == 1, :) = [0,-0.8];
-    end
-    if ~isempty(find(labels == 2, 1))
-        t(labels == 2, :) = [-0.5,0];
-    end
-end
-end
 
 
 
@@ -749,3 +717,25 @@ end
 
 
 
+function t = initialize_constr_3d_seg(labels)
+t = zeros(2,2);
+if isempty(find(labels == 2,1))
+    if ~isempty(find(labels == 0, 1))
+        id = find(labels == 0);
+        t(id, :) = repmat([0,1], length(id),1);
+    end
+    if ~isempty(find(labels == 1, 1))
+        id = find(labels == 1);
+        t(id, :) = repmat([0,-2], length(id), 1);
+    end
+else
+    if ~isempty(find(labels == 1, 1))
+        id = find(labels == 1);
+        t(id, :) = repmat([0,-0.8], length(id),1);
+    end
+    if ~isempty(find(labels == 2, 1))
+        id = find(labels == 2);
+        t(id, :) = repmat([-0.5,0], length(id),1);
+    end
+end
+end
