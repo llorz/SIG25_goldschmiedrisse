@@ -8,6 +8,7 @@ export let params = {
 };
 
 export let curves = [];
+export let recon_curves = [];
 
 export let EditMode = {
   none: "none",
@@ -27,6 +28,13 @@ export function add_curve(loc) {
   set_edit_mode(EditMode.new_curve);
 }
 export function finish_curve() {
+  if (pending_curve.control_points.length <= 4) {
+    curves.splice(curves.indexOf(pending_curve), 1);
+    pending_curve.destroy();
+    pending_curve = null;
+    set_edit_mode(EditMode.none);
+    return;
+  }
   pending_curve.abort_last_segment();
   pending_curve = null;
   set_edit_mode(EditMode.none);

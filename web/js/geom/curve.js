@@ -87,28 +87,33 @@ export class Curve {
   }
 
   closest_point(loc) {
-    let ref_mat = this.get_reflection_mat();
-    let rot_mat = this.get_rotation_mat();
-    let min_dist = 1000;
+    // let ref_mat = this.get_reflection_mat();
+    // let rot_mat = this.get_rotation_mat();
+    // let min_dist = 1000;
+    // let closest_p = new THREE.Vector3();
+    // for (let t = 0.0; t < 1.0; t += 0.01) {
+    //   let p = this.bezy_curve.getPoint(t);
+    //   let dist = p.distanceTo(loc);
+    //   if (dist < min_dist && t < 0.9) {
+    //     min_dist = dist;
+    //     closest_p.set(p.x, p.y, p.z);
+    //   }
+    //   let p_rot = p.clone();
+    //   let p_ref_rot = p.clone().applyMatrix4(ref_mat);
+    //   for (let i = 0; i < this.rotation_symmetry - 1; i++) {
+    //     p_rot.applyMatrix4(rot_mat);
+    //     let dist = p_rot.distanceTo(loc);
+    //     if (dist < min_dist) {
+    //       min_dist = dist;
+    //       closest_p.set(p_rot.x, p_rot.y, p_rot.z);
+    //     }
+    //   }
+    // }
+
+    // return closest_p;
+    let bla = sync_module.closest_point(this.bezy_curve.points, loc, this.rotation_symmetry);
     let closest_p = new THREE.Vector3();
-    for (let t = 0.0; t < 1.0; t += 0.01) {
-      let p = this.bezy_curve.getPoint(t);
-      let dist = p.distanceTo(loc);
-      if (dist < min_dist && t < 0.9) {
-        min_dist = dist;
-        closest_p.set(p.x, p.y, p.z);
-      }
-      let p_rot = p.clone();
-      let p_ref_rot = p.clone().applyMatrix4(ref_mat);
-      for (let i = 0; i < this.rotation_symmetry - 1; i++) {
-        p_rot.applyMatrix4(rot_mat);
-        let dist = p_rot.distanceTo(loc);
-        if (dist < min_dist) {
-          min_dist = dist;
-          closest_p.set(p_rot.x, p_rot.y, p_rot.z);
-        }
-      }
-    }
+    closest_p.set(bla[0], 0, bla[1]);
 
     return closest_p;
   }
@@ -202,7 +207,10 @@ export class Curve {
       inter.geometry.dispose();
       scene.remove(inter);
     }
+    let start_time = performance.now();
     let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry);
+    let end_time = performance.now();
+    console.log("bezier_intersections_with_symmetry took " + (end_time - start_time) + "ms");
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
       let p = bezy(inter[0], this.bezy_curve.points[0], this.bezy_curve.points[1], this.bezy_curve.points[2], this.bezy_curve.points[3]);
@@ -213,10 +221,21 @@ export class Curve {
   }
 
   destroy() {
-    scene.remove(this.three_curve)
-    for (let control_point of this.three_control_points) {
-      control_point.material.dispose();
-      scene.remove(control_point);
+    for (let curve of this.three_curves) {
+      curve.geometry.dispose();
+      scene.remove(curve);
+    }
+    for (let inter of this.three_intersections) {
+      inter.geometry.dispose();
+      scene.remove(inter);
+    }
+    for (let p of this.three_control_points_lines) {
+      p.geometry.dispose();
+      scene.remove(p);
+    }
+    for (let p of this.three_control_points) {
+      p.geometry.dispose();
+      scene.remove(p);
     }
   }
 }
