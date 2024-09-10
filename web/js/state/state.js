@@ -5,7 +5,7 @@ import { enable_controls } from "../view/visual";
 export let params = {
   view: "Top View",
   rotation_symmetry: 6,
-  reflection_symmetry: false,
+  reflection_symmetry: true,
 };
 
 export let curves = [];

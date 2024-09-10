@@ -162,6 +162,8 @@ export class Curve {
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? main_curve_material : symmetry_curve_material);
+      tube.type = "ns_line";
+
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(tube);
       scene.add(tube);
@@ -169,6 +171,7 @@ export class Curve {
     if (this.reflection_symmetry) {
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let tube = new THREE.Mesh(tube_geom, symmetry_reflection_curve_material);
+        tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
         this.three_curves.push(tube);
@@ -192,6 +195,8 @@ export class Curve {
       let line2 = new THREE.LineCurve(p3, p4);
       let mesh1 = new THREE.Mesh(new THREE.TubeGeometry(line1, 16, 0.005, 8, false), tangent_line_material);
       let mesh2 = new THREE.Mesh(new THREE.TubeGeometry(line2, 16, 0.005, 8, false), tangent_line_material);
+      mesh1.type = "ns_line";
+      mesh2.type = "ns_line";
       mesh1.translateY(0.001);
       mesh2.translateY(0.001);
       scene.add(mesh1);
@@ -214,6 +219,7 @@ export class Curve {
     let end_time = performance.now();
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
+      sphere.type = "ns_point";
       let p = bezy(inter[0], this.bezy_curve.points[0], this.bezy_curve.points[1], this.bezy_curve.points[2], this.bezy_curve.points[3]);
       sphere.position.set(p.x, p.y, p.z);
       scene.add(sphere);

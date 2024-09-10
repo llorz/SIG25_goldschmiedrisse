@@ -50,11 +50,12 @@ export class ReconstructedCurve {
     }
 
     let curve_points = this.points.length * 16;
-    let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.005, 8, false);
+    let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.003, 8, false);
     let ref_mat = this.get_reflection_mat();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? main_curve_material : symmetry_curve_material);
+      tube.type = "ns_line";
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(tube);
       scene.add(tube);
@@ -62,6 +63,7 @@ export class ReconstructedCurve {
     if (this.reflection_symmetry) {
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let tube = new THREE.Mesh(tube_geom, symmetry_reflection_curve_material);
+        tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
         this.three_curves.push(tube);
