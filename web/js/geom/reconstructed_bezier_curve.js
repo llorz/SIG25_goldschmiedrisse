@@ -26,11 +26,12 @@ export function bezy(t, p0, p1, p2, p3) {
 }
 
 export class ReconstructedBezierCurve extends THREE.Curve {
+
   constructor(points, height_points) {
     super();
     this.points = points;
     this.height_points = height_points;
-    if (this.height_points.length == 0) {
+    if (!this.height_points || this.height_points.length == 0) {
       this.height_points = this.estimate_height_points();
     }
     this.accumulated_seg_lengths = this.approximate_segment_lengths();
@@ -39,6 +40,7 @@ export class ReconstructedBezierCurve extends THREE.Curve {
   estimate_height_points() {
     let height_points = [new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.3),
     new THREE.Vector2(1, 0.7), new THREE.Vector2(1, 1)];
+    return height_points;
   }
 
   approximate_segment_lengths() {
@@ -81,7 +83,7 @@ export class ReconstructedBezierCurve extends THREE.Curve {
     // Compute bezier point.
     let height_point = bezy(seg_t, h0, h1, h2, h3);
     let top_view_point = bezy(height_point.x, p0, p1, p2, p3);
-    point.set(top_view_point.x, height_point.y, top_view_point.y);
+    point.set(top_view_point.x, height_point.y, top_view_point.z);
     return point;
   }
 

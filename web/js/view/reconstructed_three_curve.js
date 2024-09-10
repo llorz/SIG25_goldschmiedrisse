@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import { scene } from './visual';
+
 import { ReconstructedBezierCurve } from '../geom/reconstructed_bezier_curve';
 
 let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff00ff, side: THREE.DoubleSide });
@@ -19,6 +21,7 @@ export class ReconstructedCurve {
     this.reflection_symmetry = ref_symmetry;
 
     this.recon_bezy_curve = new ReconstructedBezierCurve(points);
+    this.points = points;
 
     this.three_curves = [];
   }
@@ -29,12 +32,12 @@ export class ReconstructedCurve {
     return mat;
   }
   get_reflection_mat() {
-    let x = this.control_points[0].x, y = this.control_points[0].y, z = this.control_points[0].z;
+    let x = this.points[0].x, y = this.points[0].y, z = this.points[0].z;
     let norm = Math.sqrt(x * x + y * y + z * z);
     x /= norm; y /= norm; z /= norm;
     let mat = new THREE.Matrix4().set
       (2 * x * x - 1, 2 * x * y, 2 * x * z, 0,
-        2 * y * x, 2 * y * y - 1, 2 * y * z, 0,
+        0, 1, 0, 0,
         2 * z * x, 2 * z * y, 2 * z * z - 1, 0,
         0, 0, 0, 1);
     return mat;
@@ -46,8 +49,8 @@ export class ReconstructedCurve {
       scene.remove(curve);
     }
 
-    let curve_points = this.control_points.length * 16;
-    let tube_geom = new THREE.TubeGeometry(this.bezy_curve, curve_points, 0.005, 8, false);
+    let curve_points = this.points.length * 16;
+    let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.005, 8, false);
     let ref_mat = this.get_reflection_mat();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { scene } from '../view/visual';
 import { BezierSegmentsCurve, bezy } from './bezier_segments_curve';
 import { sync_module } from '../native/native';
+import { reconstruct_curves } from '../state/state';
 
 const sphere_geom = new THREE.SphereGeometry(0.013, 32, 32);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
@@ -200,6 +201,7 @@ export class Curve {
     }
 
     this.show_intersections();
+    reconstruct_curves();
   }
 
   show_intersections() {
@@ -210,7 +212,6 @@ export class Curve {
     let start_time = performance.now();
     let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry);
     let end_time = performance.now();
-    console.log("bezier_intersections_with_symmetry took " + (end_time - start_time) + "ms");
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
       let p = bezy(inter[0], this.bezy_curve.points[0], this.bezy_curve.points[1], this.bezy_curve.points[2], this.bezy_curve.points[3]);
