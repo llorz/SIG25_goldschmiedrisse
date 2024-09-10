@@ -13,6 +13,8 @@ struct Bezier {
   Eigen::VectorXd at(double t) const;
 
   std::pair<Bezier, Bezier> subdivide();
+
+  double closest_point_t(const Eigen::Vector2d &point) const;
 };
 
 std::vector<std::pair<double, double>>

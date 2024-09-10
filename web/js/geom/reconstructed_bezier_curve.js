@@ -18,15 +18,29 @@ export function bezy(t, p0, p1, p2, p3) {
   let m3 = t3;
   let x = m0 * p0.x + m1 * p1.x + m2 * p2.x + m3 * p3.x;
   let y = m0 * p0.y + m1 * p1.y + m2 * p2.y + m3 * p3.y;
-  let z = m0 * p0.z + m1 * p1.z + m2 * p2.z + m3 * p3.z;
-  return new THREE.Vector3(x, y, z);
+  if (p0.isVector3) {
+    let z = m0 * p0.z + m1 * p1.z + m2 * p2.z + m3 * p3.z;
+    return new THREE.Vector3(x, y, z);
+  }
+  return new THREE.Vector2(x, y);
 }
 
-export class BezierSegmentsCurve extends THREE.Curve {
-  constructor(points) {
+export class ReconstructedBezierCurve extends THREE.Curve {
+
+  constructor(points, height_points) {
     super();
     this.points = points;
+    this.height_points = height_points;
+    if (!this.height_points || this.height_points.length == 0) {
+      this.height_points = this.estimate_height_points();
+    }
     this.accumulated_seg_lengths = this.approximate_segment_lengths();
+  }
+
+  estimate_height_points() {
+    let height_points = [new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.3),
+    new THREE.Vector2(1, 0.7), new THREE.Vector2(1, 1)];
+    return height_points;
   }
 
   approximate_segment_lengths() {
@@ -62,8 +76,14 @@ export class BezierSegmentsCurve extends THREE.Curve {
     let p1 = this.points[(seg_idx - 1) * 3 + 1];
     let p2 = this.points[(seg_idx - 1) * 3 + 2];
     let p3 = this.points[(seg_idx - 1) * 3 + 3];
+    let h0 = this.height_points[(seg_idx - 1) * 3];
+    let h1 = this.height_points[(seg_idx - 1) * 3 + 1];
+    let h2 = this.height_points[(seg_idx - 1) * 3 + 2];
+    let h3 = this.height_points[(seg_idx - 1) * 3 + 3];
     // Compute bezier point.
-    point = bezy(seg_t, p0, p1, p2, p3);
+    let height_point = bezy(seg_t, h0, h1, h2, h3);
+    let top_view_point = bezy(height_point.x, p0, p1, p2, p3);
+    point.set(top_view_point.x, height_point.y, top_view_point.z);
     return point;
   }
 
@@ -86,7 +106,7 @@ export class BezierSegmentsCurve extends THREE.Curve {
     let K = H.clone().lerp(J, t);
     return [A, E, H, K, J, G, D];
   }
-  
+
   /**
    * Split the curve at the given parameter values and indices.
    */

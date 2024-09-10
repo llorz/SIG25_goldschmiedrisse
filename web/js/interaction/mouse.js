@@ -10,6 +10,14 @@ import * as THREE from 'three';
 import { Curve } from '../geom/curve.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
+let non_selectable_types = ["ns_line", "ns_point"];
+
+let plane_y0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+function is_selectable(obj) {
+  return !!obj && (non_selectable_types.indexOf(obj.type) == -1
+    && non_selectable_objects_names.indexOf(obj.name) == -1);
+}
 
 const ray_cast = new THREE.Raycaster();
 
@@ -38,8 +46,9 @@ canvas.onpointerdown = (e) => {
   if (edit_mode == EditMode.none) {
     selected_obj = null;
     for (let intersection of intersections) {
-      if (non_selectable_objects_names.indexOf(intersection.object.name) != -1)
+      if (!is_selectable(intersection.object)) {
         continue;
+      }
       selected_obj = intersection.object;
       outlinePass.selectedObjects = [selected_obj];
       break;
@@ -48,7 +57,7 @@ canvas.onpointerdown = (e) => {
   // Object was selected, nothing to do.
   if (selected_obj) {
     disable_controls();
-    if (selected_obj.type == "control_point" && edit_mode == EditMode.none && mode == Mode.top_view) {
+    if (selected_obj.type == "control_point") {
       set_edit_mode(EditMode.move_control_point);
     }
     return;
@@ -78,7 +87,7 @@ canvas.onpointermove = (e) => {
     // Highlight the hovered object.
     outlinePass.selectedObjects = [];
     if (intersections.length > 0) {
-      if (non_selectable_objects_names.indexOf(intersections[0].object.name) == -1) {
+      if (is_selectable(intersections[0].object)) {
         outlinePass.selectedObjects = [intersections[0].object];
       }
     }
@@ -94,6 +103,9 @@ canvas.onpointermove = (e) => {
     pending_curve.move_last_point(flat_point);
   } else if (edit_mode == EditMode.move_control_point
     && selected_obj && selected_obj.type == "control_point") {
+    if (mode == Mode.side_view) {
+      ray_cast.ray.intersectPlane(plane_y0, flat_point);
+    }
     let p = selected_obj.userData.closest_point(flat_point);
     if (p.distanceTo(flat_point) < 0.02) {
       flat_point = p;

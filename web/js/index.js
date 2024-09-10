@@ -3,3 +3,7 @@ import "./interaction/mouse.js";
 import "./view/gui.js";
 import "./interaction/keyboard.js";
 import "./native/native.js"
+
+import * as THREE from 'three';
+
+window.THREE = THREE;
