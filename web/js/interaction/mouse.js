@@ -59,12 +59,28 @@ canvas.onpointerdown = (e) => {
     disable_controls();
     if (selected_obj.type == "control_point") {
       set_edit_mode(EditMode.move_control_point);
+    } else if (selected_obj.type == "height_control_point") {
+      set_edit_mode(EditMode.move_height_control_point);
+    } else if (selected_obj.type == "tangent_control_point") {
+      set_edit_mode(EditMode.move_tangent_control_point);
     }
     return;
   }
-
-  let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
-  if (mode == Mode.top_view) {
+};
+canvas.onpointerup = (e) => {
+  let loc = get_pointer_location(e);
+  is_mouse_down = false;
+  enable_controls();
+  // Stop moving control points.
+  if (edit_mode == EditMode.move_control_point
+    || edit_mode == EditMode.move_height_control_point
+    || edit_mode == EditMode.move_tangent_control_point) {
+    set_edit_mode(EditMode.none);
+    selected_obj = null;
+  }
+  // Add a new curve or a new point in the curve.
+  if (loc.distanceTo(point_down_location) < 0.02 && mode == Mode.top_view) {
+    let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
     if (edit_mode == EditMode.none) {
       add_curve(flat_point);
     } else if (edit_mode == EditMode.new_curve) {
@@ -72,14 +88,7 @@ canvas.onpointerdown = (e) => {
     }
   }
 };
-canvas.onpointerup = (e) => {
-  is_mouse_down = false;
-  enable_controls();
-  if (edit_mode == EditMode.move_control_point) {
-    set_edit_mode(EditMode.none);
-    selected_obj = null;
-  }
-};
+
 canvas.onpointermove = (e) => {
   let pointer_location = get_pointer_location(e);
   let intersections = find_intersections(pointer_location);
@@ -96,6 +105,7 @@ canvas.onpointermove = (e) => {
   let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
 
   if (edit_mode == EditMode.new_curve) {
+    // Add new point in a curve.
     let p = pending_curve.closest_point(flat_point);
     if (p.distanceTo(flat_point) < 0.02) {
       flat_point = p;
@@ -103,6 +113,7 @@ canvas.onpointermove = (e) => {
     pending_curve.move_last_point(flat_point);
   } else if (edit_mode == EditMode.move_control_point
     && selected_obj && selected_obj.type == "control_point") {
+    // Move a control point.
     if (mode == Mode.side_view) {
       ray_cast.ray.intersectPlane(plane_y0, flat_point);
     }
@@ -111,6 +122,24 @@ canvas.onpointermove = (e) => {
       flat_point = p;
     }
     selected_obj.userData.move_control_point(selected_obj, flat_point);
+  } else if (edit_mode == EditMode.move_height_control_point
+    && mode == Mode.side_view
+    && selected_obj && selected_obj.type == "height_control_point") {
+    // Move a height control point.
+    let plane = new THREE.Plane();
+    plane.setFromNormalAndCoplanarPoint(ray_cast.ray.direction, selected_obj.position);
+    ray_cast.ray.intersectPlane(plane, flat_point);
+    selected_obj.userData.move_control_point(selected_obj, flat_point);
+  } else if (edit_mode == EditMode.move_tangent_control_point
+    && mode == Mode.side_view
+    && selected_obj && selected_obj.type == "tangent_control_point") {
+    // Move a tangent control point.
+    let plane = new THREE.Plane();
+    let n = selected_obj.userData.getControlPointNormal(selected_obj);
+    plane.setFromNormalAndCoplanarPoint(n, selected_obj.position);
+    ray_cast.ray.intersectPlane(plane, flat_point);
+    selected_obj.userData.move_tangent_control_point(selected_obj, flat_point);
   }
+
 
 };

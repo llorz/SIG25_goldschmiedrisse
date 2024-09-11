@@ -101,3 +101,21 @@ double Bezier::closest_point_t(const Eigen::Vector2d &point) const {
   }
   return min_t;
 }
+
+Polynomial Bezier::get_polynomial() const {
+  return p1 * points.row(0).transpose() + p2 * points.row(1).transpose() +
+         p3 * points.row(2).transpose() + p4 * points.row(3).transpose();
+}
+
+double Bezier::t_for_x(double x) const {
+  Polynomial poly = p1 * points(0, 0) + p2 * points(1, 0) + p3 * points(2, 0) +
+                    p4 * points(3, 0);
+  auto eq = poly - x;
+  auto roots = eq.real_roots();
+  for (auto root : roots) {
+    if (root < 0 || root > 1)
+      continue;
+    return root;
+  }
+  return -1.0;
+}

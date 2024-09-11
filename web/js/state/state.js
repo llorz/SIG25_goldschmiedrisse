@@ -3,7 +3,8 @@ import { ReconstructedCurve } from "../view/reconstructed_three_curve";
 import { enable_controls } from "../view/visual";
 
 export let params = {
-  view: "Top View",
+  view: "Ortho",
+  ortho_view: "Top view",
   rotation_symmetry: 6,
   reflection_symmetry: true,
 };
@@ -16,6 +17,8 @@ export let EditMode = {
   new_curve: "new_curve",
   edit_curve: "edit_curve",
   move_control_point: "move_control_point",
+  move_height_control_point: "move_height_control_point",
+  move_tangent_control_point: "move_tangent_control_point",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }
@@ -37,6 +40,7 @@ export function reconstruct_curves() {
   for (let curve of curves) {
     if (curve.control_points.length > 4) continue;
     recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.reflection_symmetry));
+    recon_curves[recon_curves.length - 1].calc_control_points();
     recon_curves[recon_curves.length - 1].update_curve();
   }
 }
@@ -47,6 +51,7 @@ export function finish_curve() {
     pending_curve.destroy();
     pending_curve = null;
     set_edit_mode(EditMode.none);
+    reconstruct_curves();
     return;
   }
   pending_curve.abort_last_segment();
