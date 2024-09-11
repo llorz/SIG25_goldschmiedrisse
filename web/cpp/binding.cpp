@@ -34,22 +34,25 @@ val intersect_beziers(emscripten::val a, emscripten::val b) {
 }
 
 val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
-                                    int symmetry) {
+                                    int symmetry, bool reflection_symmetry) {
   Bezier bezier_a = js_to_bezier(a), bezier_b = js_to_bezier(b);
   emscripten::val res = val::global("Array").new_();
-  for (int i = 0; i < symmetry; i++) {
-    if (i == 0 && (bezier_a.points - bezier_b.points).norm() < 1e-4)
-      continue;
-    Eigen::Rotation2D<double> rot(2.0 * i * M_PI / symmetry);
-    Bezier bb = bezier_b;
-    bb.points = bezier_b.points * rot.toRotationMatrix();
-    auto intersections = find_intersections(bezier_a, bb);
+  auto fill_intersections = [&](const Bezier& other) {
+    auto intersections = find_intersections(bezier_a, other);
     for (auto [t1, t2] : intersections) {
       val t12 = val::global("Array").new_();
       t12.call<void>("push", t1);
       t12.call<void>("push", t2);
       res.call<void>("push", t12);
     }
+  };
+  
+  for (int i = 0; i < symmetry; i++) {
+    Eigen::Matrix2d rot_mat =Eigen::Rotation2D<double>(2.0 * i * M_PI / symmetry).toRotationMatrix();
+    if (i == 0 && (bezier_a.points - bezier_b.points).norm() < 1e-4)
+      continue;
+    Bezier bb(bezier_b.points * rot_mat);
+    fill_intersections(bb);
   }
   return res;
 }
@@ -77,9 +80,22 @@ emscripten::val closest_point(emscripten::val bezier, emscripten::val point, int
   return res;
 }
 
+val find_t_for_x(val bezier, val xs) {
+  Bezier bezi = js_to_bezier(bezier);
+  emscripten::val res = val::global("Array").new_();
+  auto nxs = xs["length"].as<unsigned>();
+  for (int i = 0; i < nxs; i++) {
+    double x = xs[i].as<double>();
+    double t = bezi.t_for_x(x);
+    res.call<void>("push", t);
+  }
+  return res;
+}
+
 EMSCRIPTEN_BINDINGS(utils) {
   function("bezier_intersections", &intersect_beziers),
       function("bezier_intersections_with_symmetry",
                &intersect_beziers_with_symmetry),
-      function("closest_point", &closest_point);
+      function("closest_point", &closest_point),
+      function("find_t_for_x", &find_t_for_x);
 }

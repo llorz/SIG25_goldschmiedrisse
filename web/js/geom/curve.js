@@ -112,9 +112,9 @@ export class Curve {
     // }
 
     // return closest_p;
-    let bla = sync_module.closest_point(this.bezy_curve.points, loc, this.rotation_symmetry);
+    let p = sync_module.closest_point(this.bezy_curve.points, loc, this.rotation_symmetry);
     let closest_p = new THREE.Vector3();
-    closest_p.set(bla[0], 0, bla[1]);
+    closest_p.set(p[0], 0, p[1]);
 
     return closest_p;
   }
@@ -215,7 +215,7 @@ export class Curve {
       scene.remove(inter);
     }
     let start_time = performance.now();
-    let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry);
+    let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry, this.reflection_symmetry);
     let end_time = performance.now();
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
