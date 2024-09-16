@@ -29,6 +29,11 @@ export class BezierSegmentsCurve extends THREE.Curve {
     this.accumulated_seg_lengths = this.approximate_segment_lengths();
   }
 
+  setPoints(points) {
+    this.points = points;
+    this.accumulated_seg_lengths = this.approximate_segment_lengths();
+  }
+
   approximate_segment_lengths() {
     let approx_seg_lengths = [0];
     for (let i = 0; i < this.points.length - 1; i += 3) {

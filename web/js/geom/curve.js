@@ -6,6 +6,7 @@ import { sync_module } from '../native/native';
 import { reconstruct_curves } from '../state/state';
 
 const sphere_geom = new THREE.SphereGeometry(0.013, 32, 32);
+const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
@@ -27,6 +28,7 @@ export class Curve {
     this.three_control_points_lines = [];
     this.rotation_symmetry = rot_symmetry;
     this.reflection_symmetry = ref_symmetry;
+    this.ref_symmetry_point = null;
 
     this.three_intersections = [];
     this.bezy_curve = null;
@@ -34,7 +36,7 @@ export class Curve {
 
   add_control_point(loc) {
     this.control_points.push(loc);
-    let mesh = new THREE.Mesh(sphere_geom, new THREE.MeshBasicMaterial({ color: 0x0 }));
+    let mesh = new THREE.Mesh(sphere_geom, curve_material);
     mesh.position.copy(loc);
     mesh.type = "control_point";
     mesh.userData = this;
@@ -46,6 +48,10 @@ export class Curve {
     for (let i = 0; i < 4; i++)
       this.add_control_point(start_loc);
     this.bezy_curve = new BezierSegmentsCurve(this.control_points);
+    if (this.reflection_symmetry) {
+      this.ref_symmetry_point = new THREE.Vector3();
+      this.ref_symmetry_point.copy(this.control_points[0]);
+    }
   }
 
   set_control_point_pos(idx, new_loc) {
@@ -84,34 +90,11 @@ export class Curve {
     scene.remove(this.three_control_points[n - 1]);
     scene.remove(this.three_control_points[n - 2]);
     scene.remove(this.three_control_points[n - 3]);
+    this.three_control_points.splice(n - 3, 3);
     this.update_curve();
   }
 
   closest_point(loc) {
-    // let ref_mat = this.get_reflection_mat();
-    // let rot_mat = this.get_rotation_mat();
-    // let min_dist = 1000;
-    // let closest_p = new THREE.Vector3();
-    // for (let t = 0.0; t < 1.0; t += 0.01) {
-    //   let p = this.bezy_curve.getPoint(t);
-    //   let dist = p.distanceTo(loc);
-    //   if (dist < min_dist && t < 0.9) {
-    //     min_dist = dist;
-    //     closest_p.set(p.x, p.y, p.z);
-    //   }
-    //   let p_rot = p.clone();
-    //   let p_ref_rot = p.clone().applyMatrix4(ref_mat);
-    //   for (let i = 0; i < this.rotation_symmetry - 1; i++) {
-    //     p_rot.applyMatrix4(rot_mat);
-    //     let dist = p_rot.distanceTo(loc);
-    //     if (dist < min_dist) {
-    //       min_dist = dist;
-    //       closest_p.set(p_rot.x, p_rot.y, p_rot.z);
-    //     }
-    //   }
-    // }
-
-    // return closest_p;
     let p = sync_module.closest_point(this.bezy_curve.points, loc, this.rotation_symmetry);
     let closest_p = new THREE.Vector3();
     closest_p.set(p[0], 0, p[1]);
@@ -129,7 +112,7 @@ export class Curve {
    * @return {THREE.Matrix4} - The reflection matrix.
    */
   get_reflection_mat() {
-    let x = this.control_points[0].x, y = this.control_points[0].y, z = this.control_points[0].z;
+    let x = this.ref_symmetry_point.x, y = this.ref_symmetry_point.y, z = this.ref_symmetry_point.z;
     let norm = Math.sqrt(x * x + y * y + z * z);
     x /= norm; y /= norm; z /= norm;
     let mat = new THREE.Matrix4().set
@@ -155,7 +138,8 @@ export class Curve {
       curve.geometry.dispose();
       scene.remove(curve);
     }
-    this.bezy_curve = new BezierSegmentsCurve(this.control_points);
+    this.three_curves.length = 0;
+    this.bezy_curve.setPoints(this.control_points);
     let curve_points = this.control_points.length * 16;
     let tube_geom = new THREE.TubeGeometry(this.bezy_curve, curve_points, 0.005, 8, false);
     let ref_mat = this.get_reflection_mat();
@@ -184,7 +168,7 @@ export class Curve {
       p.geometry.dispose();
       scene.remove(p);
     }
-    this.three_control_points_lines = [];
+    this.three_control_points_lines.length = 0;
 
     for (let i = 0; i < this.control_points.length - 1; i += 3) {
       let p = this.control_points[i];
@@ -214,11 +198,12 @@ export class Curve {
       inter.geometry.dispose();
       scene.remove(inter);
     }
+    this.three_intersections.length = 0;
     let start_time = performance.now();
     let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry, this.reflection_symmetry);
     let end_time = performance.now();
     for (let inter of intersections) {
-      let sphere = new THREE.Mesh(new THREE.SphereGeometry(0.01), intersection_material);
+      let sphere = new THREE.Mesh(intersection_sphere_geometry, intersection_material);
       sphere.type = "ns_point";
       let p = bezy(inter[0], this.bezy_curve.points[0], this.bezy_curve.points[1], this.bezy_curve.points[2], this.bezy_curve.points[3]);
       sphere.position.set(p.x, p.y, p.z);
@@ -232,17 +217,20 @@ export class Curve {
       curve.geometry.dispose();
       scene.remove(curve);
     }
+    this.three_curves.length = 0;
     for (let inter of this.three_intersections) {
       inter.geometry.dispose();
       scene.remove(inter);
     }
+    this.three_intersections.length = 0;
     for (let p of this.three_control_points_lines) {
       p.geometry.dispose();
       scene.remove(p);
     }
+    this.three_control_points_lines.length = 0;
     for (let p of this.three_control_points) {
-      p.geometry.dispose();
       scene.remove(p);
     }
+    this.three_control_points.length = 0;
   }
 }

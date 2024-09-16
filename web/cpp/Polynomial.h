@@ -1,13 +1,13 @@
 #pragma once
 
 #include <Eigen/Eigen>
-#include <iostream>
 #include <complex>
+#include <iostream>
 #include <type_traits>
 
 #define POLY(poly)                                                             \
   [] {                                                                         \
-    Polynomial x(1, 0), x2(1, 0, 0), x3(1, 0, 0, 0);                    \
+    Polynomial x(1, 0), x2(1, 0, 0), x3(1, 0, 0, 0);                           \
     return poly;                                                               \
   }()
 

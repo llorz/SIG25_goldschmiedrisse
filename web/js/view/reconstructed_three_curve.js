@@ -140,6 +140,7 @@ export class ReconstructedCurve {
       curve.geometry.dispose();
       scene.remove(curve);
     }
+    this.three_curves.length = 0;
 
     let curve_points = this.points.length * 16;
     let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.003, 8, false);
@@ -168,6 +169,7 @@ export class ReconstructedCurve {
       tl.geometry.dispose();
       scene.remove(tl);
     }
+    this.tangent_lines.length = 0;
     for (let i = 0; i < this.control_points.length - 1; i += 3) {
       let p = this.control_points[i];
       let p2 = this.control_points[i + 1];
@@ -191,12 +193,15 @@ export class ReconstructedCurve {
       curve.geometry.dispose();
       scene.remove(curve);
     }
+    this.three_curves.length = 0;
     for (let cp of this.control_points) {
       scene.remove(cp);
     }
+    this.control_points.length = 0;
     for (let tl of this.tangent_lines) {
       tl.geometry.dispose();
       scene.remove(tl);
     }
+    this.tangent_lines.length = 0;
   }
 }

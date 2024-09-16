@@ -46,7 +46,7 @@ val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
       res.call<void>("push", t12);
     }
   };
-  
+
   for (int i = 0; i < symmetry; i++) {
     Eigen::Matrix2d rot_mat =Eigen::Rotation2D<double>(2.0 * i * M_PI / symmetry).toRotationMatrix();
     if (i == 0 && (bezier_a.points - bezier_b.points).norm() < 1e-4)
@@ -57,7 +57,7 @@ val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
   return res;
 }
 
-emscripten::val closest_point(emscripten::val bezier, emscripten::val point, int symmetry) {
+emscripten::val closest_point(emscripten::val bezier, emscripten::val point, int symmetry, val ref_symmetry) {
   Bezier bezi = js_to_bezier(bezier);
   Eigen::Vector2d p = js_to_point(point);
   double min_dist = 1000.0;
