@@ -5,6 +5,7 @@ params.floor_size = 1;
 params.project_offset = 0.5;
 
 params.col_curve = [167,201,87]/255;
+% params.col_curve = [0,0,0];
 params.col_plane = [162,210,255]/255;
 params.col_floor = [255, 175, 204]/255;
 params.col_point = [239,35,60]/255;

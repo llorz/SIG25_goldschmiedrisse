@@ -125,15 +125,22 @@ classdef CurveStructure < handle
 
 
 
-        function [p_t, p_label] = return_intersection_at_one_unit_curve(obj, uc_id)
+        function [p_t, p_label] = return_intersection_at_one_unit_curve(obj, uc_id, eps)
+            if nargin < 3, eps = 1e-5; end
+
             pid = find(obj.intersection_point(:,1) == uc_id);
             if ~isempty(pid)
                 [~, idx] = sort(obj.intersection_point(pid, 2));
                 p_t = obj.intersection_point(pid(idx), 2);
                 p_label = obj.intersection_point(pid(idx), 3);
-
                 
-                [~, idx] = uniquetol(p_t, 1e-9);
+                % remove the values close to 0/1
+                rm_id = [find(abs(p_t) < eps);  find(abs(p_t-1) < eps)];
+                p_t(rm_id) = []; 
+                p_label(rm_id) = [];
+                
+                % remove the values close to each other
+                [~, idx] = uniquetol(p_t, eps);
                 p_t = p_t(idx);
                 p_label = p_label(idx);
     

@@ -22,27 +22,27 @@ end
 
 
 %%
-p1 = [0,-0.6];
-    p2 = [-sqrt(3)/2, 0.5];
-    p3 = [-1.3,-1.2];
+p1 = [-0.5, 0.5];
+    p2 = [0.8, 0.3];
 
-    anchor = [p1; p3];
-    anchor_label = [0,1];
+    anchor = [-p2; ...
+        p1;];
+    anchor_label = [1,0];
+
     uc1 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-        3, true, 1);
+        2, false);
 
-    anchor = [p2; p3];
+    acnhor = [p1; p2];
     anchor_label = [0,1];
     uc2 = UnitCurve(ControlledCurve(anchor, [], anchor_label), ...
-        3, true, 1);
-
-
-    cs = CurveStructure('U.XI.18');
+        2, false);
+    cs = CurveStructure('tn-5');
     cs.add_unit_curve(uc1);
     cs.add_unit_curve(uc2);
 
-    figure(3); clf;
-cs.plot_2D_projection;
+    figure(1); clf;
+    cs.prepare_control_points();
+    cs.plot_curves()
 
 return
 
@@ -77,7 +77,9 @@ name = 'U.XI.30';
 name = 'tn-8';
 
 name = 'U.XI.15';
-name = 'tn-1'
+name = 'U.XI.18';
+name = 'tn-10';
+
 cs = read_2D_drawings([filepath, name, '.uc']);
 cs = rescale_curve_structure(cs, 1.5);
 cs.prepare_control_points();
