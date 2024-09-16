@@ -34,7 +34,7 @@ val intersect_beziers(emscripten::val a, emscripten::val b) {
 }
 
 val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
-                                    int symmetry, bool reflection_symmetry) {
+                                    int symmetry, val reflection_symmetry_point) {
   Bezier bezier_a = js_to_bezier(a), bezier_b = js_to_bezier(b);
   emscripten::val res = val::global("Array").new_();
   auto fill_intersections = [&](const Bezier& other) {

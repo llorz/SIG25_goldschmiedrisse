@@ -1,7 +1,8 @@
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
-import { get_active_camera, scene } from '../view/visual.js';
-import { outlinePass, mode, Mode } from '../view/visual.js';
+import { camera2d, get_active_camera, scene } from '../view/visual.js';
+import { outlinePass } from '../view/visual.js';
+import {mode, Mode} from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
@@ -77,9 +78,9 @@ canvas.onpointerup = (e) => {
     || edit_mode == EditMode.move_tangent_control_point) {
     set_edit_mode(EditMode.none);
     selected_obj = null;
-  }
-  // Add a new curve or a new point in the curve.
-  if (loc.distanceTo(point_down_location) < 0.02 && mode == Mode.top_view) {
+  } else if (
+    loc.distanceTo(point_down_location) < 0.02 
+  && mode == Mode.orthographic && Math.abs(camera2d.position.y - 1) < 0.01) {
     let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
     if (edit_mode == EditMode.none) {
       add_curve(flat_point);
@@ -114,7 +115,7 @@ canvas.onpointermove = (e) => {
   } else if (edit_mode == EditMode.move_control_point
     && selected_obj && selected_obj.type == "control_point") {
     // Move a control point.
-    if (mode == Mode.side_view) {
+    if (mode == Mode.perspective) {
       ray_cast.ray.intersectPlane(plane_y0, flat_point);
     }
     let p = selected_obj.userData.closest_point(flat_point);
@@ -123,7 +124,7 @@ canvas.onpointermove = (e) => {
     }
     selected_obj.userData.move_control_point(selected_obj, flat_point);
   } else if (edit_mode == EditMode.move_height_control_point
-    && mode == Mode.side_view
+    // && mode == Mode.perspective
     && selected_obj && selected_obj.type == "height_control_point") {
     // Move a height control point.
     let plane = new THREE.Plane();
@@ -131,7 +132,7 @@ canvas.onpointermove = (e) => {
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_control_point(selected_obj, flat_point);
   } else if (edit_mode == EditMode.move_tangent_control_point
-    && mode == Mode.side_view
+    // && mode == Mode.perspective
     && selected_obj && selected_obj.type == "tangent_control_point") {
     // Move a tangent control point.
     let plane = new THREE.Plane();

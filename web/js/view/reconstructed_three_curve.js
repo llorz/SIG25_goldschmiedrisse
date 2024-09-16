@@ -25,7 +25,7 @@ function last_elem(arr) {
 export class ReconstructedCurve {
   constructor(points, rot_symmetry, ref_symmetry) {
     this.rotation_symmetry = rot_symmetry;
-    this.reflection_symmetry = ref_symmetry;
+    this.ref_symmetry_point = ref_symmetry;
 
     this.recon_bezy_curve = new ReconstructedBezierCurve(points);
     this.points = points;
@@ -43,7 +43,7 @@ export class ReconstructedCurve {
     return mat;
   }
   get_reflection_mat() {
-    let x = this.points[0].x, y = this.points[0].y, z = this.points[0].z;
+    let x = this.ref_symmetry_point.x, y = this.ref_symmetry_point.y, z = this.ref_symmetry_point.z;
     let norm = Math.sqrt(x * x + y * y + z * z);
     x /= norm; y /= norm; z /= norm;
     let mat = new THREE.Matrix4().set
@@ -56,7 +56,7 @@ export class ReconstructedCurve {
 
   calc_control_points() {
     let intersections = sync_module.bezier_intersections_with_symmetry(
-      this.points, this.points, this.rotation_symmetry, this.reflection_symmetry);
+      this.points, this.points, this.rotation_symmetry, this.ref_symmetry_point);
     intersections = intersections.map(x => x[0]);
     intersections.sort();
     let height_pts = this.recon_bezy_curve.height_points.map(pt => new THREE.Vector3(pt.x, 0, pt.y));
@@ -144,7 +144,6 @@ export class ReconstructedCurve {
 
     let curve_points = this.points.length * 16;
     let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.003, 8, false);
-    let ref_mat = this.get_reflection_mat();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? main_curve_material : symmetry_curve_material);
@@ -153,7 +152,8 @@ export class ReconstructedCurve {
       this.three_curves.push(tube);
       scene.add(tube);
     }
-    if (this.reflection_symmetry) {
+    if (!!this.ref_symmetry_point) {
+      let ref_mat = this.get_reflection_mat();
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let tube = new THREE.Mesh(tube_geom, symmetry_reflection_curve_material);
         tube.type = "ns_line";
@@ -203,5 +203,14 @@ export class ReconstructedCurve {
       scene.remove(tl);
     }
     this.tangent_lines.length = 0;
+  }
+
+  set_control_points_visibility(is_visible) {
+    for (let p of this.control_points) {
+      p.visible = is_visible;
+    }
+    for (let p of this.tangent_lines) {
+      p.visible = is_visible;
+    }
   }
 }

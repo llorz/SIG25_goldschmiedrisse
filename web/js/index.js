@@ -7,3 +7,6 @@ import "./native/native.js"
 import * as THREE from 'three';
 
 window.THREE = THREE;
+
+import * as VIEWER from './view/visual.js';
+window.VIEWER = VIEWER;

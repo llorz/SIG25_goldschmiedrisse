@@ -7,6 +7,7 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import {OutlinePass} from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import {OutputPass} from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { Mode, mode } from '../state/state';
 
 let canvas = document.getElementById("canvas");
 canvas.width = canvas.clientWidth;
@@ -76,13 +77,7 @@ controls.enableDamping = true;
 export let top_view_controls = new MapControls(camera2d, renderer.domElement);
 top_view_controls.enableRotate = false;
 
-export let Mode = {
-  top_view: "top_view",
-  side_view: "side_view",
-};
-export let mode = Mode.top_view;
-export let set_mode = (m) => mode = m;
-export let get_active_camera = () => mode === Mode.top_view ? camera2d : camera3d;
+export let get_active_camera = () => mode === Mode.orthographic ? camera2d : camera3d;
 
 let center_circle = new THREE.Mesh(
   new THREE.CircleGeometry(0.01),
@@ -101,7 +96,7 @@ scene.add(designing_area);
 
 animate();
 function animate() {
-  if (mode === Mode.top_view) {
+  if (mode === Mode.orthographic) {
     controls.enabled = false;
     top_view_controls.enabled = controls_enabled;
     top_view_controls.update();

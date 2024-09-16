@@ -1,13 +1,14 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { set_mode, Mode, camera2d } from "./visual.js";
-
+import { camera2d, top_view_controls } from "./visual.js";
+import { load_from_curves_file, set_control_points_visibility, set_mode } from "../state/state.js";
 import { params } from "../state/state.js";
+import { Quaternion, Vector3 } from "three";
+import { Mode, mode } from "../state/state.js";
 
 export let pane = new Pane({
   title: "Menu",
   expanded: true,
-  // container: document.getElementById("menumenu"),
 });
 pane.registerPlugin(EssentialsPlugin);
 
@@ -34,12 +35,22 @@ pane.addBinding(params, 'view', {
   label: 'Camera',
 }).on('change', (ev) => {
   if (ev.value == "Ortho") {
-    set_mode(Mode.top_view);
+    set_mode(Mode.orthographic);
     set_top_view_visibility(false);
   } else {
-    set_mode(Mode.side_view);
+    set_mode(Mode.perspective);
     set_top_view_visibility(true);
   }
+});
+
+let view_options_folder = pane.addFolder({
+  title: "Show",
+  expanded: true
+});
+view_options_folder.addBinding(params, 'control_points_visible', {
+  label: 'Control points',
+}).on('change', (ev) => {
+  set_control_points_visibility(ev.value);
 });
 
 
@@ -56,12 +67,18 @@ let ortho_view = pane.addBlade({
 }).on('click', (ev) => {
   if (ev.index[0] == 0) {
     camera2d.position.set(0, 1, 0);
+    camera2d.up.set(0, 1, 0);
+    top_view_controls.target.set(0, 0, 0);
+    top_view_controls._quat = new Quaternion().setFromUnitVectors( new Vector3(0, 1, 0), new Vector3( 0, 1, 0 ) );
+    top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
   } else {
     camera2d.position.set(0, 0, 1);
     camera2d.up.set(0, 0, 1);
-    camera2d.right
-    camera2d.lookAt(new THREE.Vector3(0, 0, 0));
+    top_view_controls.target.set(0, 0, 0);
+    top_view_controls._quat = new Quaternion().setFromUnitVectors( new Vector3(0, 0, 1), new Vector3( 0, 1, 0 ) );
+    top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
   }
+  set_control_points_visibility(params.control_points_visible);
 });
 top_view_options.push(ortho_view);
 let new_curve_options_folder = pane.addFolder({
@@ -80,3 +97,28 @@ new_curve_options_folder.addBinding(params, 'rotation_symmetry', {
 new_curve_options_folder.addBinding(params, 'reflection_symmetry', {
   label: 'Reflection Symmetry',
 });
+
+
+
+export let left_menu = new Pane({
+  title: "Load/save",
+  expanded: true,
+  container: document.getElementById("left_menu"),
+});
+left_menu.registerPlugin(EssentialsPlugin);
+
+let curve_list = left_menu.addBlade({
+  view: 'list',
+  label: 'curves',
+  options: [
+    {text: 'tn-1', value: 'tn-1'},
+    {text: 'tn-2', value: 'tn-2'},
+    {text: 'tn-3', value: 'tn-3'},
+  ],
+  value: 'tn-1',
+});
+let button = left_menu.addButton({
+  title: 'Load',
+}).on('click', (ev) => {
+  let val = fetch("data/" + curve_list.value + ".uc").then(res => res.text()).then(text => load_from_curves_file(text));
+})

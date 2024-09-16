@@ -28,3 +28,9 @@ z-index: 1;
 #help:hover .tooltiptext {
   visibility: visible;
 }
+
+#left_menu {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
