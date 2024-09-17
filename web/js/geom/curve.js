@@ -108,7 +108,7 @@ export class Curve {
   }
 
   closest_point(loc) {
-    let p = sync_module.closest_point(this.get_bezy_curve().points, loc, this.rotation_symmetry);
+    let p = sync_module.closest_point(this.get_bezy_curve().points, loc, this.rotation_symmetry, this.ref_symmetry_point);
     let closest_p = new THREE.Vector3();
     closest_p.set(p[0], 0, p[1]);
 
