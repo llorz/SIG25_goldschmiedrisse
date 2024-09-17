@@ -17,7 +17,8 @@ let plane_y0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
 function is_selectable(obj) {
   return !!obj && (non_selectable_types.indexOf(obj.type) == -1
-    && non_selectable_objects_names.indexOf(obj.name) == -1);
+    && non_selectable_objects_names.indexOf(obj.name) == -1)
+    && obj.visible;
 }
 
 const ray_cast = new THREE.Raycaster();
@@ -96,9 +97,10 @@ canvas.onpointermove = (e) => {
   if (!is_mouse_down) {
     // Highlight the hovered object.
     outlinePass.selectedObjects = [];
-    if (intersections.length > 0) {
-      if (is_selectable(intersections[0].object)) {
-        outlinePass.selectedObjects = [intersections[0].object];
+    for (let intersection of intersections) {
+      if (is_selectable(intersection.object)) {
+        outlinePass.selectedObjects = [intersection.object];
+        break;
       }
     }
   }
