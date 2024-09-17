@@ -120,8 +120,14 @@ export class ReconstructedCurve {
 
   move_control_point(three_point_mesh, new_loc) {
     let idx = this.control_points.indexOf(three_point_mesh);
+    let offset = new_loc.y - this.recon_bezy_curve.height_points[idx].y;
     three_point_mesh.position.y = new_loc.y;
     this.recon_bezy_curve.height_points[idx].y = new_loc.y;
+    for (let i = 0; i < this.tangent_points_base_index.length; i++) {
+      if (i == idx || this.tangent_points_base_index[i] != idx) continue;
+      this.recon_bezy_curve.height_points[i].y += offset;
+      this.control_points[i].position.y += offset;
+    }
     this.update_curve();
   }
 
