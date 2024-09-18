@@ -65,6 +65,10 @@ export class Curve {
       this.ref_symmetry_point = new THREE.Vector3();
       this.ref_symmetry_point.copy(this.control_points[0]);
     }
+    // By default first point is a ground point.
+    this.point_labels.push(0);
+    // And the second is a top point.
+    this.point_labels.push(1);
   }
 
   set_control_point_pos(idx, new_loc) {
@@ -94,6 +98,12 @@ export class Curve {
     for (let i = 0; i < 3; i++)
       this.add_control_point(loc);
 
+    if (this.point_labels[this.point_labels.length - 1] == 2) {
+      this.point_labels.push(1);
+    } else {
+      this.point_labels.push(2);
+    }
+
     this.update_curve();
   }
 
@@ -104,6 +114,7 @@ export class Curve {
     scene.remove(this.three_control_points[n - 2]);
     scene.remove(this.three_control_points[n - 3]);
     this.three_control_points.splice(n - 3, 3);
+    this.point_labels.splice(this.point_labels.length - 1, 1);
     this.update_curve();
   }
 
@@ -214,7 +225,6 @@ export class Curve {
     this.three_intersections.length = 0;
     let start_time = performance.now();
     let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry, this.ref_symmetry_point);
-    console.info("Intersections ", intersections);
     let end_time = performance.now();
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(intersection_sphere_geometry, intersection_material);

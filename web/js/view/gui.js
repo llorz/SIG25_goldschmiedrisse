@@ -1,10 +1,11 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { camera2d, top_view_controls } from "./visual.js";
-import { load_from_curves_file, set_control_points_visibility, set_mode } from "../state/state.js";
+import { curves, load_from_curves_file, set_control_points_visibility, set_mode } from "../state/state.js";
 import { params } from "../state/state.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
+import { save_curves } from "../io/save_curves.js";
 
 export let pane = new Pane({
   title: "Menu",
@@ -69,13 +70,13 @@ let ortho_view = pane.addBlade({
     camera2d.position.set(0, 1, 0);
     camera2d.up.set(0, 1, 0);
     top_view_controls.target.set(0, 0, 0);
-    top_view_controls._quat = new Quaternion().setFromUnitVectors( new Vector3(0, 1, 0), new Vector3( 0, 1, 0 ) );
+    top_view_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
     top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
   } else {
     camera2d.position.set(0, 0, 1);
     camera2d.up.set(0, 0, 1);
     top_view_controls.target.set(0, 0, 0);
-    top_view_controls._quat = new Quaternion().setFromUnitVectors( new Vector3(0, 0, 1), new Vector3( 0, 1, 0 ) );
+    top_view_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
     top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
   }
   set_control_points_visibility(params.control_points_visible);
@@ -107,18 +108,80 @@ export let left_menu = new Pane({
 });
 left_menu.registerPlugin(EssentialsPlugin);
 
+const curves_in_file = ["tn-1", "tn-2", "tn-3"];
+function get_saved_curves_names() {
+  let saved_curves_names = localStorage.getItem("saved_curves_names");
+  if (!saved_curves_names) {
+    return [];
+  }
+  return saved_curves_names.split(",");
+}
+function get_curves_list() {
+  let lst = [];
+  for (let curve of curves_in_file) {
+    lst.push({ text: curve, value: curve });
+  }
+  let saved_curves_names = localStorage.getItem("saved_curves_names");
+  if (!!saved_curves_names) {
+    for (let curve of saved_curves_names.split(",")) {
+      lst.push({ text: curve, value: curve });
+    }
+  }
+  return lst;
+}
+
 let curve_list = left_menu.addBlade({
   view: 'list',
   label: 'curves',
-  options: [
-    {text: 'tn-1', value: 'tn-1'},
-    {text: 'tn-2', value: 'tn-2'},
-    {text: 'tn-3', value: 'tn-3'},
-  ],
+  options: get_curves_list(),
   value: 'tn-1',
 });
 let button = left_menu.addButton({
   title: 'Load',
 }).on('click', (ev) => {
-  let val = fetch("data/" + curve_list.value + ".uc").then(res => res.text()).then(text => load_from_curves_file(text));
-})
+  let is_saved_curve = get_saved_curves_names().indexOf(curve_list.value) >= 0;
+  if (!is_saved_curve)
+    fetch("data/" + curve_list.value + ".uc").then(res => res.text()).then(text => load_from_curves_file(text));
+  else
+    load_from_curves_file(localStorage.getItem(curve_list.value));
+});
+left_menu.addButton({
+  title: 'Delete',
+}).on('click', (ev) => {
+  let names = get_saved_curves_names();
+  let idx = names.indexOf(curve_list.value);
+  if (idx >= 0) {
+    names.splice(idx, 1);
+    localStorage.setItem("saved_curves_names", names.join(","));
+    localStorage.removeItem(curve_list.value);
+    let api_state = curve_list.exportState();
+    let options = get_curves_list();
+    api_state.options = options;
+    curve_list.importState(api_state);
+  }
+});
+left_menu.addBlade({
+  view: 'separator',
+});
+
+left_menu.addBinding(params, 'save_curve_name', {
+  label: 'Name',
+});
+left_menu.addButton({
+  title: 'Save',
+}).on('click', (ev) => {
+  let saved_curves_names = localStorage.getItem("saved_curves_names");
+  if (!saved_curves_names)
+    saved_curves_names = params.save_curve_name;
+  else
+    saved_curves_names += "," + params.save_curve_name;
+  localStorage.setItem("saved_curves_names", saved_curves_names);
+  let text = save_curves(curves);
+  localStorage.setItem(params.save_curve_name, text);
+  let api_state = curve_list.exportState();
+  let options = get_curves_list();
+  api_state.options = options;
+  curve_list.importState(api_state);
+});
+
+window.curve_list = curve_list;

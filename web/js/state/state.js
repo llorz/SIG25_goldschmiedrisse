@@ -9,6 +9,7 @@ export let params = {
   rotation_symmetry: 6,
   reflection_symmetry: true,
   control_points_visible: true,
+  save_curve_name: "tmp_unit_curve",
 };
 
 export let curves = [];

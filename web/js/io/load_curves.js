@@ -32,7 +32,7 @@ export function load_curves(txt) {
         parseInt(parts[3]) == 1);
       curves.push(curve);
     } else if (line.startsWith("reflectionPoint")) {
-      curves[curves.length - 1].ref_symmetry_point = parse_point(parts.slice(1));
+      last(curves).ref_symmetry_point = parse_point(parts.slice(1));
       // Control points.
     } else if (line.startsWith("ptPos")) {
       let curve = last(curves);
@@ -48,6 +48,8 @@ export function load_curves(txt) {
       } else if (curve.control_points.length % 3 == 2) {
         let last_pt = last(curve.control_points);
         curve.add_control_point(last_pt.clone().lerp(pt, 0.8));
+        curve.add_control_point(pt);
+      } else {
         curve.add_control_point(pt);
       }
       // Control point tangent.

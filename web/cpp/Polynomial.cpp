@@ -130,12 +130,10 @@ Eigen::VectorXcd Polynomial::roots() {
   for (; i < 1000 && roots_error.maxCoeff() > 1e-6; i++) {
     auto val = at(res(current_root)) / coefs(coefs.cols() - 1);
     roots_error(current_root) = std::abs(val);
-    std::complex<double> denom(1, 0);
     for (int j = 0; j < res.size(); j++)
       if (j != current_root)
-        denom *= res(current_root) - res(j);
-
-    res(current_root) -= val / denom;
+        val /= res(current_root) - res(j);
+    res(current_root) -= val;
 
     current_root = (current_root + 1) % res.size();
   }

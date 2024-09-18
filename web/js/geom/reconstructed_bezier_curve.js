@@ -63,24 +63,29 @@ export class ReconstructedBezierCurve extends THREE.Curve {
       new THREE.Vector2(1, 0.7), new THREE.Vector2(1, 1)];
       return height_points;
     }
-    let height_points = [], seg = 0;
+    let height_points = [], seg = 0, next_tangent_point;
     for (let i = 0; i < pt_labels.length; i++) {
       // Ground point.
       let curve_point, tangent_point;
       if (pt_labels[i] == 0) {
         curve_point = new THREE.Vector2(seg, 0);
         tangent_point = new THREE.Vector2(seg, 0.3);
+        next_tangent_point = new THREE.Vector2(seg, 0.3);
       } else if (pt_labels[i] == 1) {
         curve_point = new THREE.Vector2(seg, 1);
         tangent_point = new THREE.Vector2(seg, 0.7);
+        next_tangent_point = new THREE.Vector2(seg, 0.7);
       } else {
         curve_point = new THREE.Vector2(seg, 0.5);
         tangent_point = new THREE.Vector2(seg - 0.3, 0.5);
+        next_tangent_point = new THREE.Vector2(seg + 0.3, 0.5);
       }
       if (height_points.length == 0) {
         height_points.push(curve_point);
         height_points.push(tangent_point);
       } else {
+        if (height_points.length > 2)
+          height_points.push(next_tangent_point);
         height_points.push(tangent_point);
         height_points.push(curve_point);
       }
