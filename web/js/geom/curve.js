@@ -153,7 +153,7 @@ export class Curve {
     }
     this.three_curves.length = 0;
     this.get_bezy_curve().setPoints(this.control_points);
-    let curve_points = this.control_points.length * 16;
+    let curve_points = this.control_points.length * 32;
     let tube_geom = new THREE.TubeGeometry(this.bezy_curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
@@ -214,6 +214,7 @@ export class Curve {
     this.three_intersections.length = 0;
     let start_time = performance.now();
     let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry, this.ref_symmetry_point);
+    console.info("Intersections ", intersections);
     let end_time = performance.now();
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(intersection_sphere_geometry, intersection_material);

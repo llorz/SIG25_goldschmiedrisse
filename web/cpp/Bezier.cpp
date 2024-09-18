@@ -42,12 +42,18 @@ find_intersections(const Bezier &a, const Bezier &b, double param_threshold) {
     auto [left, right] = beziers.top();
     beziers.pop();
     if (left.max_t - left.min_t < param_threshold) {
+      if (std::abs(left.min_t - 1) < 1e-1 && std::abs(right.min_t - 1) < 1e-1 ||
+          std::abs(left.min_t) < 1e-1 && std::abs(right.min_t))
+        continue;
       bool add_res = true;
       for (auto [lt, rt] : res) {
         if (std::abs(lt - left.min_t) < param_threshold ||
             std::abs(lt - left.max_t) < param_threshold ||
             std::abs(rt - right.min_t) < param_threshold ||
-            std::abs(rt - right.max_t) < param_threshold) {
+            std::abs(rt - right.max_t) < param_threshold ||
+            // Make the following checks only if it's the same curve?
+            (std::abs(lt - right.min_t) < param_threshold) ||
+            (std::abs(lt - right.max_t) < param_threshold)) {
           add_res = false;
           break;
         }

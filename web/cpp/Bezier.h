@@ -24,4 +24,4 @@ struct Bezier {
 
 std::vector<std::pair<double, double>>
 find_intersections(const Bezier &a, const Bezier &b,
-                   double param_threshold = 1e-2);
+                   double param_threshold = 1e-3);

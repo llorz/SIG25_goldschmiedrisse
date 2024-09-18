@@ -23,11 +23,11 @@ function last_elem(arr) {
 }
 
 export class ReconstructedCurve {
-  constructor(points, rot_symmetry, ref_symmetry) {
+  constructor(points, rot_symmetry, ref_symmetry, pt_labels) {
     this.rotation_symmetry = rot_symmetry;
     this.ref_symmetry_point = ref_symmetry;
 
-    this.recon_bezy_curve = new ReconstructedBezierCurve(points);
+    this.recon_bezy_curve = new ReconstructedBezierCurve(points, pt_labels);
     this.points = points;
     this.control_points = [];
     this.control_points_tangent = [];
@@ -67,6 +67,7 @@ export class ReconstructedCurve {
 
     this.control_points = [new THREE.Mesh(sphere_geom, control_point_material)];
     this.control_points[0].position.copy(this.recon_bezy_curve.points[0]);
+    this.control_points[0].position.y = height_pts[0].z;
     this.control_points_tangent = ["dummy"];
     this.tangent_points_base_index = ["dummy"];
 

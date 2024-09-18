@@ -47,7 +47,8 @@ export function reconstruct_curves() {
   recon_curves.length = 0;
   for (let curve of curves) {
     if (curve.control_points.length > 4) continue;
-    recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point));
+    recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point,
+      curve.point_labels));
     recon_curves[recon_curves.length - 1].calc_control_points();
     recon_curves[recon_curves.length - 1].update_curve();
   }

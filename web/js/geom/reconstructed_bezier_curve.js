@@ -25,15 +25,15 @@ export function bezy(t, p0, p1, p2, p3) {
   return new THREE.Vector2(x, y);
 }
 
-  /**
-   * Computes the derivative of a cubic bezier curve at a given parameter t
-   * @param {number} t - The parameter of the bezier curve, between 0 and 1
-   * @param {THREE.Vector3} p0 - The starting point of the curve
-   * @param {THREE.Vector3} p1 - The first control point
-   * @param {THREE.Vector3} p2 - The second control point
-   * @param {THREE.Vector3} p3 - The ending point of the curve
-   * @returns {THREE.Vector3} The derivative of the curve at parameter t
-   */
+/**
+ * Computes the derivative of a cubic bezier curve at a given parameter t
+ * @param {number} t - The parameter of the bezier curve, between 0 and 1
+ * @param {THREE.Vector3} p0 - The starting point of the curve
+ * @param {THREE.Vector3} p1 - The first control point
+ * @param {THREE.Vector3} p2 - The second control point
+ * @param {THREE.Vector3} p3 - The ending point of the curve
+ * @returns {THREE.Vector3} The derivative of the curve at parameter t
+ */
 export function bezy_derivative(t, p0, p1, p2, p3) {
   let m0 = -3 + 6 * t - 3 * t * t;
   let m1 = 3 - 12 * t + 9 * t * t;
@@ -50,19 +50,42 @@ export function bezy_derivative(t, p0, p1, p2, p3) {
 
 export class ReconstructedBezierCurve extends THREE.Curve {
 
-  constructor(points, height_points) {
+  constructor(points, pt_labels) {
     super();
     this.points = points;
-    this.height_points = height_points;
-    if (!this.height_points || this.height_points.length == 0) {
-      this.height_points = this.estimate_height_points();
-    }
+    this.height_points = this.estimate_height_points(pt_labels);
     this.accumulated_seg_lengths = this.approximate_segment_lengths();
   }
 
-  estimate_height_points() {
-    let height_points = [new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.3),
-    new THREE.Vector2(1, 0.7), new THREE.Vector2(1, 1)];
+  estimate_height_points(pt_labels) {
+    if (pt_labels.length == 0) {
+      let height_points = [new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.3),
+      new THREE.Vector2(1, 0.7), new THREE.Vector2(1, 1)];
+      return height_points;
+    }
+    let height_points = [], seg = 0;
+    for (let i = 0; i < pt_labels.length; i++) {
+      // Ground point.
+      let curve_point, tangent_point;
+      if (pt_labels[i] == 0) {
+        curve_point = new THREE.Vector2(seg, 0);
+        tangent_point = new THREE.Vector2(seg, 0.3);
+      } else if (pt_labels[i] == 1) {
+        curve_point = new THREE.Vector2(seg, 1);
+        tangent_point = new THREE.Vector2(seg, 0.7);
+      } else {
+        curve_point = new THREE.Vector2(seg, 0.5);
+        tangent_point = new THREE.Vector2(seg - 0.3, 0.5);
+      }
+      if (height_points.length == 0) {
+        height_points.push(curve_point);
+        height_points.push(tangent_point);
+      } else {
+        height_points.push(tangent_point);
+        height_points.push(curve_point);
+      }
+      seg += 1;
+    }
     return height_points;
   }
 

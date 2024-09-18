@@ -35,8 +35,17 @@ val intersect_beziers(emscripten::val a, emscripten::val b) {
 
 val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
                                     int symmetry,
-                                    val reflection_symmetry_point) {
+                                    val ref_symmetry) {
   Bezier bezier_a = js_to_bezier(a), bezier_b = js_to_bezier(b);
+  // Extract reflection point.
+  Eigen::Vector2d ref_point(0, 0);
+  std::string ref_type = ref_symmetry.typeOf().as<std::string>();
+  if (ref_type == "object") {
+    ref_point = js_to_point(ref_symmetry).normalized();
+  }
+  Eigen::Matrix2d ref_mat =
+      2 * ref_point * ref_point.transpose() - Eigen::Matrix2d::Identity();
+
   emscripten::val res = val::global("Array").new_();
   auto fill_intersections = [&](const Bezier &other) {
     auto intersections = find_intersections(bezier_a, other);
@@ -55,6 +64,11 @@ val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
       continue;
     Bezier bb(bezier_b.points * rot_mat);
     fill_intersections(bb);
+    if (ref_point.norm() > 1e-6) {
+      Eigen::Matrix2d mat = ref_mat.transpose() * rot_mat;
+      bb.points = bezier_b.points * mat;
+      fill_intersections(bb);
+    }
   }
   return res;
 }
