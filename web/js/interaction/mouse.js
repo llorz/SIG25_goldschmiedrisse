@@ -2,7 +2,7 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { camera2d, get_active_camera, scene } from '../view/visual.js';
 import { outlinePass } from '../view/visual.js';
-import {mode, Mode} from '../state/state.js';
+import { mode, Mode } from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { Curve } from '../geom/curve.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
-let non_selectable_types = ["ns_line", "ns_point"];
+let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
 
 let plane_y0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
@@ -80,9 +80,10 @@ canvas.onpointerup = (e) => {
     set_edit_mode(EditMode.none);
     selected_obj = null;
   } else if (
-    loc.distanceTo(point_down_location) < 0.02 
-  && mode == Mode.orthographic && Math.abs(camera2d.position.y - 1) < 0.01) {
-    let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
+    loc.distanceTo(point_down_location) < 0.02
+    && mode == Mode.orthographic) {
+    let flat_point = new THREE.Vector3();
+    ray_cast.ray.intersectPlane(plane_y0, flat_point);
     if (edit_mode == EditMode.none) {
       add_curve(flat_point);
     } else if (edit_mode == EditMode.new_curve) {
@@ -105,7 +106,8 @@ canvas.onpointermove = (e) => {
     }
   }
 
-  let flat_point = new THREE.Vector3(ray_cast.ray.origin.x, 0, ray_cast.ray.origin.z);
+  let flat_point = new THREE.Vector3();
+  ray_cast.ray.intersectPlane(plane_y0, flat_point);
 
   if (edit_mode == EditMode.new_curve) {
     // Add new point in a curve.

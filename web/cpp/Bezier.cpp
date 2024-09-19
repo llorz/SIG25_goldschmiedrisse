@@ -43,7 +43,7 @@ find_intersections(const Bezier &a, const Bezier &b, double param_threshold) {
     beziers.pop();
     if (left.max_t - left.min_t < param_threshold) {
       if (std::abs(left.min_t - 1) < 1e-1 && std::abs(right.min_t - 1) < 1e-1 ||
-          std::abs(left.min_t) < 1e-1 && std::abs(right.min_t))
+          std::abs(left.min_t) < 1e-1 && std::abs(right.min_t) < 1e-1)
         continue;
       bool add_res = true;
       for (auto [lt, rt] : res) {

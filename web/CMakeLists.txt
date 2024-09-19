@@ -20,11 +20,18 @@ if(NOT TARGET Eigen3::Eigen)
   add_library(Eigen3::Eigen INTERFACE IMPORTED)
   set_target_properties(Eigen3::Eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
                                                  ${eigen3_SOURCE_DIR})
-endif()
+endif() 
+SET(LIBIGL_RESTRICTED_TRIANGLE ON)
+FetchContent_Declare(
+  libigl
+  GIT_REPOSITORY https://github.com/libigl/libigl.git
+  GIT_TAG v2.5.0)
+
+FetchContent_MakeAvailable(libigl)
 
 file(GLOB SRC_FILES cpp/*.cpp)
 add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen igl::core igl_restricted::triangle)
 
 target_link_options(${PROJECT_NAME} PRIVATE -sMODULARIZE -sEXPORT_NAME="createModule" --bind  -sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=5MB  -sNO_EXIT_RUNTIME=0 -sASSERTIONS=1)
 

@@ -1,3 +1,4 @@
+import "./state/state.js";
 import "./view/visual.js";
 import "./interaction/mouse.js";
 import "./view/gui.js";

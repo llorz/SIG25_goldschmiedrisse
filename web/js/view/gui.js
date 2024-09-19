@@ -1,11 +1,14 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, top_view_controls } from "./visual.js";
-import { curves, load_from_curves_file, set_control_points_visibility, set_mode } from "../state/state.js";
+import { camera2d, scene, top_view_controls } from "./visual.js";
+import { curves, load_from_curves_file, recon_curves, reconstruct_surfaces, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
 import { params } from "../state/state.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
 import { save_curves } from "../io/save_curves.js";
+import { sync_module } from "../native/native.js";
+
+import * as THREE from "three";
 
 export let pane = new Pane({
   title: "Menu",
@@ -52,6 +55,12 @@ view_options_folder.addBinding(params, 'control_points_visible', {
   label: 'Control points',
 }).on('change', (ev) => {
   set_control_points_visibility(ev.value);
+});
+
+view_options_folder.addBinding(params, 'reconstructed_surfaces_visible', {
+  label: 'Surface',
+}).on('change', (ev) => {
+  set_reconstructed_surface_visibility(ev.value);
 });
 
 
@@ -184,4 +193,8 @@ left_menu.addButton({
   curve_list.importState(api_state);
 });
 
-window.curve_list = curve_list;
+left_menu.addButton({
+  title: 'Test',
+}).on('click', (ev) => {
+  reconstruct_surfaces();
+});

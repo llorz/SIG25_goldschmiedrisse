@@ -5,8 +5,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import {OutlinePass} from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import {OutputPass} from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { Mode, mode } from '../state/state';
 
 let canvas = document.getElementById("canvas");
@@ -22,10 +22,26 @@ renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(0xffffff, 1);
 
+// Lights.
+const light = new THREE.AmbientLight(0x888888);
+scene.add(light);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
+directionalLight.position.set(0, 0, 1);
+scene.add(directionalLight);
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2.0);
+directionalLight2.position.set(0, 0, -1);
+scene.add(directionalLight2);
+const directionalLight3 = new THREE.DirectionalLight(0xffffff, 2.0);
+directionalLight3.position.set(1, 0, 0);
+scene.add(directionalLight3);
+const directionalLight4 = new THREE.DirectionalLight(0xffffff, 2.0);
+directionalLight4.position.set(-1, 0, 0);
+scene.add(directionalLight4);
+
 // Cameras.
 export let camera3d = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
 camera3d.position.y = 1.3;
-export let camera2d = new THREE.OrthographicCamera(-aspect_ratio, aspect_ratio, 1, -1, 0.1, 1000);
+export let camera2d = new THREE.OrthographicCamera(-aspect_ratio, aspect_ratio, 1, -1, -2, 1000);
 function init_orth_camera() {
   if (aspect_ratio > 1) {
     camera2d.left = -aspect_ratio;
@@ -75,7 +91,6 @@ export function enable_controls() { controls_enabled = true; }
 export let controls = new OrbitControls(camera3d, renderer.domElement);
 controls.enableDamping = true;
 export let top_view_controls = new MapControls(camera2d, renderer.domElement);
-top_view_controls.enableRotate = false;
 
 export let get_active_camera = () => mode === Mode.orthographic ? camera2d : camera3d;
 
@@ -94,7 +109,7 @@ designing_area.rotateX(Math.PI / 2);
 designing_area.position.y = -1e-3;
 scene.add(designing_area);
 
-animate();
+requestAnimationFrame(animate);
 function animate() {
   if (mode === Mode.orthographic) {
     controls.enabled = false;

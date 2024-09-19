@@ -10,13 +10,13 @@ const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
-let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff00ff, side: THREE.DoubleSide });
+let main_curve_material = new THREE.MeshLambertMaterial({ color: 0x000000, side: THREE.DoubleSide });
 let symmetry_curve_material = new THREE.MeshLambertMaterial({
-  color: 0x00ff00, side: THREE.DoubleSide,
+  color: 0x000000, side: THREE.DoubleSide,
   opacity: 0.2, transparent: true
 });
 let symmetry_reflection_curve_material = new THREE.MeshLambertMaterial({
-  color: 0x00ffaa, side: THREE.DoubleSide,
+  color: 0x000000, side: THREE.DoubleSide,
   opacity: 0.2, transparent: true
 });
 

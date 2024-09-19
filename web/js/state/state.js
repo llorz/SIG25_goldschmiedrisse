@@ -1,5 +1,6 @@
 import { Curve } from "../geom/curve";
 import { load_curves } from "../io/load_curves";
+import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
 import { camera2d, enable_controls } from "../view/visual";
 
@@ -9,11 +10,13 @@ export let params = {
   rotation_symmetry: 6,
   reflection_symmetry: true,
   control_points_visible: true,
+  reconstructed_surfaces_visible: true,
   save_curve_name: "tmp_unit_curve",
 };
 
 export let curves = [];
 export let recon_curves = [];
+export let recon_surfaces = [];
 
 export let EditMode = {
   none: "none",
@@ -46,6 +49,11 @@ export function reconstruct_curves() {
     curve.destroy();
   }
   recon_curves.length = 0;
+  for (let surface of recon_surfaces) {
+    surface.destroy();
+  }
+  recon_surfaces.length = 0;
+  
   for (let curve of curves) {
     if (curve.control_points.length > 4) continue;
     recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point,
@@ -54,6 +62,18 @@ export function reconstruct_curves() {
     recon_curves[recon_curves.length - 1].update_curve();
   }
   set_control_points_visibility(params.control_points_visible);
+}
+
+export function reconstruct_surfaces() {
+  for (let surface of recon_surfaces) {
+    surface.destroy();
+  }
+  recon_surfaces.length = 0;
+  for (let curve of recon_curves) {
+    recon_surfaces.push(new ReconstructedSurface(curve));
+    recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
+    recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
+  }
 }
 
 export function finish_curve() {
@@ -79,6 +99,10 @@ export function clear_all() {
     curve.destroy();
   }
   recon_curves.length = 0;
+  for (let surface of recon_surfaces) {
+    surface.destroy();
+  }
+  recon_surfaces.length = 0;
   set_edit_mode(EditMode.none);
 }
 
@@ -105,6 +129,12 @@ export function set_control_points_visibility(is_visible) {
         curve.set_control_points_visibility(false);
       }
     }
+  }
+}
+
+export function set_reconstructed_surface_visibility(is_visible) {
+  for (let surface of recon_surfaces) {
+    surface.set_visibility(is_visible);
   }
 }
 
