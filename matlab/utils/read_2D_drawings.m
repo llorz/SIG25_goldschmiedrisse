@@ -20,7 +20,7 @@ for ii = 1:numCurves
     anchor_label = zeros(np, 1);
 
     for jj = 1:np
-        anchor(jj, :) = fscanf(fid, 'ptPos\t%f\t%f\n', 2)';
+        anchor(jj, :) = fscanf(fid, 'ptPos\t%f\t%f\t%f\n', 2)';
         if ~feof(fid)
             line = fgetl(fid);
             if startsWith(line, 'ptTan')
