@@ -2,11 +2,14 @@ import * as THREE from 'three';
 import { scene } from './visual';
 import { sync_module } from '../native/native';
 
-const surface_material = new THREE.MeshStandardMaterial({
+export const surface_material = new THREE.MeshStandardMaterial({
   side: THREE.DoubleSide,
-  color: 0x4040d9,
-  roughness: 0.8,
-  metalness: 0.2,
+  color: 0xbde0fe,
+  opacity: 0.8,
+  transparent: true,
+  roughness: 0.9,
+  metalness: 0.1,
+  // wireframe: true,
 });
 
 export class ReconstructedSurface {

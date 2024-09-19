@@ -11,6 +11,7 @@ export let params = {
   reflection_symmetry: true,
   control_points_visible: true,
   reconstructed_surfaces_visible: true,
+  surface_color: "0xbde0fe",
   save_curve_name: "tmp_unit_curve",
 };
 
@@ -53,7 +54,7 @@ export function reconstruct_curves() {
     surface.destroy();
   }
   recon_surfaces.length = 0;
-  
+
   for (let curve of curves) {
     if (curve.control_points.length > 4) continue;
     recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point,

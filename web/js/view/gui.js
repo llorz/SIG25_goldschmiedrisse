@@ -9,6 +9,7 @@ import { save_curves } from "../io/save_curves.js";
 import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
+import { surface_material } from "./reconstructed_surface.js";
 
 export let pane = new Pane({
   title: "Menu",
@@ -64,6 +65,21 @@ view_options_folder.addBinding(params, 'reconstructed_surfaces_visible', {
 });
 
 
+view_options_folder.addBlade({
+  view: 'separator',
+});
+
+let surface_params = pane.addFolder({
+  title: "Surface parameters",
+  expanded: true
+});
+surface_params.addBinding(params, "surface_color", {
+  view: 'color',
+  label: 'Surface Color'
+}).on('change', (ev) => {
+  surface_material.color.set(ev.value);
+});
+
 let ortho_view = pane.addBlade({
   view: 'buttongrid',
   groupName: 'ortho_view',
@@ -117,7 +133,7 @@ export let left_menu = new Pane({
 });
 left_menu.registerPlugin(EssentialsPlugin);
 
-const curves_in_file = ["tn-1", "tn-2", "tn-3"];
+const curves_in_file = ["tn-1", "tn-2", "tn-3", "tn-4", "tn-7", "tn-12"];
 function get_saved_curves_names() {
   let saved_curves_names = localStorage.getItem("saved_curves_names");
   if (!saved_curves_names) {
