@@ -113,20 +113,24 @@ export class ReconstructedBezierCurve extends THREE.Curve {
   }
 
   getGroundProjectedPoint(t) {
-    let p0 = this.points[0];
-    let p1 = this.points[1];
-    let p2 = this.points[2];
-    let p3 = this.points[3];
+    let ind = Math.max(Math.floor(t - 1e-5), 0);
+    let frac = t - ind;
+    let p0 = this.points[ind * 3];
+    let p1 = this.points[ind * 3 + 1];
+    let p2 = this.points[ind * 3 + 2];
+    let p3 = this.points[ind * 3 + 3];
 
-    return bezy(t, p0, p1, p2, p3);
+    return bezy(frac, p0, p1, p2, p3);
   }
 
   getGroundTangent(t) {
-    let p0 = this.points[0];
-    let p1 = this.points[1];
-    let p2 = this.points[2];
-    let p3 = this.points[3];
-    return bezy_derivative(t, p0, p1, p2, p3);
+    let ind = Math.max(Math.floor(t - 1e-5), 0);
+    let frac = t - ind;
+    let p0 = this.points[ind * 3];
+    let p1 = this.points[ind * 3 + 1];
+    let p2 = this.points[ind * 3 + 2];
+    let p3 = this.points[ind * 3 + 3];
+    return bezy_derivative(frac, p0, p1, p2, p3);
   }
 
   getPoint(t, optionalTarget = new THREE.Vector3()) {
@@ -139,18 +143,19 @@ export class ReconstructedBezierCurve extends THREE.Curve {
     let seg_t = (t - this.accumulated_seg_lengths[seg_idx - 1]) /
       (this.accumulated_seg_lengths[seg_idx] - this.accumulated_seg_lengths[seg_idx - 1]);
 
-
-    let p0 = this.points[0];
-    let p1 = this.points[1];
-    let p2 = this.points[2];
-    let p3 = this.points[3];
     let h0 = this.height_points[(seg_idx - 1) * 3];
     let h1 = this.height_points[(seg_idx - 1) * 3 + 1];
     let h2 = this.height_points[(seg_idx - 1) * 3 + 2];
     let h3 = this.height_points[(seg_idx - 1) * 3 + 3];
     // Compute bezier point.
     let height_point = bezy(seg_t, h0, h1, h2, h3);
-    let top_view_point = bezy(height_point.x, p0, p1, p2, p3);
+    let ind = Math.max(Math.floor(height_point.x - 1e-5), 0);
+    let p0 = this.points[ind * 3];
+    let p1 = this.points[ind * 3 + 1];
+    let p2 = this.points[ind * 3 + 2];
+    let p3 = this.points[ind * 3 + 3];
+    let frac = height_point.x - ind;
+    let top_view_point = bezy(frac, p0, p1, p2, p3);
     point.set(top_view_point.x, height_point.y, top_view_point.z);
     return point;
   }

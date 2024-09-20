@@ -47,13 +47,13 @@ find_intersections(const Bezier &a, const Bezier &b, double param_threshold) {
         continue;
       bool add_res = true;
       for (auto [lt, rt] : res) {
-        if (std::abs(lt - left.min_t) < param_threshold ||
-            std::abs(lt - left.max_t) < param_threshold ||
-            std::abs(rt - right.min_t) < param_threshold ||
-            std::abs(rt - right.max_t) < param_threshold ||
+        if (std::abs(lt - left.min_t) < param_threshold * 10 ||
+            std::abs(lt - left.max_t) < param_threshold * 10 ||
+            std::abs(rt - right.min_t) < param_threshold * 10 ||
+            std::abs(rt - right.max_t) < param_threshold * 10 ||
             // Make the following checks only if it's the same curve?
-            (std::abs(lt - right.min_t) < param_threshold) ||
-            (std::abs(lt - right.max_t) < param_threshold)) {
+            (std::abs(lt - right.min_t) < param_threshold * 10) ||
+            (std::abs(lt - right.max_t) < param_threshold * 10)) {
           add_res = false;
           break;
         }
@@ -124,4 +124,13 @@ double Bezier::t_for_x(double x) const {
     return root;
   }
   return -1.0;
+}
+
+Eigen::VectorXd MultiBezier::at(double t) const {
+  int seg_idx = 1;
+  for (; seg_idx < ts.size() && t > ts[seg_idx]; seg_idx++)
+    ;
+  double seg_t = (t - ts[seg_idx - 1]) /
+                 (ts[seg_idx] - ts[seg_idx - 1]);
+  return beziers[seg_idx - 1].at(seg_t);
 }

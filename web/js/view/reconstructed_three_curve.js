@@ -57,7 +57,9 @@ export class ReconstructedCurve {
   calc_control_points() {
     let intersections = sync_module.bezier_intersections_with_symmetry(
       this.points, this.points, this.rotation_symmetry, this.ref_symmetry_point);
-    intersections = intersections.map(x => x[0]);
+    intersections = intersections
+      .filter(x => Math.abs(x[0] - x[1]) < 1e-2)
+      .map(x => x[0]);
     intersections.sort();
     let height_pts = this.recon_bezy_curve.height_points.map(pt => new THREE.Vector3(pt.x, 0, pt.y));
     let ts = sync_module.find_t_for_x(height_pts, intersections);
@@ -155,7 +157,7 @@ export class ReconstructedCurve {
     }
     this.three_curves.length = 0;
 
-    let curve_points = this.points.length * 16;
+    let curve_points = this.points.length * 32;
     let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.003, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,

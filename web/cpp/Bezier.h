@@ -22,6 +22,13 @@ struct Bezier {
   double t_for_x(double x) const;
 };
 
+struct MultiBezier {
+  std::vector<Bezier> beziers;
+  std::vector<double> ts;
+
+  Eigen::VectorXd at(double t) const;
+};
+
 std::vector<std::pair<double, double>>
 find_intersections(const Bezier &a, const Bezier &b,
                    double param_threshold = 1e-3);

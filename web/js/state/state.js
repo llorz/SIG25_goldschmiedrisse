@@ -7,7 +7,7 @@ import { camera2d, enable_controls } from "../view/visual";
 export let params = {
   view: "Ortho",
   ortho_view: "Top view",
-  rotation_symmetry: 6,
+  rotation_symmetry: 4,
   reflection_symmetry: true,
   control_points_visible: true,
   reconstructed_surfaces_visible: true,
@@ -56,7 +56,7 @@ export function reconstruct_curves() {
   recon_surfaces.length = 0;
 
   for (let curve of curves) {
-    if (curve.control_points.length > 4) continue;
+    // if (curve.control_points.length > 4) continue;
     recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point,
       curve.point_labels));
     recon_curves[recon_curves.length - 1].calc_control_points();
