@@ -1,8 +1,8 @@
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
-import { camera2d, get_active_camera, scene } from '../view/visual.js';
+import { camera2d, get_active_camera, scene, selectedOutlinePass } from '../view/visual.js';
 import { outlinePass } from '../view/visual.js';
-import { mode, Mode } from '../state/state.js';
+import { mode, Mode, reconstruct_surfaces } from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
@@ -25,6 +25,7 @@ const ray_cast = new THREE.Raycaster();
 
 let point_down_location = new THREE.Vector2();
 let selected_obj = null;
+let deselect_obj = false;
 let is_mouse_down = false;
 const canvas = document.getElementById("canvas");
 
@@ -40,20 +41,34 @@ function find_intersections(pointer_location) {
   return ray_cast.intersectObjects(scene.children);
 }
 
+function find_selected(pointer_location, print_stuff) {
+  let intersections = find_intersections(point_down_location);
+  // Check for selection.
+  for (let intersection of intersections) {
+    if (!is_selectable(intersection.object)) {
+      continue;
+    }
+    return intersection.object;
+  }
+  return null;
+}
+
 canvas.onpointerdown = (e) => {
   point_down_location = get_pointer_location(e);
   is_mouse_down = true;
-  let intersections = find_intersections(point_down_location);
+  deselect_obj = false;
   // Check for selection.
   if (edit_mode == EditMode.none) {
-    selected_obj = null;
-    for (let intersection of intersections) {
-      if (!is_selectable(intersection.object)) {
-        continue;
+    selected_obj = find_selected(point_down_location, false);
+    if (selected_obj) {
+      outlinePass.selectedObjects = [];
+      selectedOutlinePass.selectedObjects = [selected_obj];
+    } else {
+      if (selectedOutlinePass.selectedObjects.length > 0) {
+        deselect_obj = true;
       }
-      selected_obj = intersection.object;
-      outlinePass.selectedObjects = [selected_obj];
-      break;
+      outlinePass.selectedObjects = [];
+      selectedOutlinePass.selectedObjects = [];
     }
   }
   // Object was selected, nothing to do.
@@ -72,16 +87,21 @@ canvas.onpointerdown = (e) => {
 canvas.onpointerup = (e) => {
   let loc = get_pointer_location(e);
   is_mouse_down = false;
+  let current_select = find_selected(loc, true);
   enable_controls();
   // Stop moving control points.
   if (edit_mode == EditMode.move_control_point
     || edit_mode == EditMode.move_height_control_point
     || edit_mode == EditMode.move_tangent_control_point) {
     set_edit_mode(EditMode.none);
-    selected_obj = null;
-  } else if (
-    loc.distanceTo(point_down_location) < 0.02
-    && mode == Mode.orthographic) {
+    if (current_select != selected_obj) {
+      selected_obj = null;
+      selectedOutlinePass.selectedObjects = [];
+    }
+  } else if (!deselect_obj
+    && loc.distanceTo(point_down_location) < 0.02
+    && mode == Mode.orthographic
+    && Math.abs(ray_cast.ray.direction.x) < 1e-4 && Math.abs(ray_cast.ray.direction.z) < 1e-4) {
     let flat_point = new THREE.Vector3();
     ray_cast.ray.intersectPlane(plane_y0, flat_point);
     if (edit_mode == EditMode.none) {
@@ -135,6 +155,7 @@ canvas.onpointermove = (e) => {
     plane.setFromNormalAndCoplanarPoint(ray_cast.ray.direction, selected_obj.position);
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_control_point(selected_obj, flat_point);
+    reconstruct_surfaces();
   } else if (edit_mode == EditMode.move_tangent_control_point
     // && mode == Mode.perspective
     && selected_obj && selected_obj.type == "tangent_control_point") {
@@ -144,6 +165,7 @@ canvas.onpointermove = (e) => {
     plane.setFromNormalAndCoplanarPoint(n, selected_obj.position);
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_tangent_control_point(selected_obj, flat_point);
+    reconstruct_surfaces();
   }
 
 

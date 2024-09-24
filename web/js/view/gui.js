@@ -198,8 +198,11 @@ left_menu.addButton({
   let saved_curves_names = localStorage.getItem("saved_curves_names");
   if (!saved_curves_names)
     saved_curves_names = params.save_curve_name;
-  else
-    saved_curves_names += "," + params.save_curve_name;
+  else {
+    if (saved_curves_names.split(",").indexOf(params.save_curve_name) < 0) {
+      saved_curves_names += "," + params.save_curve_name;
+    }
+  }
   localStorage.setItem("saved_curves_names", saved_curves_names);
   let text = save_curves(curves);
   localStorage.setItem(params.save_curve_name, text);

@@ -72,6 +72,15 @@ outlinePass.visibleEdgeColor = new THREE.Color(0xffb15d);
 outlinePass.hiddenEdgeColor = new THREE.Color(0xffb15d);
 outlinePass.overlayMaterial.blending = THREE.CustomBlending;
 composer.addPass(outlinePass);
+// Another one for selected object.
+export const selectedOutlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera2d);
+selectedOutlinePass.edgeThickness = 3.0;
+selectedOutlinePass.edgeStrength = 5.0;
+selectedOutlinePass.edgeGlow = 0.0;
+selectedOutlinePass.visibleEdgeColor = new THREE.Color(0xffa71b);
+selectedOutlinePass.hiddenEdgeColor = new THREE.Color(0xffa71b);
+selectedOutlinePass.overlayMaterial.blending = THREE.CustomBlending;
+composer.addPass(selectedOutlinePass);
 // Output pass.
 const outputPass = new OutputPass();
 composer.addPass(outputPass);
@@ -117,6 +126,7 @@ function animate() {
     top_view_controls.update();
     renderPass.camera = camera2d;
     outlinePass.renderCamera = camera2d;
+    selectedOutlinePass.renderCamera = camera2d;
     // renderer.render(scene, camera2d);
   } else {
     top_view_controls.enabled = false;
@@ -124,6 +134,7 @@ function animate() {
     controls.update();
     renderPass.camera = camera3d;
     outlinePass.renderCamera = camera3d;
+    selectedOutlinePass.renderCamera = camera3d;
     // renderer.render(scene, camera3d);
   }
   composer.render();
