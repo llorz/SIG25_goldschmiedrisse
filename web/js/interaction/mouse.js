@@ -114,8 +114,8 @@ canvas.onpointerup = (e) => {
 
 canvas.onpointermove = (e) => {
   let pointer_location = get_pointer_location(e);
-  let intersections = find_intersections(pointer_location);
   if (!is_mouse_down) {
+    let intersections = find_intersections(pointer_location);
     // Highlight the hovered object.
     outlinePass.selectedObjects = [];
     for (let intersection of intersections) {
@@ -127,6 +127,7 @@ canvas.onpointermove = (e) => {
   }
 
   let flat_point = new THREE.Vector3();
+  ray_cast.setFromCamera(pointer_location, get_active_camera());
   ray_cast.ray.intersectPlane(plane_y0, flat_point);
 
   if (edit_mode == EditMode.new_curve) {

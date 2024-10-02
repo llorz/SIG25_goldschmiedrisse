@@ -8,7 +8,7 @@ import { sync_module } from '../native/native';
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
 const sphere_geom = new THREE.SphereGeometry(0.01, 32, 32);
 let control_point_material = new THREE.MeshBasicMaterial({ color: 0x0 });
-let main_curve_material = new THREE.MeshLambertMaterial({ color: 0x000000, side: THREE.DoubleSide });
+let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 let symmetry_curve_material = new THREE.MeshLambertMaterial({
   color: 0x000000, side: THREE.DoubleSide,
   opacity: 0.6, transparent: true
@@ -158,7 +158,7 @@ export class ReconstructedCurve {
     this.three_curves.length = 0;
 
     let curve_points = this.points.length * 32;
-    let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.003, 8, false);
+    let tube_geom = new THREE.TubeGeometry(this.recon_bezy_curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? main_curve_material : symmetry_curve_material);

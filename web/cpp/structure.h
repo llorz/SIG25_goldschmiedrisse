@@ -1,7 +1,7 @@
 #pragma once
 
-#include <emscripten/bind.h>
 #include "Bezier.h"
+#include <emscripten/bind.h>
 
 struct Face {
   struct Vertex {
@@ -16,4 +16,50 @@ struct GraphFaces {
   Bezier bezier;
 };
 
-GraphFaces build_graph(emscripten::val bezier, int symmetry, emscripten::val ref_symmetry);
+GraphFaces build_graph(emscripten::val bezier, int symmetry,
+                       emscripten::val ref_symmetry);
+
+/**
+ * @brief Represents an intersection of 'this_curve_index' with
+ * 'other_curve_index' at ('t', 'other_t').
+ */
+struct RealIntersection {
+  double t;
+  int this_curve_index;
+  // Jump to 'other_curve_index' at 'other_t'.
+  double other_t;
+  int other_curve_index;
+  // Continue going up or down (from 'other_t').
+  bool direction;
+  // The rotation symmetry of the other curve.
+  int other_rot_sym;
+  // The reflection symmetry of the other curve.
+  bool other_ref_sym;
+
+  bool operator<(const RealIntersection &o) const { return t < o.t; }
+};
+
+struct IntersectionsGraph {
+  std::vector<std::vector<RealIntersection>> intersections;
+};
+
+IntersectionsGraph
+get_real_intersections(const std::vector<MultiBezier> &beziers);
+
+struct MultiFace {
+  struct Vertex {
+    RealIntersection intersection;
+    int rotation;
+    bool reflection;
+  };
+  std::vector<Vertex> vertices;
+};
+
+struct MultiGraphFaces {
+  std::vector<MultiFace> faces;
+  std::vector<MultiBezier> bezier;
+};
+
+MultiGraphFaces build_multi_graph(const std::vector<MultiBezier> &beziers, int rot_sym);
+
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXd> build_face(const MultiGraphFaces& graph, int i);

@@ -10,7 +10,7 @@ const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
-let main_curve_material = new THREE.MeshLambertMaterial({ color: 0x000000, side: THREE.DoubleSide });
+let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 let symmetry_curve_material = new THREE.MeshLambertMaterial({
   color: 0x000000, side: THREE.DoubleSide,
   opacity: 0.2, transparent: true
@@ -223,9 +223,8 @@ export class Curve {
       scene.remove(inter);
     }
     this.three_intersections.length = 0;
-    let start_time = performance.now();
-    let intersections = sync_module.bezier_intersections_with_symmetry(this.bezy_curve.points.slice(0, 4), this.bezy_curve.points.slice(0, 4), this.rotation_symmetry, this.ref_symmetry_point);
-    let end_time = performance.now();
+    let intersections = sync_module.bezier_intersections_with_symmetry(
+      this.bezy_curve.points, this.bezy_curve.points, this.rotation_symmetry, this.ref_symmetry_point);
     for (let inter of intersections) {
       let sphere = new THREE.Mesh(intersection_sphere_geometry, intersection_material);
       sphere.type = "ns_point";

@@ -1,5 +1,6 @@
 import { Curve } from "../geom/curve";
 import { load_curves } from "../io/load_curves";
+import { sync_module } from "../native/native";
 import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
 import { camera2d, enable_controls } from "../view/visual";
@@ -70,11 +71,14 @@ export function reconstruct_surfaces() {
     surface.destroy();
   }
   recon_surfaces.length = 0;
-  for (let curve of recon_curves) {
-    recon_surfaces.push(new ReconstructedSurface(curve));
-    recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
-    recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
-  }
+  recon_surfaces.push(new ReconstructedSurface(recon_curves));
+  recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
+  recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
+  // for (let curve of recon_curves) {
+  //   recon_surfaces.push(new ReconstructedSurface(curve));
+  //   recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
+  //   recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
+  // }
 }
 
 export function finish_curve() {

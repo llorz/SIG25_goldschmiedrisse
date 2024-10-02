@@ -14,14 +14,14 @@ export const surface_material = new THREE.MeshStandardMaterial({
 
 export class ReconstructedSurface {
 
-  constructor(recon_curve) {
-    this.recon_curve = recon_curve;
+  constructor(recon_curves) {
+    this.recon_curves = recon_curves;
     this.three_surfaces = [];
+    this.rotation_symmetry = recon_curves[0].rotation_symmetry;
   }
 
   calculate_and_show() {
-    let res = sync_module.build_faces(
-      this.recon_curve.recon_bezy_curve, this.recon_curve.rotation_symmetry, this.recon_curve.ref_symmetry_point);
+    let res = sync_module.build_faces_v2(this.recon_curves);
     for (let face of res) {
       let [verts, faces, normals] = face;
       const geometry = new THREE.BufferGeometry();
@@ -33,9 +33,9 @@ export class ReconstructedSurface {
       recon_surface.type = "reconstructed_surface";
       this.three_surfaces.push(recon_surface);
       scene.add(recon_surface);
-      for (let i = 1; i < this.recon_curve.rotation_symmetry; i++) {
+      for (let i = 1; i < this.rotation_symmetry; i++) {
         let mat = new THREE.Matrix4();
-        mat.makeRotationY(2 * Math.PI / this.recon_curve.rotation_symmetry * i);
+        mat.makeRotationY(2 * Math.PI / this.rotation_symmetry * i);
         let surf = recon_surface.clone();
         surf.applyMatrix4(mat);
         surf.type = "reconstructed_surface";

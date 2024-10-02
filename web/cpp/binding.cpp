@@ -11,15 +11,6 @@
 
 using namespace emscripten;
 
-template <typename T> std::vector<T> to_array(emscripten::val js_array) {
-  std::vector<T> res;
-  int len = js_array["length"].as<unsigned>();
-  for (int i = 0; i < len; i++) {
-    res.push_back(js_array[i].as<T>());
-  }
-  return res;
-} 
-
 double find_t_in_height_bezier(double x, const std::vector<Bezier> &beziers,
                                const std::vector<double> &accum_len) {
   for (int i = 0; i < beziers.size(); i++) {
@@ -32,7 +23,7 @@ double find_t_in_height_bezier(double x, const std::vector<Bezier> &beziers,
   return -1;
 }
 
-Eigen::Vector3d get_point(double t, const MultiBezier &mb,
+Eigen::Vector3d get_point(double t, const SplitBezier &mb,
                           const Bezier &flat_bezier) {
   Eigen::Vector2d pt = mb.at(t);
   Eigen::Vector2d flat_pt = flat_bezier.at(pt.x());
@@ -59,7 +50,7 @@ get_face_points(const Face &face, const std::vector<Bezier> &height_beziers,
         ref_sym == 1 ? (ref_mat.transpose() * rot_mat).eval() : rot_mat;
     mat.transposeInPlace();
 
-    MultiBezier mb(height_beziers, accum_len);
+    SplitBezier mb(height_beziers, accum_len);
     for (int j = 0; j < 10; j++) {
       double t = t1 + (t2 - t1) * j / 10.0;
       auto pt = get_point(t, mb, flat_bezier);
@@ -101,11 +92,31 @@ val test_stuff(emscripten::val curve, int symmetry, val ref_symmetry) {
   return all_faces;
 }
 
+val test_stuff_v2(emscripten::val curve) {
+  auto bezi_vec = js_to_multibeziers(curve);
+  emscripten::val all_faces = val::global("Array").new_();
+  if (bezi_vec.empty()) {
+    return all_faces;
+  }
+  auto graph = build_multi_graph(bezi_vec, bezi_vec[0].rotation_symmetry);
+
+  
+  for (int i = 0; i< graph.faces.size(); i++) {
+    auto [V, F, N] = build_face(graph, i);
+    emscripten::val res = val::global("Array").new_();
+    res.call<void>("push", eig_to_js_array(V));
+    res.call<void>("push", eig_to_js_array(F));
+    res.call<void>("push", eig_to_js_array(N));
+    all_faces.call<void>("push", res);
+  }
+  return all_faces;
+}
+
 emscripten::val closest_point(emscripten::val bezier, emscripten::val point,
                               int symmetry, val ref_symmetry) {
   Bezier bezi = js_to_bezier(bezier);
   Eigen::Vector2d p = js_to_point(point);
-  double closest_point_t = bezi.closest_point_t(p);
+  double closest_point_t = bezi.closest_point_t(p).first;
   // Extract reflection point.
   Eigen::Vector2d ref_point(0, 0);
   std::string ref_type = ref_symmetry.typeOf().as<std::string>();
@@ -119,7 +130,7 @@ emscripten::val closest_point(emscripten::val bezier, emscripten::val point,
   auto find_and_update_closest_point = [&](const Bezier &curve,
                                            const Eigen::Matrix2d &mat,
                                            bool moving_last_point) {
-    double t = curve.closest_point_t(p);
+    double t = curve.closest_point_t(p).first;
     Eigen::Vector2d cp = curve.at(t);
     if (std::abs(closest_point_t - t) < 1e-2) {
       Eigen::Vector2d kernel =
@@ -169,5 +180,6 @@ EMSCRIPTEN_BINDINGS(utils) {
            &intersect_beziers_with_symmetry),
       function("closest_point", &closest_point),
       function("find_t_for_x", &find_t_for_x),
-      function("build_faces", &test_stuff);
+      function("build_faces", &test_stuff),
+      function("build_faces_v2", &test_stuff_v2);
 }
