@@ -5,6 +5,7 @@
 #include "mc_flow.h"
 #include "triangulation.h"
 #include <igl/per_vertex_normals.h>
+#include <set>
 
 struct SymIntersection {
   double t;
@@ -164,7 +165,7 @@ void add_intersections(const MultiBezier &a, const MultiBezier &b, int inda,
       // Fill the intersection.
       graph.intersections[inda].emplace_back(hta, inda, htb, indb,
                                              get_direction(a, b, hta, htb, mat),
-                                             rot_sym, ref_sym);
+                                             rot_sym, ref_sym, false);
       if (inda != indb) {
         // TODO: Add the other curve.
       }
@@ -189,7 +190,7 @@ get_real_intersections(const std::vector<MultiBezier> &beziers) {
   IntersectionsGraph graph;
   graph.intersections.resize(beziers.size());
   for (int i = 0; i < beziers.size(); i++)
-    for (int j = i; j < beziers.size(); j++)
+    for (int j = 0; j < beziers.size(); j++)
       add_intersections(beziers[i], beziers[j], i, j, graph);
   for (int i = 0; i < graph.intersections.size(); i++) {
     std::sort(graph.intersections[i].begin(), graph.intersections[i].end(),
@@ -242,7 +243,8 @@ int get_intersection_index(const std::vector<RealIntersection> &intersections,
 }
 
 void trace_face(const IntersectionsGraph &graph, int curve, int start_index,
-                int rot_sym, MultiGraphFaces &faces) {
+                int rot_sym, MultiGraphFaces &faces,
+                std::set<MultiFace::Edge> &used_edges) {
   MultiFace face;
   face.vertices.emplace_back(graph.intersections[curve][start_index], 0, false);
   int cur_curve = curve, cur_index = start_index, rotation = 0, dir = 1;
@@ -252,6 +254,11 @@ void trace_face(const IntersectionsGraph &graph, int curve, int start_index,
   std::cout << "(curve: " << cur_curve << ", index: " << cur_index
             << ", rotation: " << rotation << ", dir: " << dir
             << ", reflection: " << reflection << ")" << std::endl;
+
+  if (!used_edges.insert(MultiFace::Edge(cur_curve, cur_index, dir)).second) {
+    std::cout << "Edge already used." << std::endl;
+    return;
+  }
 
   int iter = 0;
   while (cur_index >= 0 && cur_index < graph.intersections[curve].size() &&
@@ -273,10 +280,16 @@ void trace_face(const IntersectionsGraph &graph, int curve, int start_index,
     std::cout << "(curve: " << cur_curve << ", index: " << cur_index
               << ", rotation: " << rotation << ", dir: " << dir
               << ", reflection: " << reflection << ")" << std::endl;
+
     face.vertices.emplace_back(graph.intersections[cur_curve][cur_index],
                                rotation, reflection);
     if (cur_curve == curve && cur_index == start_index && rotation == 0) {
       faces.faces.emplace_back(face);
+      return;
+    }
+    
+    if (!used_edges.insert(MultiFace::Edge(cur_curve, cur_index, dir)).second) {
+      std::cout << "Edge already used." << std::endl;
       return;
     }
   }
@@ -286,9 +299,10 @@ MultiGraphFaces build_multi_graph(const std::vector<MultiBezier> &beziers,
                                   int rot_sym) {
   IntersectionsGraph inter_graph = get_real_intersections(beziers);
   MultiGraphFaces graph;
+  std::set<MultiFace::Edge> used_edges;
   for (int curve = 0; curve < inter_graph.intersections.size(); curve++) {
     for (int i = 0; i < inter_graph.intersections[curve].size() - 1; i++) {
-      trace_face(inter_graph, curve, i, rot_sym, graph);
+      trace_face(inter_graph, curve, i, rot_sym, graph, used_edges);
     }
   }
   graph.bezier = beziers;
@@ -311,7 +325,7 @@ Eigen::MatrixXd get_face_points(const MultiGraphFaces &graph, int i) {
             .toRotationMatrix();
     Eigen::Matrix2d ref_mat = vi.reflection ? get_ref_mat(bezier.ref_point)
                                             : Eigen::Matrix2d::Identity();
-                                            
+
     Eigen::Matrix2d mat = rot_mat.transpose() * ref_mat;
     for (int j = 0; j < 10; j++) {
       double t = t1 + (t2 - t1) * j / 10.0;

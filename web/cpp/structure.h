@@ -35,6 +35,7 @@ struct RealIntersection {
   int other_rot_sym;
   // The reflection symmetry of the other curve.
   bool other_ref_sym;
+  bool this_ref_sym;
 
   bool operator<(const RealIntersection &o) const { return t < o.t; }
 };
@@ -52,6 +53,15 @@ struct MultiFace {
     int rotation;
     bool reflection;
   };
+  struct Edge {
+    int curve;
+    int index;
+    int dir;
+    bool operator<(const Edge &o) const {
+      return curve < o.curve || (curve == o.curve && index < o.index) ||
+             (curve == o.curve && index == o.index && dir < o.dir);
+    }
+  };
   std::vector<Vertex> vertices;
 };
 
@@ -60,6 +70,8 @@ struct MultiGraphFaces {
   std::vector<MultiBezier> bezier;
 };
 
-MultiGraphFaces build_multi_graph(const std::vector<MultiBezier> &beziers, int rot_sym);
+MultiGraphFaces build_multi_graph(const std::vector<MultiBezier> &beziers,
+                                  int rot_sym);
 
-std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXd> build_face(const MultiGraphFaces& graph, int i);
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXd>
+build_face(const MultiGraphFaces &graph, int i);

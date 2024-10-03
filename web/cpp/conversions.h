@@ -117,7 +117,17 @@ js_to_multibeziers(emscripten::val recon_curves) {
   int len = recon_curves["length"].as<unsigned>();
   std::vector<MultiBezier> res;
   for (int i = 0; i < len; i++) {
-    res.push_back(js_to_multibezier(recon_curves[i]));
+    auto bezi = js_to_multibezier(recon_curves[i]);
+    auto ref_point = bezi.ref_point;
+    bezi.ref_point.setZero();
+    res.push_back(bezi);
+    if (ref_point.norm() > 0) {
+      auto ref_mat = get_ref_mat(ref_point);
+      for (auto& bez : bezi.plane_bezier.beziers) {
+        bez.points = (bez.points * ref_mat.transpose()).eval();
+      }
+      res.push_back(bezi);
+    }
   }
   return res;
 }

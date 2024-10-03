@@ -133,7 +133,7 @@ export let left_menu = new Pane({
 });
 left_menu.registerPlugin(EssentialsPlugin);
 
-const curves_in_file = ["tn-1", "tn-2", "tn-3", "tn-4", "tn-7", "tn-12"];
+const curves_in_file = ["tn-1", "tn-2", "tn-3", "tn-4", "tn-7", "tn-12", "two_curves"];
 function get_saved_curves_names() {
   let saved_curves_names = localStorage.getItem("saved_curves_names");
   if (!saved_curves_names) {

@@ -59,6 +59,7 @@ export class ReconstructedCurve {
       this.points, this.points, this.rotation_symmetry, this.ref_symmetry_point);
     intersections = intersections
       .filter(x => Math.abs(x[0] - x[1]) < 1e-2)
+      .filter(x => Math.abs(x[0]) > 1e-2)
       .map(x => x[0]);
     intersections.sort();
     let height_pts = this.recon_bezy_curve.height_points.map(pt => new THREE.Vector3(pt.x, 0, pt.y));
