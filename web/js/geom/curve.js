@@ -78,6 +78,10 @@ export class Curve {
 
   move_control_point(three_point_mesh, new_loc) {
     let idx = this.three_control_points.indexOf(three_point_mesh);
+    if (idx == 0) {
+      // Also change reflection point.
+      this.ref_symmetry_point.copy(new_loc);
+    }
     this.set_control_point_pos(idx, new_loc);
     this.update_curve();
   }
