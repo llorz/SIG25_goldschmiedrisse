@@ -4,3 +4,7 @@
 
 emscripten::val intersect_beziers_with_symmetry(emscripten::val a, emscripten::val b,
                                     int symmetry, emscripten::val ref_symmetry);
+
+
+emscripten::val intersect_lines_with_symmetry(emscripten::val a, emscripten::val b,
+                                    int symmetry, emscripten::val ref_symmetry);

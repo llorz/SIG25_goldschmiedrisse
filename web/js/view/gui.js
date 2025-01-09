@@ -1,8 +1,8 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, top_view_controls } from "./visual.js";
-import { curves, load_from_curves_file, recon_curves, reconstruct_surfaces, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
-import { params } from "../state/state.js";
+import { camera2d, scene, top_view_controls, update_rotation_symmetry_lines } from "./visual.js";
+import { add_level, curves, load_from_curves_file, recon_curves, reconstruct_surfaces, set_biarc_visibility, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
 import { save_curves } from "../io/save_curves.js";
@@ -56,6 +56,12 @@ view_options_folder.addBinding(params, 'control_points_visible', {
   label: 'Control points',
 }).on('change', (ev) => {
   set_control_points_visibility(ev.value);
+});
+
+view_options_folder.addBinding(params, 'reconstructed_biarc_visible', {
+  label: 'Biarcs',
+}).on('change', (ev) => {
+  set_biarc_visibility(ev.value);
 });
 
 view_options_folder.addBinding(params, 'reconstructed_surfaces_visible', {
@@ -118,12 +124,27 @@ new_curve_options_folder.addBinding(params, 'rotation_symmetry', {
   step: 1,
   min: 1,
   max: 10,
+}).on('change', (ev) => {
+  update_rotation_symmetry_lines(ev.value);
 });
 
 new_curve_options_folder.addBinding(params, 'reflection_symmetry', {
   label: 'Reflection Symmetry',
 });
-
+pane.addButton({
+  title: 'add level',
+}).on('click', (ev) => {
+  add_level();
+});
+export let level_controller = pane.addBinding(params, 'current_level', {
+  label: 'Level',
+  step: 1,
+  min: 0,
+  max: 0,
+}).on('change', (ev) => {
+  update_current_level();
+});
+window.lala = level_controller;
 
 
 export let left_menu = new Pane({

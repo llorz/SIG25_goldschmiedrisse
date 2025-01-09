@@ -2,13 +2,14 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { camera2d, get_active_camera, scene, selectedOutlinePass } from '../view/visual.js';
 import { outlinePass } from '../view/visual.js';
-import { mode, Mode, reconstruct_surfaces } from '../state/state.js';
+import { finish_curve, get_level_bottom, mode, Mode, prc_t, reconstruct_biarcs, reconstruct_surfaces } from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
 
 import * as THREE from 'three';
-import { Curve } from '../geom/curve.js';
+import { Curve } from '../view/curve.js';
+import { closest_rotation_line } from '../utils/snapping.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
 let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
@@ -24,7 +25,11 @@ function is_selectable(obj) {
 const ray_cast = new THREE.Raycaster();
 
 let point_down_location = new THREE.Vector2();
-let selected_obj = null;
+export let selected_obj = null;
+export function clear_selected_obj() {
+  selected_obj = null;
+  selectedOutlinePass.selectedObjects = [];
+}
 let deselect_obj = false;
 let is_mouse_down = false;
 const canvas = document.getElementById("canvas");
@@ -80,6 +85,10 @@ canvas.onpointerdown = (e) => {
       set_edit_mode(EditMode.move_height_control_point);
     } else if (selected_obj.type == "tangent_control_point") {
       set_edit_mode(EditMode.move_tangent_control_point);
+    } else if (selected_obj.type == "intersection_point") {
+      prc_t[selected_obj.userData.i1] = selected_obj.userData.t1;
+      prc_t[selected_obj.userData.i2] = selected_obj.userData.t2;
+      reconstruct_biarcs();
     }
     return;
   }
@@ -98,16 +107,25 @@ canvas.onpointerup = (e) => {
       selected_obj = null;
       selectedOutlinePass.selectedObjects = [];
     }
+  } else if (selected_obj && selected_obj.type == "unit_curve") {
+
   } else if (!deselect_obj
     && loc.distanceTo(point_down_location) < 0.02
     && mode == Mode.orthographic
     && Math.abs(ray_cast.ray.direction.x) < 1e-4 && Math.abs(ray_cast.ray.direction.z) < 1e-4) {
     let flat_point = new THREE.Vector3();
-    ray_cast.ray.intersectPlane(plane_y0, flat_point);
+    let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+    ray_cast.ray.intersectPlane(intersection_plane, flat_point);
+    flat_point.y = 0;
+    let closest = closest_rotation_line(flat_point);
+    if (flat_point.distanceTo(closest) < 0.02) {
+      flat_point = closest;
+    }
     if (edit_mode == EditMode.none) {
       add_curve(flat_point);
     } else if (edit_mode == EditMode.new_curve) {
       pending_curve.add_new_segment(flat_point);
+      finish_curve();
     }
   }
 };
@@ -128,25 +146,37 @@ canvas.onpointermove = (e) => {
 
   let flat_point = new THREE.Vector3();
   ray_cast.setFromCamera(pointer_location, get_active_camera());
-  ray_cast.ray.intersectPlane(plane_y0, flat_point);
+  let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+  ray_cast.ray.intersectPlane(intersection_plane, flat_point);
+  flat_point.y = 0;
 
   if (edit_mode == EditMode.new_curve) {
     // Add new point in a curve.
-    let p = pending_curve.closest_point(flat_point);
-    if (p.distanceTo(flat_point) < 0.02) {
-      flat_point = p;
+    let closest = closest_rotation_line(flat_point);
+    if (flat_point.distanceTo(closest) < 0.02) {
+      flat_point = closest;
     }
+    // let p = pending_curve.closest_point(flat_point);
+    // if (p.distanceTo(flat_point) < 0.02) {
+    //   flat_point = p;
+    // }
     pending_curve.move_last_point(flat_point);
   } else if (edit_mode == EditMode.move_control_point
     && selected_obj && selected_obj.type == "control_point") {
     // Move a control point.
     if (mode == Mode.perspective) {
-      ray_cast.ray.intersectPlane(plane_y0, flat_point);
+      let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+      ray_cast.ray.intersectPlane(intersection_plane, flat_point);
+      flat_point.y = 0;
     }
-    let p = selected_obj.userData.closest_point(flat_point);
-    if (p.distanceTo(flat_point) < 0.02) {
-      flat_point = p;
+    let closest = closest_rotation_line(flat_point);
+    if (flat_point.distanceTo(closest) < 0.02) {
+      flat_point = closest;
     }
+    // let p = selected_obj.userData.closest_point(flat_point);
+    // if (p.distanceTo(flat_point) < 0.02) {
+    //   flat_point = p;
+    // }
     selected_obj.userData.move_control_point(selected_obj, flat_point);
   } else if (edit_mode == EditMode.move_height_control_point
     // && mode == Mode.perspective
@@ -156,7 +186,7 @@ canvas.onpointermove = (e) => {
     plane.setFromNormalAndCoplanarPoint(ray_cast.ray.direction, selected_obj.position);
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_control_point(selected_obj, flat_point);
-    reconstruct_surfaces();
+    // reconstruct_surfaces();
   } else if (edit_mode == EditMode.move_tangent_control_point
     // && mode == Mode.perspective
     && selected_obj && selected_obj.type == "tangent_control_point") {

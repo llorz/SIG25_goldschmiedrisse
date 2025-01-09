@@ -1,5 +1,5 @@
 
-import { Curve } from "../geom/curve";
+import { Curve } from "../view/curve";
 import * as THREE from "three";
 
 

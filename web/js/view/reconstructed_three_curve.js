@@ -60,8 +60,12 @@ export class ReconstructedCurve {
     intersections = intersections
       .filter(x => Math.abs(x[0] - x[1]) < 1e-2)
       .filter(x => Math.abs(x[0]) > 1e-2)
+      .filter(x => Math.abs(x[0] - 1) > 1e-2)
       .map(x => x[0]);
     intersections.sort();
+    if (intersections.length > 0) {
+      intersections = [intersections[0]];
+    }
     let height_pts = this.recon_bezy_curve.height_points.map(pt => new THREE.Vector3(pt.x, 0, pt.y));
     let ts = sync_module.find_t_for_x(height_pts, intersections);
     this.recon_bezy_curve.height_points = this.recon_bezy_curve.split(ts,
