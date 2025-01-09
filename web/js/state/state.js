@@ -14,14 +14,39 @@ import { level_controller } from "../view/gui";
 
 /** @type {Curve[]} */
 export let curves = [];
+// The height of each curve.
 export let recon_curves = [];
 export let recon_surfaces = [];
+
+export function max_level() {
+  let max = 0;
+  for (let curve of curves) {
+    max = Math.max(max, curve.level);
+  }
+  return max;
+}
+
+export function get_level_height(level) {
+  if (level < 0) {
+    return 0;
+  }
+  let height = 0;
+  for (let i = 0; i < curves.length; i++) {
+    if (curves[i].level == level) {
+      height = Math.max(height, curves[i].height);
+    }
+  }
+  if (height == 0)
+    return get_level_height(level - 1) + 1;
+  return height;
+}
+
 export let levels_height = [1];
 export function set_level_height(level, height) {
   levels_height[level] = height;
 }
 export function get_level_bottom(level = params.current_level) {
-  return params.current_level == 0 ? 0 : levels_height[level - 1];
+  return get_level_height(level - 1);
 }
 
 export let EditMode = {
@@ -61,14 +86,9 @@ export class Intersection {
 };
 /** @type {Intersection[]} */
 export let intersections = [];
-export let prc_t = [];
 
 export function find_intersections() {
   intersections.length = 0;
-  // Add missing prc_t.
-  for (let i = prc_t.length; i < curves.length; i++) {
-    prc_t.push(0.5);
-  }
 
   let closest_t = [...new Array(curves.length)].map(() => -2);
   for (let i = 0; i < curves.length; i++) {
@@ -76,7 +96,7 @@ export function find_intersections() {
     let self_inters = analytic_self_intersection(curves[i]);
     for (let t of self_inters) {
       intersections.push(new Intersection(curves[i], curves[i], t, t, i, i, curves[i].level));
-      if (Math.abs(t - prc_t[i]) < Math.abs(closest_t[i] - prc_t[i])) {
+      if (Math.abs(t - curves[i].prc_t) < Math.abs(closest_t[i] - curves[i].prc_t)) {
         closest_t[i] = t;
       }
     }
@@ -87,10 +107,10 @@ export function find_intersections() {
       let res = analytic_curves_intersection(curves[i], curves[j]);
       for (let [t1, t2] of res) {
         intersections.push(new Intersection(curves[i], curves[j], t1, t2, i, j, curves[i].level));
-        if (Math.abs(t1 - prc_t[i]) < Math.abs(closest_t[i] - prc_t[i])) {
+        if (Math.abs(t1 - curves[i].prc_t) < Math.abs(closest_t[i] - curves[i].prc_t)) {
           closest_t[i] = t1;
         }
-        if (Math.abs(t2 - prc_t[j]) < Math.abs(closest_t[j] - prc_t[j])) {
+        if (Math.abs(t2 - curves[j].prc_t) < Math.abs(closest_t[j] - curves[j].prc_t)) {
           closest_t[j] = t2;
         }
       }
@@ -100,9 +120,9 @@ export function find_intersections() {
   // Update prc_t.
   for (let i = 0; i < curves.length; i++) {
     if (closest_t[i] >= 0) {
-      prc_t[i] = closest_t[i];
+      curves[i].prc_t = closest_t[i];
     } else {
-      prc_t[i] = 0.5;
+      curves[i].prc_t = 0.5;
     }
   }
 }
@@ -127,7 +147,7 @@ export function delete_selected_curve() {
 }
 
 export function add_level() {
-  let top_level = levels_height.length - 1;
+  // let top_level = levels_height.length - 1;
   // for (let curve of curves) {
   //   if (curve.level == top_level) {
   //     let new_curve = new Curve(curve.rotation_symmetry, curve.control_points[curve.control_points.length - 1], curve.level + 1);
@@ -136,14 +156,15 @@ export function add_level() {
   //     curves.push(new_curve);
   //   }
   // }
-  levels_height.push(levels_height[top_level] + 1);
-  level_controller.controller.valueController.sliderController.props.set('max', levels_height.length - 1);
-  level_controller.controller.valueController.value.rawValue = levels_height.length - 1;
+  // levels_height.push(levels_height[top_level] + 1);
+  let new_level = max_level() + 1;
+  level_controller.controller.valueController.sliderController.props.set('max', new_level);
+  level_controller.controller.valueController.value.rawValue = new_level;
   reconstruct_biarcs();
 }
 
 export function update_current_level() {
-  set_designing_area_height(params.current_level == 0 ? 0 : levels_height[params.current_level - 1]);
+  set_designing_area_height(get_level_height(params.current_level - 1));
   for (let curve of curves) {
     if (curve.level != params.current_level) {
       curve.set_visibility(false);
@@ -160,7 +181,7 @@ export function reconstruct_biarcs() {
   }
   recon_curves.length = 0;
   for (let i = 0; i < curves.length; i++) {
-    let recon_biarc = new ReconstructedBiArcCurve(curves[i].arc_curve, curves[i].rotation_symmetry, curves[i].ref_symmetry_point, curves[i].level, prc_t[i]);
+    let recon_biarc = new ReconstructedBiArcCurve(curves[i]);
     let recon_three_curve = new ReconstructedThreeBiArcCurve(recon_biarc);
     recon_three_curve.update_curve();
     recon_curves.push(recon_three_curve);

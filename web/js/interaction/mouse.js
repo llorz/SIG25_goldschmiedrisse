@@ -2,7 +2,7 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { camera2d, get_active_camera, scene, selectedOutlinePass } from '../view/visual.js';
 import { outlinePass } from '../view/visual.js';
-import { finish_curve, get_level_bottom, mode, Mode, prc_t, reconstruct_biarcs, reconstruct_surfaces } from '../state/state.js';
+import { curves, finish_curve, get_level_bottom, mode, Mode, reconstruct_biarcs, reconstruct_surfaces } from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
@@ -86,8 +86,8 @@ canvas.onpointerdown = (e) => {
     } else if (selected_obj.type == "tangent_control_point") {
       set_edit_mode(EditMode.move_tangent_control_point);
     } else if (selected_obj.type == "intersection_point") {
-      prc_t[selected_obj.userData.i1] = selected_obj.userData.t1;
-      prc_t[selected_obj.userData.i2] = selected_obj.userData.t2;
+      curves[selected_obj.userData.i1].prc_t = selected_obj.userData.t1;
+      curves[selected_obj.userData.i2].prc_t = selected_obj.userData.t2;
       reconstruct_biarcs();
     }
     return;

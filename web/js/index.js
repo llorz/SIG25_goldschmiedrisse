@@ -14,6 +14,3 @@ import * as STATE from './state/state.js';
 import * as VIEWER from './view/visual.js';
 window.VIEWER = VIEWER;
 window.STATE = STATE;
-
-window.BiArcCurve = BiArcCurve;
-window.level_height = STATE.levels_height;

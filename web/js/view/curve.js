@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene } from './visual';
 import { BezierSegmentsCurve, bezy } from '../geom/bezier_segments_curve';
 import { sync_module } from '../native/native';
-import { get_level_bottom, reconstruct_biarcs, reconstruct_curves } from '../state/state';
+import { get_level_bottom, get_level_height, reconstruct_biarcs, reconstruct_curves } from '../state/state';
 import { BiArcCurve } from '../geom/biarc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { update_intersections } from './intersections';
@@ -40,6 +40,9 @@ export class Curve {
     /** @type{boolean | THREE.Vector3} */
     this.ref_symmetry_point = ref_symmetry;
     this.level = level;
+
+    this.height = get_level_height(level);
+    this.prc_t = 0.5;
 
     this.arc_curve = null;
   }
@@ -177,6 +180,7 @@ export class Curve {
       curve.geometry.dispose();
       scene.remove(curve);
     }
+    let level_bottom = get_level_bottom(this.level);
     this.three_curves.length = 0;
     this.get_bezy_curve().setPoints(this.control_points);
     let curve_points = this.control_points.length * 32;
@@ -188,7 +192,7 @@ export class Curve {
       tube.userData = this;
 
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
-      tube.translateY(get_level_bottom(this.level));
+      tube.translateY(level_bottom);
       this.three_curves.push(tube);
       scene.add(tube);
     }
@@ -199,7 +203,7 @@ export class Curve {
         tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
-        tube.translateY(get_level_bottom(this.level));
+        tube.translateY(level_bottom);
         this.three_curves.push(tube);
         scene.add(tube);
       }

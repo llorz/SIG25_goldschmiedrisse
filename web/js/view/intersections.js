@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { scene } from './visual';
 import { curves, find_intersections, intersections } from '../state/state';
+import { params } from '../state/params';
 
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
@@ -20,6 +21,7 @@ export function update_intersections() {
     scene.add(sphere);
     intersection_meshes.push(sphere);
   }
+  show_intersections_at_level(params.current_level);
 }
 
 export function clear_intersections() {
