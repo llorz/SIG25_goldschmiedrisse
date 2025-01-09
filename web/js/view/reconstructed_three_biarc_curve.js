@@ -6,7 +6,7 @@ import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { sync_module } from '../native/native';
 import { get_reflection_mat } from '../utils/intersect';
 import { params } from '../state/params';
-import { updated_height } from '../state/state';
+import { get_level_height, updated_height } from '../state/state';
 
 let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();
@@ -124,8 +124,17 @@ export class ReconstructedThreeBiArcCurve {
     }
     this.three_curves.length = 0;
 
+    // Update control points position.
     this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
     this.control_points[1].position.copy(this.curve.getPoint(1));
+
+    let filling_tube = null;
+    let level_height = get_level_height(this.curve.curve.level);
+    if (Math.abs(this.curve.curve.height - level_height) > 1e-3) {
+      let curve_top = this.curve.getPoint(1);
+      let line_curve = new THREE.LineCurve3(curve_top, new THREE.Vector3(curve_top.x, level_height, curve_top.z));
+      filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, 0.005, 8, false), symmetry_curve_material);
+    }
 
     let curve_points = 64;//this.points.length * 32;
     let tube_geom =// this.sweep_plane(); 
@@ -138,6 +147,12 @@ export class ReconstructedThreeBiArcCurve {
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(tube);
       scene.add(tube);
+      if (!!filling_tube) {
+        let filling_tube_clone = filling_tube.clone();
+        filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        this.three_curves.push(filling_tube_clone);
+        scene.add(filling_tube_clone);
+      }
     }
     if (!!this.ref_symmetry_point) {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
@@ -150,6 +165,13 @@ export class ReconstructedThreeBiArcCurve {
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
         this.three_curves.push(tube);
         scene.add(tube);
+        if (!!filling_tube) {
+          let filling_tube_clone = filling_tube.clone();
+          filling_tube_clone.applyMatrix4(ref_mat);
+          filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+          this.three_curves.push(filling_tube_clone);
+          scene.add(filling_tube_clone);
+        }
       }
     }
   }

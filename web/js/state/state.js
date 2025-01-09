@@ -3,7 +3,7 @@ import { load_curves } from "../io/load_curves";
 import { sync_module } from "../native/native";
 import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
-import { camera2d, enable_controls, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
+import { camera2d, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
 import { ReconstructedBiArcCurve } from "../geom/reconstructed_biarc_curve";
 import { ReconstructedThreeBiArcCurve } from "../view/reconstructed_three_biarc_curve";
 import { analytic_curves_intersection, analytic_self_intersection, curves_intersection, self_sym_intersections } from "../utils/intersect";
@@ -16,6 +16,8 @@ import { level_controller } from "../view/gui";
 export let curves = [];
 // The height of each curve.
 export let recon_curves = [];
+// Vertical lines to fill the gap between the curve top and the level top.
+export let filling_curves = [];
 export let recon_surfaces = [];
 
 export function max_level() {
@@ -147,16 +149,6 @@ export function delete_selected_curve() {
 }
 
 export function add_level() {
-  // let top_level = levels_height.length - 1;
-  // for (let curve of curves) {
-  //   if (curve.level == top_level) {
-  //     let new_curve = new Curve(curve.rotation_symmetry, curve.control_points[curve.control_points.length - 1], curve.level + 1);
-  //     new_curve.control_points = [...curve.control_points].reverse();
-  //     new_curve.get_bezy_curve();
-  //     curves.push(new_curve);
-  //   }
-  // }
-  // levels_height.push(levels_height[top_level] + 1);
   let new_level = max_level() + 1;
   level_controller.controller.valueController.sliderController.props.set('max', new_level);
   level_controller.controller.valueController.value.rawValue = new_level;
@@ -197,7 +189,6 @@ export function updated_height(last_top_height, new_top_height, last_mid_height,
       recon_three_curve.curve.set_middle_height(new_mid_height);
       recon_three_curve.update_curve();
     }
-
   }
 }
 
