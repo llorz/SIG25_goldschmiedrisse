@@ -188,6 +188,19 @@ export function reconstruct_biarcs() {
   }
 }
 
+export function updated_height(last_top_height, new_top_height, last_mid_height, new_mid_height) {
+  for (let recon_three_curve of recon_curves) {
+    if (Math.abs(recon_three_curve.curve.top_height - last_top_height) < 1e-3) {
+      recon_three_curve.curve.set_top_height(new_top_height);
+      recon_three_curve.update_curve();
+    } else if (Math.abs(recon_three_curve.curve.middle_height - last_mid_height) < 1e-3) {
+      recon_three_curve.curve.set_middle_height(new_mid_height);
+      recon_three_curve.update_curve();
+    }
+
+  }
+}
+
 export function reconstruct_curves() {
   for (let curve of recon_curves) {
     curve.destroy();

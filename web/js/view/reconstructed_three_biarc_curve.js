@@ -6,6 +6,7 @@ import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { sync_module } from '../native/native';
 import { get_reflection_mat } from '../utils/intersect';
 import { params } from '../state/params';
+import { updated_height } from '../state/state';
 
 let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();
@@ -91,13 +92,14 @@ export class ReconstructedThreeBiArcCurve {
   move_control_point(three_point_mesh, new_loc) {
     let idx = this.control_points.indexOf(three_point_mesh);
     if (idx == -1) return;
+    let last_mid_height = this.curve.middle_height;
+    let last_top_height = this.curve.top_height;
     if (idx == 0) {
       this.curve.set_middle_height(new_loc.y);
     } else if (idx == 1) {
       this.curve.set_top_height(new_loc.y);
     }
-    this.control_points[0].position.y = this.curve.middle_height;
-    this.control_points[1].position.y = this.curve.top_height;
+    updated_height(last_top_height, this.curve.top_height, last_mid_height, this.curve.middle_height);
     this.update_curve();
   }
 
@@ -122,9 +124,12 @@ export class ReconstructedThreeBiArcCurve {
     }
     this.three_curves.length = 0;
 
+    this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
+    this.control_points[1].position.copy(this.curve.getPoint(1));
+
     let curve_points = 64;//this.points.length * 32;
     let tube_geom =// this.sweep_plane(); 
-    new THREE.TubeGeometry(this.curve, curve_points, 0.005, 8, false);
+      new THREE.TubeGeometry(this.curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         // i == 0 ? sweep_plane_material : sweep_plane_material);
@@ -137,7 +142,7 @@ export class ReconstructedThreeBiArcCurve {
     if (!!this.ref_symmetry_point) {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
       for (let i = 0; i < this.rotation_symmetry; i++) {
-        let tube = new THREE.Mesh(tube_geom, 
+        let tube = new THREE.Mesh(tube_geom,
           // sweep_plane_material);
           symmetry_reflection_curve_material);
         tube.type = "ns_line";

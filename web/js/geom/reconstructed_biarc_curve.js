@@ -18,7 +18,6 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.rotation_symmetry = curve.rotation_symmetry;
     this.ref_symmetry_point = curve.ref_symmetry_point;
     this.level = curve.level;
-    this.prc_t = curve.prc_t;
     /** @type {number} */
     this.top_height;
     /** @type {number} */
@@ -28,9 +27,9 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
 
   compute_biarc() {
     let flat_curve_len = this.arc_curve.length();
-    let middle_height = this.prev_level_height() * (1 - this.prc_t) + this.prc_t * this.top_height;
+    let middle_height = this.prev_level_height() * (1 - this.curve.prc_t) + this.curve.prc_t * this.top_height;
     let p0 = new THREE.Vector2(0, this.prev_level_height());
-    let p_mid = new THREE.Vector2(flat_curve_len * this.prc_t, middle_height);
+    let p_mid = new THREE.Vector2(flat_curve_len * this.curve.prc_t, middle_height);
     let p_top = new THREE.Vector2(flat_curve_len, this.top_height);
 
     let l1 = p_mid.clone().sub(p0).normalize();
@@ -66,14 +65,14 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.top_height = height;
     this.curve.height = height;
     // set_level_height(this.level, this.top_height);
-    let t = this.prc_t;
+    let t = this.curve.prc_t;
     this.middle_height = this.prev_level_height() * (1 - t) + t * this.top_height;
     this.compute_biarc();
   }
 
   set_middle_height(height) {
     this.middle_height = height;
-    let t = this.prc_t;
+    let t = this.curve.prc_t;
     this.top_height = (this.middle_height - this.prev_level_height() * (1 - t)) / t;
     this.curve.height = this.top_height
     // set_level_height(this.level, this.top_height);
