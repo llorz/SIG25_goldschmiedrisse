@@ -55,6 +55,8 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.arcb_len = this.rb * Math.abs(this.min_angle - 2 * Math.PI);
 
     this.len = this.arca_len + this.arcb_len;
+
+    this.compute_rmf();
   }
 
   prev_level_height() {
@@ -103,34 +105,116 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     return point;
   }
 
+  getTangent(t, optionalTarget = new THREE.Vector3()) {
+    let tangent = optionalTarget;
+    let s = t * this.len;
+    let x, y, x_t, y_t, x_tt, y_tt;
+    if (s < this.arca_len) {
+      let tt = (s / this.arca_len);
+      let angle = Math.PI * (1 - tt) + this.max_angle * tt;
+      let sgn = this.max_angle > Math.PI ? 1 : -1;
+      x = this.ca.x + this.ra * Math.cos(angle);
+      y = this.ca.y + this.ra * Math.sin(angle);
+      x_t = -sgn * this.ra * Math.sin(angle);
+      y_t = sgn * this.ra * Math.cos(angle);
+    } else {
+      let tt = ((s - this.arca_len) / this.arcb_len);
+      let angle = this.min_angle * (1 - tt) + 2 * Math.PI * tt;
+      let sgn = this.min_angle > 2*Math.PI ? -1 : 1;
+      x = this.cb.x + this.rb * Math.cos(angle);
+      y = this.cb.y + this.rb * Math.sin(angle);
+      x_t = -sgn * this.rb * Math.sin(angle);
+      y_t = sgn * this.rb * Math.cos(angle);
+    }
+    let arc_curve_len = this.arc_curve.length();
+    // Tangent at t.
+    tangent = this.arc_curve.d_dt(x / arc_curve_len);
+    tangent.x = tangent.x * x_t / arc_curve_len;
+    tangent.z = tangent.z * x_t / arc_curve_len;
+    tangent.y = y_t;
+    tangent.normalize();
+
+    return tangent;
+  }
+
+  compute_rmf(resolution = 100) {
+    this.rmf = [{
+      t: 0,
+      tangent: this.getTangent(0),
+      normal: this.getPoint(0).normalize(),
+      binormal: new THREE.Vector3()
+    }];
+    this.rmf[0].binormal.crossVectors(this.rmf[0].tangent, this.rmf[0].normal);
+    for (let i = 0; i < resolution - 1; i++) {
+      let t_i = i / (resolution - 1);
+      let t_ip1 = (i + 1) / (resolution - 1);
+      let x_i = this.getPoint(t_i);
+      let x_ip1 = this.getPoint(t_ip1);
+      // First reflection.
+      let v_1 = x_ip1.clone().sub(x_i).normalize();
+      let n_i = this.rmf[i].normal;
+      // Reflect n_i and t_I through the plane perpendicular to v_1.
+      let n_il = n_i.clone().sub(v_1.clone().multiplyScalar(2 * n_i.dot(v_1)));
+      let t_il = this.rmf[i].tangent.clone().sub(v_1.clone().multiplyScalar(2 * this.rmf[i].tangent.dot(v_1)));
+
+      // Second reflection.
+      let tang_p1 = this.getTangent(t_ip1);
+      let v_2 = tang_p1.clone().sub(t_il).normalize();
+      let n_ip1 = n_il.clone().sub(v_2.clone().multiplyScalar(2 * n_il.dot(v_2)));
+      let bin_ip1 = new THREE.Vector3();
+      bin_ip1.crossVectors(tang_p1, n_ip1);
+      this.rmf.push({ t: t_ip1, tangent: tang_p1, normal: n_ip1, binormal: bin_ip1 });
+    }
+  }
+
+  get_rmf_frame(t) {
+    // Binary search for the frame.
+    let l = 0;
+    let r = this.rmf.length - 1;
+    while (r - l > 1) {
+      let m = Math.floor((l + r) / 2);
+      if (this.rmf[m].t <= t) {
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    let tt = (t - this.rmf[l].t) / (this.rmf[r].t - this.rmf[l].t);
+    let tangent = this.rmf[l].tangent.clone().multiplyScalar(1 - tt).add(this.rmf[r].tangent.clone().multiplyScalar(tt));
+    let normal = this.rmf[l].normal.clone().multiplyScalar(1 - tt).add(this.rmf[r].normal.clone().multiplyScalar(tt));
+    let binormal = this.rmf[l].binormal.clone().multiplyScalar(1 - tt).add(this.rmf[r].binormal.clone().multiplyScalar(tt));
+    return {
+      position: this.getPoint(t),
+      tangent: tangent, normal: normal, binormal: binormal
+    };
+  }
+
   getFrame(t) {
     let s = t * this.len;
     let x, y, x_t, y_t, x_tt, y_tt;
     if (s < this.arca_len) {
       let tt = (s / this.arca_len);
       let angle = Math.PI * (1 - tt) + this.max_angle * tt;
+      let sgn = this.max_angle > Math.PI ? 1 : -1;
       x = this.ca.x + this.ra * Math.cos(angle);
       y = this.ca.y + this.ra * Math.sin(angle);
-      x_t = -this.ra * Math.sin(angle);
-      y_t = this.ra * Math.cos(angle);
-      x_tt = -this.ra * Math.cos(angle);
-      y_tt = -this.ra * Math.sin(angle);
+      x_t = -sgn * this.ra * Math.sin(angle);
+      y_t = sgn * this.ra * Math.cos(angle);
     } else {
       let tt = ((s - this.arca_len) / this.arcb_len);
       let angle = this.min_angle * (1 - tt) + 2 * Math.PI * tt;
+      let sgn = this.min_angle > Math.PI ? -1 : 1;
       x = this.cb.x + this.rb * Math.cos(angle);
       y = this.cb.y + this.rb * Math.sin(angle);
-      x_t = -this.rb * Math.sin(angle);
-      y_t = this.rb * Math.cos(angle);
-      x_tt = -this.rb * Math.cos(angle);
-      y_tt = -this.rb * Math.sin(angle);
+      x_t = -sgn * this.rb * Math.sin(angle);
+      y_t = sgn * this.rb * Math.cos(angle);
     }
     // Point at t.
     let arc_curve_len = this.arc_curve.length();
     let flat_point = this.arc_curve.getPoint(x / arc_curve_len);
     flat_point.y = y;
     // Tangent at t.
-    let tangent = this.arc_curve.getTangent(x / arc_curve_len);
+    let tangent = this.arc_curve.d_dt(x / arc_curve_len);
     tangent.x = tangent.x * x_t / arc_curve_len;
     tangent.z = tangent.z * x_t / arc_curve_len;
     tangent.y = y_t;
@@ -146,8 +230,8 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     return {
       position: flat_point,
       tangent: tangent,
-      normal: binormal,
-      binormal: normal
+      normal: normal,
+      binormal: binormal,
     };
   }
 

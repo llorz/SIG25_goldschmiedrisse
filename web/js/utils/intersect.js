@@ -114,7 +114,8 @@ export function line_segment_arc_intersection(p1, p2, arc) {
 }
 
 export function get_reflection_mat(ref_symmetry_point) {
-  let x = ref_symmetry_point.x, y = ref_symmetry_point.y, z = ref_symmetry_point.z;
+  let x = ref_symmetry_point.x, y = 0, //ref_symmetry_point.y,
+   z = ref_symmetry_point.z;
   let norm = Math.sqrt(x * x + y * y + z * z);
   x /= norm; y /= norm; z /= norm;
   let mat = new THREE.Matrix4().set

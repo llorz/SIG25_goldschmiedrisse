@@ -113,6 +113,15 @@ export class ArcCurve extends THREE.Curve {
     return point;
   }
 
+  d_dt(t) {
+    if (this.ra == 0) {
+      return new THREE.Vector3(this.points[2].x - this.points[0].x, 0, this.points[2].y - this.points[0].y); 
+    }
+
+    let angle = this.angle_a_0 * (1 - t) + this.angle_a_1 * t;
+    return new THREE.Vector3(-Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(this.ra).multiplyScalar(this.angle_a_1 - this.angle_a_0);
+  }
+
   getTangent(t, optionalTarget = new THREE.Vector3()) {
     let tangent = optionalTarget;
     if (this.ra == 0) {

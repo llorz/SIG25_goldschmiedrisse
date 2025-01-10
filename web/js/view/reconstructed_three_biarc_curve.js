@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
-import { scene } from './visual';
+import { get_active_camera, scene } from './visual';
 
 import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { sync_module } from '../native/native';
 import { get_reflection_mat } from '../utils/intersect';
 import { params } from '../state/params';
-import { get_level_height, updated_height } from '../state/state';
+import { get_level_height, mode, updated_height } from '../state/state';
 
 let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();
@@ -14,7 +14,10 @@ var size = new THREE.Vector3();
 sweep_plane_geom.boundingBox.getSize(size);
 sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2, -sweep_plane_geom.boundingBox.min.z - size.z / 2);
 
-const sweep_plane_material = new THREE.MeshStandardMaterial({ color: 0x0099ff, side: THREE.DoubleSide })
+const sweep_plane_material = new THREE.MeshStandardMaterial({
+  color: 0x3456ff, side: THREE.DoubleSide,
+  metalness: 0.7, roughness: 0.4, reflectivity: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.5
+})
 
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
 const sphere_geom = new THREE.SphereGeometry(0.01, 32, 32);
@@ -109,7 +112,7 @@ export class ReconstructedThreeBiArcCurve {
     for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
       v.fromBufferAttribute(geom.attributes.position, i);
       let t = v.x / size.x;
-      let frame = this.curve.getFrame(t);
+      let frame = this.curve.get_rmf_frame(t);
       let new_v = frame.position.clone().add(frame.normal.clone().multiplyScalar(v.z)).add(frame.binormal.clone().multiplyScalar(v.y));
       geom.attributes.position.setXYZ(i, new_v.x, new_v.y, new_v.z);
     }
@@ -137,7 +140,7 @@ export class ReconstructedThreeBiArcCurve {
     }
 
     let curve_points = 64;//this.points.length * 32;
-    let tube_geom =// this.sweep_plane(); 
+    let tube_geom = //this.sweep_plane(); 
       new THREE.TubeGeometry(this.curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
@@ -174,6 +177,9 @@ export class ReconstructedThreeBiArcCurve {
         }
       }
     }
+
+    this.set_control_points_visibility(
+      Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) > 1e-3);
   }
 
   destroy() {
@@ -206,8 +212,10 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   set_control_points_visibility(is_visible) {
+    let is_camera_not_vertical = mode == "side_view" ||
+      Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) > 1e-3;
     for (let cp of this.control_points) {
-      cp.visible = is_visible && params.control_points_visible;
+      cp.visible = is_camera_not_vertical && is_visible && params.control_points_visible;
     }
   }
 }

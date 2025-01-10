@@ -105,7 +105,8 @@ export class Curve {
 
     let prev_pos = this.control_points[n - 3];
     this.set_control_point_pos(n - 2,
-      new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
+      prev_pos.clone().lerp(new_loc, 0.2));
+      // new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, new_loc.y, prev_pos.z * 0.8 + new_loc.z * 0.2));
     // this.set_control_point_pos(n - 3,
     //   new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
 
@@ -331,10 +332,10 @@ export class Curve {
 
   set_control_points_visibility(is_visible) {
     for (let p of this.three_control_points) {
-      p.visible = is_visible;
+      p.visible = is_visible && this.three_curves[0].visible;
     }
     for (let p of this.three_control_points_lines) {
-      p.visible = is_visible;
+      p.visible = is_visible && this.three_curves[0].visible;
     }
   }
 

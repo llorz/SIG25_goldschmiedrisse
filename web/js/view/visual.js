@@ -86,7 +86,7 @@ function init_orth_camera() {
     camera2d.top = 1 / aspect_ratio;
     camera2d.bottom = -1 / aspect_ratio;
   }
-  camera2d.position.y = 1;
+  camera2d.position.y = 100;
 }
 init_orth_camera();
 

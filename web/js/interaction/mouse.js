@@ -119,9 +119,8 @@ canvas.onpointerup = (e) => {
     && mode == Mode.orthographic
     && Math.abs(ray_cast.ray.direction.x) < 1e-4 && Math.abs(ray_cast.ray.direction.z) < 1e-4) {
     let flat_point = new THREE.Vector3();
-    let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+    let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
     ray_cast.ray.intersectPlane(intersection_plane, flat_point);
-    flat_point.y = 0;
     let closest = closest_rotation_line(flat_point);
     if (flat_point.distanceTo(closest) < 0.02) {
       flat_point = closest;
@@ -151,9 +150,8 @@ canvas.onpointermove = (e) => {
 
   let flat_point = new THREE.Vector3();
   ray_cast.setFromCamera(pointer_location, get_active_camera());
-  let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+  let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
   ray_cast.ray.intersectPlane(intersection_plane, flat_point);
-  flat_point.y = 0;
 
   if (edit_mode == EditMode.new_curve) {
     // Add new point in a curve.
@@ -170,9 +168,8 @@ canvas.onpointermove = (e) => {
     && selected_obj && selected_obj.type == "control_point") {
     // Move a control point.
     if (mode == Mode.perspective) {
-      let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), get_level_bottom());
+      let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
       ray_cast.ray.intersectPlane(intersection_plane, flat_point);
-      flat_point.y = 0;
     }
     let closest = closest_rotation_line(flat_point);
     if (flat_point.distanceTo(closest) < 0.02) {

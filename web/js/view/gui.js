@@ -98,7 +98,7 @@ let ortho_view = pane.addBlade({
   label: 'View',
 }).on('click', (ev) => {
   if (ev.index[0] == 0) {
-    camera2d.position.set(0, 1, 0);
+    camera2d.position.set(0, 100, 0);
     camera2d.up.set(0, 1, 0);
     top_view_controls.target.set(0, 0, 0);
     top_view_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
@@ -135,6 +135,7 @@ pane.addButton({
   title: 'add level',
 }).on('click', (ev) => {
   add_level();
+  update_current_level();
 });
 export let level_controller = pane.addBinding(params, 'current_level', {
   label: 'Level',

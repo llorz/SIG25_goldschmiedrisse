@@ -164,6 +164,13 @@ export function update_current_level() {
       curve.set_visibility(true);
     }
   }
+  for (let recon_curve of recon_curves) {
+    if (recon_curve.curve.level != params.current_level) {
+      recon_curve.set_control_points_visibility(false);
+    } else {
+      recon_curve.set_control_points_visibility(true);
+    }
+  }
   show_intersections_at_level(params.current_level);
 }
 
@@ -184,11 +191,13 @@ export function updated_height(last_top_height, new_top_height, last_mid_height,
   for (let recon_three_curve of recon_curves) {
     if (Math.abs(recon_three_curve.curve.top_height - last_top_height) < 1e-3) {
       recon_three_curve.curve.set_top_height(new_top_height);
-      recon_three_curve.update_curve();
     } else if (Math.abs(recon_three_curve.curve.middle_height - last_mid_height) < 1e-3) {
       recon_three_curve.curve.set_middle_height(new_mid_height);
-      recon_three_curve.update_curve();
     }
+  }
+  for (let recon_three_curve of recon_curves) {
+    recon_three_curve.curve.compute_biarc();
+    recon_three_curve.update_curve();
   }
 }
 
@@ -265,22 +274,22 @@ export function load_from_curves_file(txt) {
 
 export function set_control_points_visibility(is_visible) {
   for (let curve of curves) {
-    curve.set_control_points_visibility(is_visible);
+    curve.set_control_points_visibility(is_visible && curve.level == params.current_level);
   }
   for (let curve of recon_curves) {
-    curve.set_control_points_visibility(is_visible);
+    curve.set_control_points_visibility(is_visible && curve.curve.level == params.current_level);
   }
-  if (mode == Mode.orthographic) {
-    if (Math.abs(camera2d.position.y - 1) < 0.01) {
-      for (let curve of recon_curves) {
-        curve.set_control_points_visibility(false);
-      }
-    } else {
-      for (let curve of curves) {
-        curve.set_control_points_visibility(false);
-      }
-    }
-  }
+  // if (mode == Mode.orthographic) {
+  //   if (Math.abs(camera2d.position.y - 1) < 0.01) {
+  //     for (let curve of recon_curves) {
+  //       curve.set_control_points_visibility(false);
+  //     }
+  //   } else {
+  //     for (let curve of curves) {
+  //       curve.set_control_points_visibility(false);
+  //     }
+  //   }
+  // }
 }
 
 export function set_biarc_visibility(is_visible) {
