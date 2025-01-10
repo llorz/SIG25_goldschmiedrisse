@@ -22,6 +22,11 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { get_rotation_mat } from '../utils/intersect';
 
+let rotation_line_material = new LineMaterial({
+  color: 0xccccff,
+  linewidth: 5,
+  opacity: 1.0,
+});
 
 let canvas = document.getElementById("canvas");
 canvas.width = canvas.clientWidth;
@@ -93,11 +98,11 @@ init_orth_camera();
 // Init composer and render pass.
 const composer = new EffectComposer(renderer);
 // SSAO.
-const ssaoPass = new SSAOPass(scene, camera3d, w, h);
-ssaoPass.kernelRadius = 16;
-ssaoPass.minDistance = 0.005;
-ssaoPass.maxDistance = 0.1;
-composer.addPass(ssaoPass);
+// const ssaoPass = new SSAOPass(scene, camera3d, w, h);
+// ssaoPass.kernelRadius = 16;
+// ssaoPass.minDistance = 0.005;
+// ssaoPass.maxDistance = 0.1;
+// composer.addPass(ssaoPass);
 // Render.
 const renderPass = new RenderPass(scene, camera2d);
 composer.addPass(renderPass);
@@ -125,11 +130,10 @@ composer.addPass(outputPass);
 
 const pixelRatio = renderer.getPixelRatio();
 const fxaaPass = new ShaderPass(FXAAShader);
-fxaaPass.uniforms['resolution'].value.set(
+fxaaPass.material.uniforms['resolution'].value.set(
   1 / (canvas.offsetWidth * pixelRatio),
   1 / (canvas.offsetHeight * pixelRatio));
 composer.addPass(fxaaPass);
-
 
 // Controls.
 let controls_enabled = true;
@@ -143,7 +147,10 @@ export let get_active_camera = () => mode === Mode.orthographic ? camera2d : cam
 
 let designing_area = new THREE.Mesh(
   new THREE.CircleGeometry(1, 64),
-  new THREE.MeshBasicMaterial({ color: 0xeb9090, side: THREE.DoubleSide, opacity: 0.3, transparent: true }));
+  new THREE.MeshBasicMaterial({ 
+    // color: 0xeb9090, 
+    color: 0xffccd5,
+    side: THREE.DoubleSide, opacity: 0.3, transparent: true }));
 designing_area.name = "designing_area";
 designing_area.rotateX(Math.PI / 2);
 designing_area.position.y = -1e-3;
@@ -163,11 +170,6 @@ export function update_rotation_symmetry_lines(rotation_symmetry) {
   }
   let rotation_line_geometry = new LineGeometry();
   rotation_line_geometry.setPositions([0, 0, 0, 0, 0, -1]);
-  let rotation_line_material = new LineMaterial({
-    color: 0xaaaaff,
-    linewidth: 5,
-    opacity: 1.0,
-  });
   let line = new Line2(rotation_line_geometry, rotation_line_material);
   line.type = "ns_line";
   for (let i = 0; i < rotation_symmetry; i++) {

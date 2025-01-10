@@ -12,4 +12,6 @@ export let params = {
   save_curve_name: "tmp_unit_curve",
   current_level: 0,
   biarcs_visualization: 'tube',
+
+  use_rmf: false,
 };

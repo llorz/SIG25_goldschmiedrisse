@@ -85,6 +85,11 @@ surface_params.addBinding(params, "surface_color", {
 }).on('change', (ev) => {
   surface_material.color.set(ev.value);
 });
+surface_params.addBinding(params, "use_rmf", {
+  label: 'Use RMF'
+}).on('change', (ev) => {
+  refresh();
+});
 surface_params.addBlade({
   view: 'list',
   label: 'Biarc visualization',

@@ -3,8 +3,6 @@ import * as THREE from 'three';
 import { get_active_camera, scene } from './visual';
 
 import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
-import { sync_module } from '../native/native';
-import { get_reflection_mat } from '../utils/intersect';
 import { params } from '../state/params';
 import { get_level_height, mode, updated_height } from '../state/state';
 
@@ -30,8 +28,15 @@ cylinder_geom3.translate(0, size.y / 2, 0);
 
 
 const sweep_plane_material = new THREE.MeshStandardMaterial({
-  color: 0x3456ff, side: THREE.DoubleSide,
-  metalness: 0.7, roughness: 0.4, reflectivity: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.5
+  // color: 0x3456ff,
+  // color: 0xa2d2ff,
+
+  // color: 0xffd670,
+  // color: 0xffea00,
+
+  color: 0xffd166,
+   side: THREE.DoubleSide,
+  metalness: 0.2, roughness: 0.8
 });
 
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
@@ -43,7 +48,9 @@ let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side:
 //   opacity: 0.6, transparent: true
 // });
 let symmetry_curve_material = new THREE.MeshStandardMaterial({
-  color: 0xFFD700, side: THREE.DoubleSide,
+  // color: 0xFFD700, 
+  color: 0xc77dff,
+  side: THREE.DoubleSide,
   opacity: 1., transparent: true,
   // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5,
 });
@@ -128,7 +135,7 @@ export class ReconstructedThreeBiArcCurve {
     for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
       v.fromBufferAttribute(geom.attributes.position, i);
       let t = v.x / (size_x + 1e-2);
-      let frame = this.curve.getFrame(t);
+      let frame = params.use_rmf? this.curve.get_rmf_frame(t) : this.curve.getFrame(t);
       let new_v = frame.position.clone().add(frame.normal.clone().multiplyScalar(v.z)).add(frame.binormal.clone().multiplyScalar(v.y));
       geom.attributes.position.setXYZ(i, new_v.x, new_v.y, new_v.z);
     }

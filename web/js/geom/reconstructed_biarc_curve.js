@@ -120,7 +120,7 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     } else {
       let tt = ((s - this.arca_len) / this.arcb_len);
       let angle = this.min_angle * (1 - tt) + 2 * Math.PI * tt;
-      let sgn = this.min_angle > 2*Math.PI ? -1 : 1;
+      let sgn = this.min_angle > 2 * Math.PI ? -1 : 1;
       x = this.cb.x + this.rb * Math.cos(angle);
       y = this.cb.y + this.rb * Math.sin(angle);
       x_t = -sgn * this.rb * Math.sin(angle);
@@ -144,8 +144,8 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
       normal: this.getPoint(0).normalize(),
       binormal: new THREE.Vector3()
     }];
-    this.rmf[0].normal.x = -this.rmf[0].tangent.z;
-    this.rmf[0].normal.z = this.rmf[0].tangent.x;
+    // this.rmf[0].normal.x = -this.rmf[0].tangent.z;
+    // this.rmf[0].normal.z = this.rmf[0].tangent.x;
     this.rmf[0].normal.y = 0;
     this.rmf[0].normal.normalize();
     this.rmf[0].binormal.crossVectors(this.rmf[0].tangent, this.rmf[0].normal);
@@ -168,6 +168,21 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
       let bin_ip1 = new THREE.Vector3();
       bin_ip1.crossVectors(tang_p1, n_ip1);
       this.rmf.push({ t: t_ip1, tangent: tang_p1, normal: n_ip1, binormal: bin_ip1 });
+    }
+
+    // Calculate minimal twist to get the correct normal in the end.
+    let target_normal = this.getPoint(1);
+    target_normal.y = 0;
+    target_normal.normalize();
+
+    let ang = Math.atan2(target_normal.dot(this.rmf[resolution - 1].binormal),
+      target_normal.dot(this.rmf[resolution - 1].normal));
+    // Rotate the normal and binormal at each frame by ang / resolution.
+    for (let i = 1; i < resolution; i++) {
+      let q = new THREE.Quaternion();
+      q.setFromAxisAngle(this.rmf[i].tangent, (i / (resolution - 1)) * ang);
+      this.rmf[i].normal.applyQuaternion(q);
+      this.rmf[i].binormal.applyQuaternion(q);
     }
   }
 
