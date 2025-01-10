@@ -308,3 +308,15 @@ export function set_mode(m) {
   mode = m;
   set_control_points_visibility(params.control_points_visible);
 }
+
+export function refresh() {
+  for (let curve of curves) {
+    curve.update_curve();
+  }
+  for (let recon_three_curve of recon_curves) {
+    recon_three_curve.curve.compute_biarc();
+    recon_three_curve.update_curve();
+  }
+  set_designing_area_height(get_level_bottom(params.current_level));
+  show_intersections_at_level(params.current_level);
+}

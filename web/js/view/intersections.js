@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { scene } from './visual';
-import { curves, find_intersections, intersections } from '../state/state';
+import { curves, find_intersections, get_level_bottom, intersections } from '../state/state';
 import { params } from '../state/params';
 
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -17,6 +17,7 @@ export function update_intersections() {
     sphere.type = "intersection_point";
     sphere.userData = intersection;
     let p = intersection.curve1.arc_curve.getPoint(intersection.t1);
+    p.y = get_level_bottom(intersection.level);
     sphere.position.set(p.x, p.y, p.z);
     scene.add(sphere);
     intersection_meshes.push(sphere);
@@ -33,7 +34,9 @@ export function clear_intersections() {
 }
 
 export function show_intersections_at_level(level) {
+  let level_bottom = get_level_bottom(level);
   for (let mesh of intersection_meshes) {
+    mesh.position.y = level_bottom;
     mesh.visible = mesh.userData.level == level;
   }
 }

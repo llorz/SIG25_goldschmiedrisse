@@ -12,12 +12,27 @@ let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();
 var size = new THREE.Vector3();
 sweep_plane_geom.boundingBox.getSize(size);
-sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2, -sweep_plane_geom.boundingBox.min.z - size.z / 2);
+sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2,
+  -sweep_plane_geom.boundingBox.min.z - size.z / 2);
+
+let cylinder_geom = new THREE.CylinderGeometry(0.004, 0.004, 10, 32, 100, true);
+cylinder_geom.rotateZ(Math.PI / 2);
+cylinder_geom.computeBoundingBox();
+let size_cyl = new THREE.Vector3();
+cylinder_geom.boundingBox.getSize(size_cyl);
+cylinder_geom.translate(-cylinder_geom.boundingBox.min.x, -cylinder_geom.boundingBox.min.y - size_cyl.y / 2,
+  -cylinder_geom.boundingBox.min.z - size_cyl.z / 2);
+
+let cylinder_geom2 = cylinder_geom.clone();
+cylinder_geom2.translate(0, -size.y / 2, 0);
+let cylinder_geom3 = cylinder_geom.clone();
+cylinder_geom3.translate(0, size.y / 2, 0);
+
 
 const sweep_plane_material = new THREE.MeshStandardMaterial({
   color: 0x3456ff, side: THREE.DoubleSide,
   metalness: 0.7, roughness: 0.4, reflectivity: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.5
-})
+});
 
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
 const sphere_geom = new THREE.SphereGeometry(0.01, 32, 32);
@@ -106,13 +121,14 @@ export class ReconstructedThreeBiArcCurve {
     this.update_curve();
   }
 
-  sweep_plane() {
-    let geom = sweep_plane_geom.clone();
+  sweep_geom(orig_geom) {
+    let geom = orig_geom.clone();
     let v = new THREE.Vector3();
+    let size_x = orig_geom.boundingBox.getSize(new THREE.Vector3()).x;
     for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
       v.fromBufferAttribute(geom.attributes.position, i);
-      let t = v.x / size.x;
-      let frame = this.curve.get_rmf_frame(t);
+      let t = v.x / (size_x + 1e-2);
+      let frame = this.curve.getFrame(t);
       let new_v = frame.position.clone().add(frame.normal.clone().multiplyScalar(v.z)).add(frame.binormal.clone().multiplyScalar(v.y));
       geom.attributes.position.setXYZ(i, new_v.x, new_v.y, new_v.z);
     }
@@ -120,10 +136,24 @@ export class ReconstructedThreeBiArcCurve {
     return geom;
   }
 
+  get_sweep_object() {
+    let obj = new THREE.Group();
+    if (params.biarcs_visualization == 'tube') {
+      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom), symmetry_curve_material));
+    } else if (params.biarcs_visualization == 'fancy') {
+      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
+      obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
+      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom2), symmetry_curve_material));
+    }
+    return obj;
+  }
+
   update_curve() {
-    for (let curve of this.three_curves) {
-      curve.geometry.dispose();
-      scene.remove(curve);
+    for (let group of this.three_curves) {
+      for (let curve of group.children) {
+        curve.geometry.dispose();
+      }
+      scene.remove(group);
     }
     this.three_curves.length = 0;
 
@@ -140,12 +170,12 @@ export class ReconstructedThreeBiArcCurve {
     }
 
     let curve_points = 64;//this.points.length * 32;
-    let tube_geom = //this.sweep_plane(); 
-      new THREE.TubeGeometry(this.curve, curve_points, 0.005, 8, false);
+    let orig_tube = this.get_sweep_object();
     for (let i = 0; i < this.rotation_symmetry; i++) {
-      let tube = new THREE.Mesh(tube_geom,
-        // i == 0 ? sweep_plane_material : sweep_plane_material);
-        i == 0 ? main_curve_material : symmetry_curve_material);
+      let tube = orig_tube.clone();
+      // let tube = new THREE.Mesh(tube_geom,
+      //   i == 0 ? sweep_plane_material : sweep_plane_material);
+      // i == 0 ? main_curve_material : symmetry_curve_material);
       tube.type = "ns_line";
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(tube);
@@ -160,9 +190,10 @@ export class ReconstructedThreeBiArcCurve {
     if (!!this.ref_symmetry_point) {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
       for (let i = 0; i < this.rotation_symmetry; i++) {
-        let tube = new THREE.Mesh(tube_geom,
-          // sweep_plane_material);
-          symmetry_reflection_curve_material);
+        let tube = orig_tube.clone();
+        // let tube = new THREE.Mesh(tube_geom,
+        //   sweep_plane_material);
+        // symmetry_reflection_curve_material);
         tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
@@ -178,14 +209,17 @@ export class ReconstructedThreeBiArcCurve {
       }
     }
 
+    this.set_visibility(params.reconstructed_biarc_visible);
     this.set_control_points_visibility(
       Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) > 1e-3);
   }
 
   destroy() {
-    for (let curve of this.three_curves) {
-      curve.geometry.dispose();
-      scene.remove(curve);
+    for (let group of this.three_curves) {
+      for (let curve of group.children) {
+        curve.geometry.dispose();
+      }
+      scene.remove(group);
     }
     this.three_curves.length = 0;
     for (let cp of this.control_points) {
@@ -200,6 +234,7 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   set_visibility(visibility) {
+    visibility = visibility && params.reconstructed_biarc_visible;
     for (let curve of this.three_curves) {
       curve.visible = visibility;
     }
@@ -215,7 +250,7 @@ export class ReconstructedThreeBiArcCurve {
     let is_camera_not_vertical = mode == "side_view" ||
       Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) > 1e-3;
     for (let cp of this.control_points) {
-      cp.visible = is_camera_not_vertical && is_visible && params.control_points_visible;
+      cp.visible = is_camera_not_vertical && is_visible && params.control_points_visible && params.reconstructed_biarc_visible;
     }
   }
 }

@@ -144,6 +144,10 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
       normal: this.getPoint(0).normalize(),
       binormal: new THREE.Vector3()
     }];
+    this.rmf[0].normal.x = -this.rmf[0].tangent.z;
+    this.rmf[0].normal.z = this.rmf[0].tangent.x;
+    this.rmf[0].normal.y = 0;
+    this.rmf[0].normal.normalize();
     this.rmf[0].binormal.crossVectors(this.rmf[0].tangent, this.rmf[0].normal);
     for (let i = 0; i < resolution - 1; i++) {
       let t_i = i / (resolution - 1);

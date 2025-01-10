@@ -141,13 +141,6 @@ export let top_view_controls = new MapControls(camera2d, renderer.domElement);
 
 export let get_active_camera = () => mode === Mode.orthographic ? camera2d : camera3d;
 
-let center_circle = new THREE.Mesh(
-  new THREE.CircleGeometry(0.01),
-  new THREE.MeshBasicMaterial({ color: 0x0000ff, side: THREE.DoubleSide }));
-center_circle.name = "center_circle";
-center_circle.rotateX(Math.PI / 2);
-scene.add(center_circle);
-
 let designing_area = new THREE.Mesh(
   new THREE.CircleGeometry(1, 64),
   new THREE.MeshBasicMaterial({ color: 0xeb9090, side: THREE.DoubleSide, opacity: 0.3, transparent: true }));
@@ -171,7 +164,7 @@ export function update_rotation_symmetry_lines(rotation_symmetry) {
   let rotation_line_geometry = new LineGeometry();
   rotation_line_geometry.setPositions([0, 0, 0, 0, 0, -1]);
   let rotation_line_material = new LineMaterial({
-    color: 0x7777ff,
+    color: 0xaaaaff,
     linewidth: 5,
     opacity: 1.0,
   });
@@ -211,3 +204,18 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+
+
+let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
+sweep_plane_geom.computeBoundingBox();
+var size = new THREE.Vector3();
+sweep_plane_geom.boundingBox.getSize(size);
+sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y,// - size.y / 2,
+  -sweep_plane_geom.boundingBox.min.z - size.z / 2);
+
+
+// scene.add(new THREE.Mesh(sweep_plane_geom, new THREE.MeshBasicMaterial({ color: 0x0000ff, side: THREE.DoubleSide })));
+
+// let cylinder_geom = new THREE.CylinderGeometry(0.1, 0.1, 10, 32, 100, true);
+// cylinder_geom.rotateZ(Math.PI / 2);
+// scene.add(new THREE.Mesh(cylinder_geom, new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide })));

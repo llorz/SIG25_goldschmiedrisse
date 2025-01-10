@@ -15,12 +15,12 @@ let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
 let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 let symmetry_curve_material = new THREE.MeshLambertMaterial({
-  color: 0x000000, side: THREE.DoubleSide,
-  opacity: 0.2, transparent: true
+  color: 0xeeeeee, side: THREE.DoubleSide,
+  opacity: 1.0, transparent: true
 });
 let symmetry_reflection_curve_material = new THREE.MeshLambertMaterial({
-  color: 0x000000, side: THREE.DoubleSide,
-  opacity: 0.2, transparent: true
+  color: 0xeeeeee, side: THREE.DoubleSide,
+  opacity: 1.0, transparent: true
 });
 
 export class Curve {

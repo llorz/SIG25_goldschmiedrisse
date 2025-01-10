@@ -11,4 +11,5 @@ export let params = {
   surface_color: "0xbde0fe",
   save_curve_name: "tmp_unit_curve",
   current_level: 0,
+  biarcs_visualization: 'tube',
 };

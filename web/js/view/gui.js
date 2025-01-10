@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { camera2d, scene, top_view_controls, update_rotation_symmetry_lines } from "./visual.js";
-import { add_level, curves, load_from_curves_file, recon_curves, reconstruct_surfaces, set_biarc_visibility, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { add_level, curves, load_from_curves_file, recon_curves, reconstruct_surfaces, refresh, set_biarc_visibility, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
@@ -84,6 +84,15 @@ surface_params.addBinding(params, "surface_color", {
   label: 'Surface Color'
 }).on('change', (ev) => {
   surface_material.color.set(ev.value);
+});
+surface_params.addBlade({
+  view: 'list',
+  label: 'Biarc visualization',
+  options: [{text: 'tube', value: 'tube'}, {text: 'fancy', value: 'fancy'}],
+  value: 'tube',
+}).on('change', (ev) => {
+  params.biarcs_visualization = ev.value;
+  refresh();
 });
 
 let ortho_view = pane.addBlade({
