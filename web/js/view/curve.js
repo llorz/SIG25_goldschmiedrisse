@@ -106,7 +106,7 @@ export class Curve {
     let prev_pos = this.control_points[n - 3];
     this.set_control_point_pos(n - 2,
       prev_pos.clone().lerp(new_loc, 0.2));
-      // new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, new_loc.y, prev_pos.z * 0.8 + new_loc.z * 0.2));
+    // new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, new_loc.y, prev_pos.z * 0.8 + new_loc.z * 0.2));
     // this.set_control_point_pos(n - 3,
     //   new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
 
@@ -177,6 +177,13 @@ export class Curve {
     return mat;
   }
   update_curve() {
+    this.draw_curve();
+
+    update_intersections();
+    reconstruct_biarcs();
+  }
+
+  draw_curve() {
     for (let curve of this.three_curves) {
       curve.geometry.dispose();
       scene.remove(curve);
@@ -189,7 +196,7 @@ export class Curve {
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? main_curve_material : symmetry_curve_material);
-      tube.type = i == 0? "unit_curve" : "ns_line";
+      tube.type = i == 0 ? "unit_curve" : "ns_line";
       tube.userData = this;
 
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
@@ -234,59 +241,6 @@ export class Curve {
       // scene.add(mesh2);
       this.three_control_points_lines.push(mesh1);
       // this.three_control_points_lines.push(mesh2);
-    }
-
-    // this.show_intersections();
-    update_intersections();
-    // this.show_self_sym_intersections();
-    reconstruct_biarcs();
-    // reconstruct_curves();
-  }
-
-  self_sym_intersections() {
-    let p0 = this.arc_curve.getPoint(0);
-    let p1 = this.arc_curve.getPoint(1);
-    let intersections_t = [];
-    for (let i = 1; i < 200; i++) {
-      let t = i / 200;
-      let p = this.arc_curve.getPoint(t);
-      // Skip points too close to the endpoints.
-      if (p1.distanceTo(p) < 1e-1 || p0.distanceTo(p) < 1e-1 ||
-        (intersections_t.length > 0 && this.arc_curve.getPoint(intersections_t[intersections_t.length - 1]).distanceTo(p) < 1e-1))
-        continue;
-      let rot_mat = this.get_rotation_mat();
-      let accum_rot_mat = new THREE.Matrix4().identity();
-      let ref_mat = (!!this.ref_symmetry_point ? this.get_reflection_mat() : null);
-      for (let rot = 0; rot < this.rotation_symmetry; rot++) {
-        if (rot > 0) {
-          let p_r = p.clone().applyMatrix4(accum_rot_mat);
-          if (p_r.distanceTo(p) < 1e-2)
-            intersections_t.push(t);
-        }
-        if (!!ref_mat) {
-          let p_ref = p.clone().applyMatrix4(ref_mat).applyMatrix4(accum_rot_mat);
-          if (p_ref.distanceTo(p) < 1e-2)
-            intersections_t.push(t);
-        }
-        accum_rot_mat.multiply(rot_mat);
-      }
-    }
-    return intersections_t;
-  }
-
-  show_self_sym_intersections() {
-    for (let inter of this.three_intersections) {
-      inter.geometry.dispose();
-      scene.remove(inter);
-    }
-    let intersections = this.self_sym_intersections();
-    for (let inter of intersections) {
-      let sphere = new THREE.Mesh(intersection_sphere_geometry, intersection_material);
-      sphere.type = "ns_point";
-      let p = this.arc_curve.getPoint(inter);
-      sphere.position.set(p.x, p.y, p.z);
-      scene.add(sphere);
-      this.three_intersections.push(sphere);
     }
   }
 

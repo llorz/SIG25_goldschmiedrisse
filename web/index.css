@@ -1,28 +1,68 @@
 body {
+  display: flex;
   margin: 0;
   padding: 0;
+  justify-content: center;
 }
 
 
 #canvas {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   color: #ffa71b;
 }
 
+#top_view_div {
+  width: 30vw;
+  height: 49%;
+}
+
+#front_view_div {
+  width: 30vw;
+  height: 49%;
+}
+
+#design_preview_area {
+  padding-left: 16px;
+  padding-right: 16px;
+  width: fit-content;
+  height: 95%;
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#preview_area {
+  display: flex;
+  flex: auto;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#design_area {
+  display: flex;
+  flex: auto;
+  height: 100%;
+  /* width: auto; */
+  width: 95vh;
+  align-self: center;
+}
 
 .tooltiptext {
   visibility: hidden;
-/* width: 120px; */
-background-color: rgb(198, 198, 198);
-color: #000000;
-text-align: left;
-border-radius: 6px;
-padding: 5px 5px;
+  /* width: 120px; */
+  background-color: rgb(198, 198, 198);
+  color: #000000;
+  text-align: left;
+  border-radius: 6px;
+  padding: 5px 5px;
 
-/* Position the tooltip */
-position: absolute;
-z-index: 1;
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
 }
 
 #help:hover .tooltiptext {

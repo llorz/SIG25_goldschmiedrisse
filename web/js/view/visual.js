@@ -28,11 +28,26 @@ let rotation_line_material = new LineMaterial({
   opacity: 1.0,
 });
 
+// Design canvas.
 let canvas = document.getElementById("canvas");
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
 let w = canvas.width, h = canvas.height;
 export let aspect_ratio = w / h;
+
+// Top view canvas.
+let top_view_canvas = document.getElementById("top_view_canvas");
+top_view_canvas.width = top_view_canvas.clientWidth;
+top_view_canvas.height = top_view_canvas.clientHeight;
+let top_view_w = top_view_canvas.width, top_view_h = top_view_canvas.height;
+let top_view_aspect_ratio = top_view_w / top_view_h;
+// Front view canvas.
+let front_view_canvas = document.getElementById("front_view_canvas");
+front_view_canvas.width = front_view_canvas.clientWidth;
+front_view_canvas.height = front_view_canvas.clientHeight;
+let front_view_w = front_view_canvas.width, front_view_h = front_view_canvas.height;
+let front_view_aspect_ratio = front_view_w / front_view_h;
+
 
 // Init threejs stuff.
 export let scene = new THREE.Scene();
@@ -42,11 +57,30 @@ export let renderer = new THREE.WebGLRenderer({
   antialias: false,
   stencil: false,
   depth: false
-
 });
 renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(0xffffff, 1);
+let top_view_renderer = new THREE.WebGLRenderer({
+  canvas: top_view_canvas,
+  powerPreference: "high-performance",
+  antialias: false,
+  stencil: false,
+  depth: false
+});
+top_view_renderer.setSize(top_view_w, top_view_h);
+top_view_renderer.setPixelRatio(window.devicePixelRatio);
+top_view_renderer.setClearColor(0xffffff, 1);
+let front_view_renderer = new THREE.WebGLRenderer({
+  canvas: front_view_canvas,
+  powerPreference: "high-performance",
+  antialias: false,
+  stencil: false,
+  depth: false
+});
+front_view_renderer.setSize(front_view_w, front_view_h);
+front_view_renderer.setPixelRatio(window.devicePixelRatio);
+front_view_renderer.setClearColor(0xffffff, 1);
 
 // Lights.
 const light = new THREE.AmbientLight(0xffffff, 0.5);
@@ -78,22 +112,30 @@ scene.add(directionalLight4);
 // Cameras.
 export let camera3d = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
 camera3d.position.y = 1.3;
-export let camera2d = new THREE.OrthographicCamera(-aspect_ratio, aspect_ratio, 1, -1, -2, 1000);
-function init_orth_camera() {
+function update_orth_camera_aspect(cam, aspect_ratio) {
   if (aspect_ratio > 1) {
-    camera2d.left = -aspect_ratio;
-    camera2d.right = aspect_ratio;
-    camera2d.top = 1;
-    camera2d.bottom = -1;
+    cam.left = -aspect_ratio;
+    cam.right = aspect_ratio;
+    cam.top = 1;
+    cam.bottom = -1;
   } else {
-    camera2d.left = -1;
-    camera2d.right = 1;
-    camera2d.top = 1 / aspect_ratio;
-    camera2d.bottom = -1 / aspect_ratio;
+    cam.left = -1;
+    cam.right = 1;
+    cam.top = 1 / aspect_ratio;
+    cam.bottom = -1 / aspect_ratio;
   }
-  camera2d.position.y = 100;
 }
-init_orth_camera();
+function init_orth_camera(aspect_ratio) {
+  let cam = new THREE.OrthographicCamera(-aspect_ratio, aspect_ratio, 1, -1, -2, 1000);
+  update_orth_camera_aspect(cam, aspect_ratio);
+  cam.position.y = 100;
+  return cam;
+}
+export let camera2d = init_orth_camera(aspect_ratio);
+let top_view_cam = init_orth_camera(top_view_aspect_ratio);
+let front_view_cam = init_orth_camera(front_view_aspect_ratio);
+front_view_cam.position.set(0, 0, 1);
+front_view_cam.up.set(0, 0, 1);
 
 // Init composer and render pass.
 const composer = new EffectComposer(renderer);
@@ -141,16 +183,19 @@ export function disable_controls() { controls_enabled = false; }
 export function enable_controls() { controls_enabled = true; }
 export let controls = new OrbitControls(camera3d, renderer.domElement);
 controls.enableDamping = true;
-export let top_view_controls = new MapControls(camera2d, renderer.domElement);
+export let orth_camera_controls = new MapControls(camera2d, renderer.domElement);
+export let top_view_controls = new MapControls(top_view_cam, top_view_renderer.domElement);
+export let front_view_controls = new MapControls(front_view_cam, front_view_renderer.domElement);
 
 export let get_active_camera = () => mode === Mode.orthographic ? camera2d : camera3d;
 
 let designing_area = new THREE.Mesh(
   new THREE.CircleGeometry(1, 64),
-  new THREE.MeshBasicMaterial({ 
+  new THREE.MeshBasicMaterial({
     // color: 0xeb9090, 
     color: 0xffccd5,
-    side: THREE.DoubleSide, opacity: 0.3, transparent: true }));
+    side: THREE.DoubleSide, opacity: 0.3, transparent: true
+  }));
 designing_area.name = "designing_area";
 designing_area.rotateX(Math.PI / 2);
 designing_area.position.y = -1e-3;
@@ -182,19 +227,43 @@ export function update_rotation_symmetry_lines(rotation_symmetry) {
 update_rotation_symmetry_lines(params.rotation_symmetry);
 
 requestAnimationFrame(animate);
+function resizeCanvasToDisplaySize(renderer, cam2d, cam3d) {
+  const canvas = renderer.domElement;
+  // look up the size the canvas is being displayed
+  const width = canvas.parentElement.clientWidth;
+  const height = canvas.parentElement.clientHeight;
+
+  if (canvas.width !== width || canvas.height !== height) {
+    renderer.setSize(width, height, true);
+    if (cam2d) {
+      update_orth_camera_aspect(cam2d, width / height);
+      cam2d.updateProjectionMatrix();
+    }
+    if (cam3d) {
+      cam3d.aspect = width / height;
+      cam3d.updateProjectionMatrix();
+    }
+  }
+}
+
 function animate() {
+  resizeCanvasToDisplaySize(renderer, camera2d, camera3d);
+  if (params.preview_mode == "Preview") {
+    resizeCanvasToDisplaySize(top_view_renderer, top_view_cam, null);
+    resizeCanvasToDisplaySize(front_view_renderer, front_view_cam, null);
+  }
   if (mode === Mode.orthographic) {
     scene.background = null;
     controls.enabled = false;
-    top_view_controls.enabled = controls_enabled;
-    top_view_controls.update();
+    orth_camera_controls.enabled = controls_enabled;
+    orth_camera_controls.update();
     renderPass.camera = camera2d;
     outlinePass.renderCamera = camera2d;
     selectedOutlinePass.renderCamera = camera2d;
     // renderer.render(scene, camera2d);
   } else {
     // scene.background = environmentMap;
-    top_view_controls.enabled = false;
+    orth_camera_controls.enabled = false;
     controls.enabled = controls_enabled;
     controls.update();
     renderPass.camera = camera3d;
@@ -203,6 +272,8 @@ function animate() {
     // renderer.render(scene, camera3d);
   }
   composer.render();
+  top_view_renderer.render(scene, top_view_cam);
+  front_view_renderer.render(scene, front_view_cam);
   requestAnimationFrame(animate);
 }
 

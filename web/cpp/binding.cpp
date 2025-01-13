@@ -1,9 +1,9 @@
 #include "Bezier.h"
 #include "conversions.h"
+#include "intersect.h"
 #include "mc_flow.h"
 #include "structure.h"
 #include "triangulation.h"
-#include "intersect.h"
 #include <chrono>
 #include <emscripten/bind.h>
 #include <igl/per_vertex_normals.h>
@@ -100,8 +100,7 @@ val test_stuff_v2(emscripten::val curve) {
   }
   auto graph = build_multi_graph(bezi_vec, bezi_vec[0].rotation_symmetry);
 
-  
-  for (int i = 0; i< graph.faces.size(); i++) {
+  for (int i = 0; i < graph.faces.size(); i++) {
     auto [V, F, N] = build_face(graph, i);
     emscripten::val res = val::global("Array").new_();
     res.call<void>("push", eig_to_js_array(V));
@@ -175,11 +174,33 @@ val find_t_for_x(val bezier, val xs) {
   return res;
 }
 
+val calculate_minimal_surface(val boundary) {
+  std::vector<Eigen::Vector3d> pts;
+  for (int i = 0; i < boundary["length"].as<unsigned>(); i++) {
+    pts.emplace_back(boundary[i]["x"].as<double>(),
+                     boundary[i]["y"].as<double>(),
+                     boundary[i]["z"].as<double>());
+  }
+  Eigen::MatrixXd bla = to_eig_mat(pts);
+  auto [V, F] = triangulate_polygon(bla);
+  set_boundary_verts(bla, F, V);
+  V = run_mc_iteration(V, F);
+  V = run_mc_iteration(V, F);
+  Eigen::MatrixXd N;
+  igl::per_vertex_normals(V, F, N);
+  emscripten::val res = val::global("Array").new_();
+  res.call<void>("push", eig_to_js_array(V));
+  res.call<void>("push", eig_to_js_array(F));
+  res.call<void>("push", eig_to_js_array(N));
+  return res;
+}
+
 EMSCRIPTEN_BINDINGS(utils) {
   function("bezier_intersections_with_symmetry",
            &intersect_beziers_with_symmetry),
       function("closest_point", &closest_point),
       function("find_t_for_x", &find_t_for_x),
       function("build_faces", &test_stuff),
-      function("build_faces_v2", &test_stuff_v2);
+      function("build_faces_v2", &test_stuff_v2),
+      function("calculate_minimal_surface", &calculate_minimal_surface);
 }

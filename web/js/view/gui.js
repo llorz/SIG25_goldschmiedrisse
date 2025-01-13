@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, top_view_controls, update_rotation_symmetry_lines } from "./visual.js";
-import { add_level, curves, load_from_curves_file, recon_curves, reconstruct_surfaces, refresh, set_biarc_visibility, set_control_points_visibility, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines } from "./visual.js";
+import { add_level, curves, export_recon_obj, load_from_curves_file, recon_curves, reconstruct_surfaces, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
@@ -10,13 +10,14 @@ import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
 import { surface_material } from "./reconstructed_surface.js";
+import { init_add_new_face } from "./add_face_mode.js";
 
 export let pane = new Pane({
   title: "Menu",
   expanded: true,
 });
 pane.registerPlugin(EssentialsPlugin);
-
+export let left_menu;
 
 
 let top_view_options = [], side_view_options = [];
@@ -45,6 +46,25 @@ pane.addBinding(params, 'view', {
   } else {
     set_mode(Mode.perspective);
     set_top_view_visibility(true);
+  }
+});
+
+pane.addBinding(params, 'preview_mode', {
+  view: 'radiogrid',
+  groupName: 'preview_mode',
+  size: [2, 1],
+  cells: (x, y) => ({
+    title: x == 0 ? 'Design' : 'Preview',
+    value: x == 0 ? 'Design' : 'Preview',
+  }),
+  label: 'View',
+}).on('change', (ev) => {
+  if (ev.value == "Design") {
+    document.getElementById("preview_area").style.display = "none";
+    left_menu.hidden = false;
+  } else {
+    document.getElementById("preview_area").style.display = "flex";
+    left_menu.hidden = true;
   }
 });
 
@@ -114,15 +134,15 @@ let ortho_view = pane.addBlade({
   if (ev.index[0] == 0) {
     camera2d.position.set(0, 100, 0);
     camera2d.up.set(0, 1, 0);
-    top_view_controls.target.set(0, 0, 0);
-    top_view_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-    top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
+    orth_camera_controls.target.set(0, 0, 0);
+    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
+    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
   } else {
     camera2d.position.set(0, 0, 1);
     camera2d.up.set(0, 0, 1);
-    top_view_controls.target.set(0, 0, 0);
-    top_view_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
-    top_view_controls._quatInverse = top_view_controls._quat.clone().invert();
+    orth_camera_controls.target.set(0, 0, 0);
+    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
   }
   set_control_points_visibility(params.control_points_visible);
 });
@@ -159,15 +179,24 @@ export let level_controller = pane.addBinding(params, 'current_level', {
 }).on('change', (ev) => {
   update_current_level();
 });
-window.lala = level_controller;
 
 
-export let left_menu = new Pane({
+pane.addButton({
+  title: 'Add face',
+}).on('click', (ev) => {
+  init_add_new_face();
+});
+
+
+/*******************************************************************************************/
+
+left_menu = new Pane({
   title: "Load/save",
   expanded: true,
   container: document.getElementById("left_menu"),
 });
 left_menu.registerPlugin(EssentialsPlugin);
+left_menu.hidden = true;
 
 const curves_in_file = ["tn-1", "tn-2", "tn-3", "tn-4", "tn-7", "tn-12", "two_curves"];
 function get_saved_curves_names() {
@@ -252,4 +281,11 @@ left_menu.addButton({
   title: 'Test',
 }).on('click', (ev) => {
   reconstruct_surfaces();
+});
+
+
+left_menu.addButton({
+  title: "Export OBJ",
+}).on('click', (ev) => {
+  export_recon_obj();
 });

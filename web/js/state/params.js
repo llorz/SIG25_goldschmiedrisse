@@ -2,6 +2,7 @@
 
 export let params = {
   view: "Ortho",
+  preview_mode: 'Preview',
   ortho_view: "Top view",
   rotation_symmetry: 4,
   reflection_symmetry: true,

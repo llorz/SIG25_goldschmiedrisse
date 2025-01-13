@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+
 import { Curve } from "../view/curve";
 import { load_curves } from "../io/load_curves";
 import { sync_module } from "../native/native";
@@ -6,7 +9,7 @@ import { ReconstructedCurve } from "../view/reconstructed_three_curve";
 import { camera2d, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
 import { ReconstructedBiArcCurve } from "../geom/reconstructed_biarc_curve";
 import { ReconstructedThreeBiArcCurve } from "../view/reconstructed_three_biarc_curve";
-import { analytic_curves_intersection, analytic_self_intersection, curves_intersection, self_sym_intersections } from "../utils/intersect";
+import { analytic_curves_intersection, analytic_self_intersection } from "../utils/intersect";
 import { params } from "./params";
 import { clear_selected_obj, selected_obj } from "../interaction/mouse";
 import { show_intersections_at_level, update_intersections } from "../view/intersections";
@@ -15,6 +18,7 @@ import { level_controller } from "../view/gui";
 /** @type {Curve[]} */
 export let curves = [];
 // The height of each curve.
+/** @type {ReconstructedThreeBiArcCurve[]} */
 export let recon_curves = [];
 // Vertical lines to fill the gap between the curve top and the level top.
 export let filling_curves = [];
@@ -58,6 +62,7 @@ export let EditMode = {
   move_control_point: "move_control_point",
   move_height_control_point: "move_height_control_point",
   move_tangent_control_point: "move_tangent_control_point",
+  new_face: "new_face",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }
@@ -67,6 +72,42 @@ export let Mode = {
   perspective: "side_view",
 };
 export let mode = Mode.orthographic;
+
+export class RealIntersection {
+  /**
+   * 
+   * @param {ReconstructedThreeBiArcCurve} curve1 
+   * @param {ReconstructedThreeBiArcCurve} curve2 
+   * @param {number} t1 
+   * @param {number} t2 
+   */
+  constructor(curve1, curve2, t1, t2) {
+    this.curve1 = curve1;
+    this.curve2 = curve2;
+    this.t1 = t1;
+    this.t2 = t2;
+  }
+};
+export function get_all_real_intersections() {
+  let inters = [];
+  for (let i = 0; i < curves.length; i++) {
+    let self_inters = analytic_self_intersection(curves[i], true);
+    for (let inter of self_inters) {
+      let t = inter.t;
+      inters.push(new RealIntersection(recon_curves[i], recon_curves[i], t, t));
+    }
+
+    for (let j = i + 1; j < curves.length; j++) {
+      if (curves[i].level != curves[j].level) continue;
+      let res = analytic_curves_intersection(curves[i], curves[j], true);
+      for (let [t1, t2] of res) {
+        if (recon_curves[i].curve.getPoint(t1).distanceTo(recon_curves[j].curve.getPoint(t2)) < 1e-3)
+          inters.push(new RealIntersection(recon_curves[i], recon_curves[j], t1, t2));
+      }
+    }
+  }
+  return inters;
+}
 
 export class Intersection {
   /**
@@ -96,7 +137,8 @@ export function find_intersections() {
   for (let i = 0; i < curves.length; i++) {
     // Find self intersections.
     let self_inters = analytic_self_intersection(curves[i]);
-    for (let t of self_inters) {
+    for (let inter of self_inters) {
+      let t = inter.t;
       intersections.push(new Intersection(curves[i], curves[i], t, t, i, i, curves[i].level));
       if (Math.abs(t - curves[i].prc_t) < Math.abs(closest_t[i] - curves[i].prc_t)) {
         closest_t[i] = t;
@@ -310,7 +352,7 @@ export function set_mode(m) {
 
 export function refresh() {
   for (let curve of curves) {
-    curve.update_curve();
+    curve.draw_curve();
   }
   for (let recon_three_curve of recon_curves) {
     recon_three_curve.curve.compute_biarc();
@@ -318,4 +360,21 @@ export function refresh() {
   }
   set_designing_area_height(get_level_bottom(params.current_level));
   show_intersections_at_level(params.current_level);
+}
+
+export function export_recon_obj() {
+  let tmp_scene = new THREE.Scene();
+  for (let recon_curve of recon_curves) {
+    for (let obj of recon_curve.three_curves) {
+      tmp_scene.add(obj.clone());
+    }
+  }
+  const exporter = new OBJExporter();
+  const data = exporter.parse(tmp_scene);
+  const blob = new Blob([data], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'exported.obj';
+  link.click();
 }

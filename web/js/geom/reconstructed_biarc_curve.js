@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ArcCurve } from './arc_curve';
 import { get_level_height, set_level_height } from '../state/state';
 import { Curve } from '../view/curve';
+import { clamp11 } from '../utils/math_funcs';
+import { get_reflection_mat, get_rotation_mat } from '../utils/intersect';
 
 export class ReconstructedBiArcCurve extends THREE.Curve {
 
@@ -9,11 +11,15 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
    * 
    * @param {Curve} curve 
    */
-  constructor(curve) {
+  constructor(curve, arc_curve = null) {
     super();
 
     /** @type {ArcCurve} */
     this.arc_curve = curve.arc_curve;
+    if (arc_curve != null) {
+      this.arc_curve = arc_curve;
+    }
+    /** @type {Curve} */
     this.curve = curve;
     this.rotation_symmetry = curve.rotation_symmetry;
     this.ref_symmetry_point = curve.ref_symmetry_point;
@@ -23,6 +29,14 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     /** @type {number} */
     this.middle_height;
     this.set_top_height(curve.height);
+  }
+
+  get_sym_curve(rot, ref = false) {
+    let mat = get_rotation_mat(this.rotation_symmetry, rot);
+    if (ref) {
+      mat.multiply(get_reflection_mat(this.ref_symmetry_point));
+    }
+    return new ReconstructedBiArcCurve(this.curve, this.arc_curve.apply_3d_transformation(mat));
   }
 
   compute_biarc() {
@@ -79,6 +93,24 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.curve.height = this.top_height
     // set_level_height(this.level, this.top_height);
     this.compute_biarc();
+  }
+
+  /**
+   * Returns the 't' parameter for which the arc_curve parameter is x.
+   * @param {number} x 
+   */
+  get_t_for_x(x) {
+    let target_x = x * this.arc_curve.length();
+    let x_arca = this.ca.x + this.ra * Math.cos(this.max_angle);
+    if (target_x <= x_arca) {
+      let target_ang = Math.acos(clamp11((target_x - this.ca.x) / this.ra));
+      let tt = (target_ang - Math.PI) / (this.max_angle - Math.PI);
+      return tt * this.arca_len / this.len;
+    }
+    let target_ang = 2 * Math.PI - Math.acos(clamp11((target_x - this.cb.x) / this.rb));
+    let tt = (target_ang - this.min_angle) / (2 * Math.PI - this.min_angle);
+    let s = this.arca_len + tt * this.arcb_len;
+    return s / this.len;
   }
 
   getPoint(t, optionalTarget = new THREE.Vector3()) {

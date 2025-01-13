@@ -6,7 +6,7 @@ import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { params } from '../state/params';
 import { get_level_height, mode, updated_height } from '../state/state';
 
-let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
+let sweep_plane_geom = new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3) ;// new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();
 var size = new THREE.Vector3();
 sweep_plane_geom.boundingBox.getSize(size);

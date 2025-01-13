@@ -10,6 +10,7 @@ import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '..
 import * as THREE from 'three';
 import { Curve } from '../view/curve.js';
 import { closest_rotation_line } from '../utils/snapping.js';
+import { add_new_face_vertex, remove_new_face_vertex } from '../view/add_face_mode.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
 let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
@@ -96,6 +97,19 @@ canvas.onpointerdown = (e) => {
       reconstruct_biarcs();
     }
     return;
+  }
+  if (edit_mode == EditMode.new_face) {
+    let obj = find_selected(point_down_location, false);
+    if (obj && obj.type == "intersection_point") {
+      let ind = selectedOutlinePass.selectedObjects.indexOf(obj);
+      if (ind != -1) {
+        selectedOutlinePass.selectedObjects.splice(ind, 1);
+        remove_new_face_vertex(obj.userData);
+      } else {
+        add_new_face_vertex(obj.userData);
+        selectedOutlinePass.selectedObjects.push(obj);
+      }
+    }
   }
 };
 canvas.onpointerup = (e) => {
