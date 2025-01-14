@@ -40,7 +40,8 @@ export class Curve {
     /** @type{number} N rotation symmetry */
     this.rotation_symmetry = rot_symmetry;
     /** @type{boolean | THREE.Vector3} */
-    this.ref_symmetry_point = ref_symmetry;
+    this.ref_symmetry_point = null;
+    this.ref_symmetry_type = ref_symmetry;
     this.level = level;
 
     this.height = get_level_height(level);
@@ -71,9 +72,11 @@ export class Curve {
     for (let i = 0; i < 3; i++)
       this.add_control_point(start_loc);
     this.arc_curve = new ArcCurve(this.control_points);
-    if (!!this.ref_symmetry_point && typeof this.ref_symmetry_point == "boolean") {
-      this.ref_symmetry_point = new THREE.Vector3();
-      this.ref_symmetry_point.copy(this.control_points[0]);
+    if (!this.ref_symmetry_point) {
+      if (this.ref_symmetry_type == "first point" || this.ref_symmetry_type == "last point") {
+        this.ref_symmetry_point = new THREE.Vector3();
+        this.ref_symmetry_point.copy(this.control_points[0]);
+      }
     }
     // By default first point is a ground point.
     this.point_labels.push(0);
@@ -88,7 +91,10 @@ export class Curve {
 
   move_control_point(three_point_mesh, new_loc) {
     let idx = this.three_control_points.indexOf(three_point_mesh);
-    if (idx == 0) {
+    if (idx == 0 && this.ref_symmetry_type == "first point") {
+      // Also change reflection point.
+      this.ref_symmetry_point.copy(new_loc);
+    } else if (idx == 2 && this.ref_symmetry_type == "last point") {
       // Also change reflection point.
       this.ref_symmetry_point.copy(new_loc);
     }
@@ -111,6 +117,10 @@ export class Curve {
     // new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, new_loc.y, prev_pos.z * 0.8 + new_loc.z * 0.2));
     // this.set_control_point_pos(n - 3,
     //   new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
+
+    if (this.ref_symmetry_type == "last point") {
+      this.ref_symmetry_point.copy(this.control_points[n - 1]);
+    }
 
     this.update_curve();
   }

@@ -5,7 +5,7 @@ export let params = {
   preview_mode: 'Design',
   ortho_view: "Top view",
   rotation_symmetry: 4,
-  reflection_symmetry: true,
+  reflection_symmetry: 'first point',
   control_points_visible: true,
   reconstructed_surfaces_visible: true,
   reconstructed_biarc_visible: true,

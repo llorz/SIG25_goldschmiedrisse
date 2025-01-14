@@ -169,9 +169,17 @@ new_curve_options_folder.addBinding(params, 'rotation_symmetry', {
   update_rotation_symmetry_lines(ev.value);
 });
 
-new_curve_options_folder.addBinding(params, 'reflection_symmetry', {
-  label: 'Reflection Symmetry',
+new_curve_options_folder.addBlade({
+  view: 'list',
+  label: 'Reflection sym',
+  options: [{ text: 'first point', value: 'first point' }, { text: 'last point', value: 'last point' },
+  { text: 'none', value: 'none' },
+  ],
+  value: 'first point',
+}).on('change', (ev) => {
+  params.reflection_symmetry = ev.value;
 });
+
 pane.addButton({
   title: 'add level',
 }).on('click', (ev) => {

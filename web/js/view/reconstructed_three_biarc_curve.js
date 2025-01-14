@@ -173,10 +173,26 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   only_update_geometry() {
-
+    this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
+    this.control_points[1].position.copy(this.curve.getPoint(1));
+    if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
+      this.sweep_geom(cylinder_geom, this.three_curves[0].children[0].geometry);
+      this.three_curves[0].children[0].geometry.attributes.position.needsUpdate = true;
+    } else {
+      this.sweep_geom(cylinder_geom3, this.three_curves[0].children[0].geometry);
+      this.three_curves[0].children[0].geometry.attributes.position.needsUpdate = true;
+      this.sweep_geom(sweep_plane_geom, this.three_curves[0].children[1].geometry);
+      this.three_curves[0].children[1].geometry.attributes.position.needsUpdate = true;
+      this.sweep_geom(cylinder_geom2, this.three_curves[0].children[2].geometry);
+      this.three_curves[0].children[2].geometry.attributes.position.needsUpdate = true;
+    }
   }
 
   update_curve() {
+    // if (this.three_curves.length > 0) {
+    //   this.only_update_geometry();
+    //   return;
+    // }
     for (let group of this.three_curves) {
       for (let curve of group.children) {
         curve.geometry.dispose();
