@@ -15,7 +15,7 @@ sweep_plane_geom.boundingBox.getSize(size);
 sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2,
   -sweep_plane_geom.boundingBox.min.z - size.z / 2);
 
-let cylinder_geom = new THREE.CylinderGeometry(0.007, 0.007, 10, 32, 200, true);
+let cylinder_geom = new THREE.CylinderGeometry(0.04, 0.04, 10, 32, 200, true);
 cylinder_geom.rotateZ(Math.PI / 2);
 cylinder_geom.computeBoundingBox();
 let size_cyl = new THREE.Vector3();
@@ -210,7 +210,7 @@ export class ReconstructedThreeBiArcCurve {
     if (Math.abs(this.curve.curve.height - level_height) > 1e-3) {
       let curve_top = this.curve.getPoint(1);
       let line_curve = new THREE.LineCurve3(curve_top, new THREE.Vector3(curve_top.x, level_height, curve_top.z));
-      filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, 0.005, 8, false), symmetry_curve_material);
+      filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, 0.04, 8, false), symmetry_curve_material);
     }
 
     let orig_tube = this.get_sweep_object();
