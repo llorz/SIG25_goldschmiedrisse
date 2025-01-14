@@ -173,8 +173,12 @@ canvas.onpointermove = (e) => {
 
   if (edit_mode == EditMode.new_curve) {
     // Add new point in a curve.
-    let closest = closest_rotation_line(flat_point);
-    if (flat_point.distanceTo(closest) < 0.02) {
+    // let closest = closest_rotation_line(flat_point);
+    // if (flat_point.distanceTo(closest) < 0.02) {
+    //   flat_point = closest;
+    // }
+    let closest = get_snapping_point(flat_point, pending_curve);
+    if (closest) {
       flat_point = closest;
     }
     pending_curve.move_last_point(flat_point);
@@ -185,8 +189,12 @@ canvas.onpointermove = (e) => {
       let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
       ray_cast.ray.intersectPlane(intersection_plane, flat_point);
     }
-    let closest = closest_rotation_line(flat_point);
-    if (flat_point.distanceTo(closest) < 0.02) {
+    // let closest = closest_rotation_line(flat_point);
+    // if (flat_point.distanceTo(closest) < 0.02) {
+    //   flat_point = closest;
+    // }
+    let closest = get_snapping_point(flat_point, selected_obj.userData);
+    if (closest) {
       flat_point = closest;
     }
     selected_obj.userData.move_control_point(selected_obj, flat_point);

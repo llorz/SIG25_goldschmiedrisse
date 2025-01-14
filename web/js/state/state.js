@@ -258,6 +258,13 @@ export function updated_height(last_top_height, last_mid_height, curve) {
       recon_three_curve.update_curve();
     }
   }
+  // The bottom might have changed, update the curves in the next level.
+  for (let recon_three_curve of recon_curves) {
+    if (recon_three_curve.curve.level == curve.level + 1) {
+      recon_three_curve.curve.compute_biarc();
+      recon_three_curve.update_curve();
+    }
+  }
 }
 
 export function reconstruct_curves() {

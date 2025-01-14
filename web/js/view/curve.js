@@ -205,7 +205,21 @@ export class Curve {
     return symmetry_curve_material;
   }
 
+  update_control_points_height() {
+    let bottom = get_level_bottom(this.level);
+    for (let i = 0; i < this.control_points.length; i++) {
+      let p = this.control_points[i];
+      if (Math.abs(p.y - bottom) < 0.001) {
+        return;
+      }
+      p.y = bottom;
+      this.three_control_points[i].position.y = bottom;
+    }
+    this.arc_curve.setPoints(this.control_points);
+  }
+
   draw_curve() {
+    this.update_control_points_height();
     for (let curve of this.three_curves) {
       curve.geometry.dispose();
       scene.remove(curve);
