@@ -119,6 +119,9 @@ export function line_segment_arc_intersection(p1, p2, arc) {
 }
 
 export function get_reflection_mat(ref_symmetry_point) {
+  if (!ref_symmetry_point) {
+    return new THREE.Matrix4().identity();
+  }
   let x = ref_symmetry_point.x, y = 0, //ref_symmetry_point.y,
     z = ref_symmetry_point.z;
   let norm = Math.sqrt(x * x + y * y + z * z);

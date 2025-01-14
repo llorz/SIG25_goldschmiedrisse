@@ -9,7 +9,7 @@ import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '..
 
 import * as THREE from 'three';
 import { Curve } from '../view/curve.js';
-import { closest_rotation_line } from '../utils/snapping.js';
+import { closest_rotation_line, get_snapping_point } from '../utils/snapping.js';
 import { add_new_face_vertex, remove_new_face_vertex } from '../view/add_face_mode.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
@@ -135,8 +135,12 @@ canvas.onpointerup = (e) => {
     let flat_point = new THREE.Vector3();
     let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
     ray_cast.ray.intersectPlane(intersection_plane, flat_point);
-    let closest = closest_rotation_line(flat_point);
-    if (flat_point.distanceTo(closest) < 0.02) {
+    // let closest = closest_rotation_line(flat_point);
+    // if (flat_point.distanceTo(closest) < 0.02) {
+    //   flat_point = closest;
+    // }
+    let closest = get_snapping_point(flat_point, pending_curve);
+    if (closest) {
       flat_point = closest;
     }
     if (edit_mode == EditMode.none) {
@@ -173,10 +177,6 @@ canvas.onpointermove = (e) => {
     if (flat_point.distanceTo(closest) < 0.02) {
       flat_point = closest;
     }
-    // let p = pending_curve.closest_point(flat_point);
-    // if (p.distanceTo(flat_point) < 0.02) {
-    //   flat_point = p;
-    // }
     pending_curve.move_last_point(flat_point);
   } else if (edit_mode == EditMode.move_control_point
     && selected_obj && selected_obj.type == "control_point") {
@@ -189,10 +189,6 @@ canvas.onpointermove = (e) => {
     if (flat_point.distanceTo(closest) < 0.02) {
       flat_point = closest;
     }
-    // let p = selected_obj.userData.closest_point(flat_point);
-    // if (p.distanceTo(flat_point) < 0.02) {
-    //   flat_point = p;
-    // }
     selected_obj.userData.move_control_point(selected_obj, flat_point);
   } else if (edit_mode == EditMode.move_height_control_point
     // && mode == Mode.perspective

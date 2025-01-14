@@ -13,5 +13,8 @@
     "three": "^0.168.0",
     "tweakpane": "^4.0.4",
     "vite": "^5.4.3"
+  },
+  "devDependencies": {
+    "@types/three": "^0.172.0"
   }
 }

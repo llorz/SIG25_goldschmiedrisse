@@ -7,6 +7,8 @@ import { get_level_bottom, get_level_height, reconstruct_biarcs, reconstruct_cur
 import { BiArcCurve } from '../geom/biarc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { update_intersections } from './intersections';
+import { params } from '../state/params';
+import { get_curve_color, get_curve_color_material, get_random_color } from '../state/color_generator';
 
 const sphere_geom = new THREE.SphereGeometry(0.013, 32, 32);
 const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
@@ -180,7 +182,17 @@ export class Curve {
     this.draw_curve();
 
     update_intersections();
-    reconstruct_biarcs();
+    reconstruct_biarcs(this);
+  }
+
+  get_main_material() {
+    return main_curve_material;
+  }
+  get_sym_material(i) {
+    if (params.biarcs_visualization == 'colorful') {
+      return get_curve_color_material(i);
+    }
+    return symmetry_curve_material;
   }
 
   draw_curve() {
@@ -195,7 +207,7 @@ export class Curve {
     let tube_geom = new THREE.TubeGeometry(this.arc_curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
-        i == 0 ? main_curve_material : symmetry_curve_material);
+        i == 0 ? this.get_main_material() : this.get_sym_material(i));
       tube.type = i == 0 ? "unit_curve" : "ns_line";
       tube.userData = this;
 
@@ -207,7 +219,7 @@ export class Curve {
     if (!!this.ref_symmetry_point) {
       let ref_mat = this.get_reflection_mat();
       for (let i = 0; i < this.rotation_symmetry; i++) {
-        let tube = new THREE.Mesh(tube_geom, symmetry_reflection_curve_material);
+        let tube = new THREE.Mesh(tube_geom, this.get_sym_material(i));
         tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
@@ -242,6 +254,8 @@ export class Curve {
       this.three_control_points_lines.push(mesh1);
       // this.three_control_points_lines.push(mesh2);
     }
+
+    this.set_control_points_visibility(params.control_points_visible);
   }
 
   show_bezier_intersections() {
@@ -286,10 +300,10 @@ export class Curve {
 
   set_control_points_visibility(is_visible) {
     for (let p of this.three_control_points) {
-      p.visible = is_visible && this.three_curves[0].visible;
+      p.visible = is_visible && this.three_curves[0].visible && params.preview_mode != 'Preview'
     }
     for (let p of this.three_control_points_lines) {
-      p.visible = is_visible && this.three_curves[0].visible;
+      p.visible = is_visible && this.three_curves[0].visible && params.preview_mode != 'Preview'
     }
   }
 

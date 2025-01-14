@@ -8,7 +8,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
-import { Mode, mode } from '../state/state';
+import { curves, Mode, mode } from '../state/state';
 import { params } from '../state/params';
 // import px from './environment_maps/less_fancy_church/nx.png';
 // import ny from './environment_maps/less_fancy_church/ny.png';
@@ -64,9 +64,7 @@ renderer.setClearColor(0xffffff, 1);
 let top_view_renderer = new THREE.WebGLRenderer({
   canvas: top_view_canvas,
   powerPreference: "high-performance",
-  antialias: false,
-  stencil: false,
-  depth: false
+  antialias: true,
 });
 top_view_renderer.setSize(top_view_w, top_view_h);
 top_view_renderer.setPixelRatio(window.devicePixelRatio);
@@ -74,9 +72,7 @@ top_view_renderer.setClearColor(0xffffff, 1);
 let front_view_renderer = new THREE.WebGLRenderer({
   canvas: front_view_canvas,
   powerPreference: "high-performance",
-  antialias: false,
-  stencil: false,
-  depth: false
+  antialias: true,
 });
 front_view_renderer.setSize(front_view_w, front_view_h);
 front_view_renderer.setPixelRatio(window.devicePixelRatio);
@@ -208,6 +204,12 @@ export function set_designing_area_height(height) {
     line.position.y = height;
   }
 }
+export function set_design_area_visibility(visible) {
+  designing_area.visible = visible;
+  for (let line of rotation_symmetry_lines) {
+    line.visible = visible;
+  }
+}
 export function update_rotation_symmetry_lines(rotation_symmetry) {
   for (let line of rotation_symmetry_lines) {
     scene.remove(line);
@@ -272,12 +274,24 @@ function animate() {
     // renderer.render(scene, camera3d);
   }
   composer.render();
-  top_view_renderer.render(scene, top_view_cam);
-  front_view_renderer.render(scene, front_view_cam);
+  if (params.preview_mode == "Preview") {
+    top_view_renderer.render(scene, top_view_cam);
+    front_view_renderer.render(scene, front_view_cam);
+  }
   requestAnimationFrame(animate);
 }
 
-
+export function update_front_view_cam() {
+  let top_height = 0;
+  for (let curve of curves) {
+    top_height = Math.max(top_height, curve.height);
+  }
+  front_view_cam.position.set(0, top_height / 2, 1);
+  front_view_cam.up.set(0, 0, 1);
+  front_view_cam.zoom = 2 / top_height;
+  front_view_controls.target.set(0, top_height / 2, 0);
+  
+}
 
 let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
 sweep_plane_geom.computeBoundingBox();

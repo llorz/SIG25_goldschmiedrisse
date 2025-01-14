@@ -1,11 +1,11 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines } from "./visual.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam } from "./visual.js";
 import { add_level, curves, export_recon_obj, load_from_curves_file, recon_curves, reconstruct_surfaces, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
-import { save_curves } from "../io/save_curves.js";
+import { save_curves, save_state } from "../io/save_curves.js";
 import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
@@ -62,9 +62,14 @@ pane.addBinding(params, 'preview_mode', {
   if (ev.value == "Design") {
     document.getElementById("preview_area").style.display = "none";
     left_menu.hidden = false;
+    set_design_area_visibility(true);
+    refresh();
   } else {
     document.getElementById("preview_area").style.display = "flex";
     left_menu.hidden = true;
+    set_design_area_visibility(false);
+    update_front_view_cam();
+    refresh();
   }
 });
 
@@ -113,7 +118,9 @@ surface_params.addBinding(params, "use_rmf", {
 surface_params.addBlade({
   view: 'list',
   label: 'Biarc visualization',
-  options: [{text: 'tube', value: 'tube'}, {text: 'fancy', value: 'fancy'}],
+  options: [{ text: 'tube', value: 'tube' }, { text: 'ribbon', value: 'ribbon' },
+  { text: 'colorful', value: 'colorful' },
+  ],
   value: 'tube',
 }).on('change', (ev) => {
   params.biarcs_visualization = ev.value;
@@ -196,7 +203,6 @@ left_menu = new Pane({
   container: document.getElementById("left_menu"),
 });
 left_menu.registerPlugin(EssentialsPlugin);
-left_menu.hidden = true;
 
 const curves_in_file = ["tn-1", "tn-2", "tn-3", "tn-4", "tn-7", "tn-12", "two_curves"];
 function get_saved_curves_names() {
@@ -269,7 +275,7 @@ left_menu.addButton({
     }
   }
   localStorage.setItem("saved_curves_names", saved_curves_names);
-  let text = save_curves(curves);
+  let text = save_state();
   localStorage.setItem(params.save_curve_name, text);
   let api_state = curve_list.exportState();
   let options = get_curves_list();

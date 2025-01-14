@@ -5,15 +5,17 @@ import { get_active_camera, scene } from './visual';
 import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { params } from '../state/params';
 import { get_level_height, mode, updated_height } from '../state/state';
+import { get_curve_color, get_curve_color_material } from '../state/color_generator';
 
-let sweep_plane_geom = new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3) ;// new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);
+let sweep_plane_geom =// new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3);
+  new THREE.PlaneGeometry(100, 0.1, 200, 1);
 sweep_plane_geom.computeBoundingBox();
 var size = new THREE.Vector3();
 sweep_plane_geom.boundingBox.getSize(size);
 sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2,
   -sweep_plane_geom.boundingBox.min.z - size.z / 2);
 
-let cylinder_geom = new THREE.CylinderGeometry(0.004, 0.004, 10, 32, 100, true);
+let cylinder_geom = new THREE.CylinderGeometry(0.007, 0.007, 10, 32, 200, true);
 cylinder_geom.rotateZ(Math.PI / 2);
 cylinder_geom.computeBoundingBox();
 let size_cyl = new THREE.Vector3();
@@ -21,10 +23,17 @@ cylinder_geom.boundingBox.getSize(size_cyl);
 cylinder_geom.translate(-cylinder_geom.boundingBox.min.x, -cylinder_geom.boundingBox.min.y - size_cyl.y / 2,
   -cylinder_geom.boundingBox.min.z - size_cyl.z / 2);
 
-let cylinder_geom2 = cylinder_geom.clone();
+let cylinder_geom2 = new THREE.CylinderGeometry(0.01, 0.01, 10, 32, 200, true);
+cylinder_geom2.rotateZ(Math.PI / 2);
+cylinder_geom2.computeBoundingBox();
+let size_cyl2 = new THREE.Vector3();
+cylinder_geom2.boundingBox.getSize(size_cyl2);
+cylinder_geom2.translate(-cylinder_geom2.boundingBox.min.x, -cylinder_geom2.boundingBox.min.y - size_cyl2.y / 2,
+  -cylinder_geom2.boundingBox.min.z - size_cyl2.z / 2);
 cylinder_geom2.translate(0, -size.y / 2, 0);
-let cylinder_geom3 = cylinder_geom.clone();
-cylinder_geom3.translate(0, size.y / 2, 0);
+
+let cylinder_geom3 = cylinder_geom2.clone();
+cylinder_geom3.translate(0, size.y, 0);
 
 
 const sweep_plane_material = new THREE.MeshStandardMaterial({
@@ -35,7 +44,7 @@ const sweep_plane_material = new THREE.MeshStandardMaterial({
   // color: 0xffea00,
 
   color: 0xffd166,
-   side: THREE.DoubleSide,
+  side: THREE.DoubleSide,
   metalness: 0.2, roughness: 0.8
 });
 
@@ -124,18 +133,17 @@ export class ReconstructedThreeBiArcCurve {
     } else if (idx == 1) {
       this.curve.set_top_height(new_loc.y);
     }
-    updated_height(last_top_height, this.curve.top_height, last_mid_height, this.curve.middle_height);
     this.update_curve();
+    updated_height(last_top_height, last_mid_height, this.curve);
   }
 
-  sweep_geom(orig_geom) {
-    let geom = orig_geom.clone();
+  sweep_geom(orig_geom, geom = orig_geom.clone()) {
     let v = new THREE.Vector3();
     let size_x = orig_geom.boundingBox.getSize(new THREE.Vector3()).x;
-    for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
-      v.fromBufferAttribute(geom.attributes.position, i);
+    for (let i = 0, l = orig_geom.attributes.position.count; i < l; i++) {
+      v.fromBufferAttribute(orig_geom.attributes.position, i);
       let t = v.x / (size_x + 1e-2);
-      let frame = params.use_rmf? this.curve.get_rmf_frame(t) : this.curve.getFrame(t);
+      let frame = params.use_rmf ? this.curve.get_rmf_frame(t) : this.curve.getFrame(t);
       let new_v = frame.position.clone().add(frame.normal.clone().multiplyScalar(v.z)).add(frame.binormal.clone().multiplyScalar(v.y));
       geom.attributes.position.setXYZ(i, new_v.x, new_v.y, new_v.z);
     }
@@ -145,14 +153,27 @@ export class ReconstructedThreeBiArcCurve {
 
   get_sweep_object() {
     let obj = new THREE.Group();
-    if (params.biarcs_visualization == 'tube') {
+    if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom), symmetry_curve_material));
-    } else if (params.biarcs_visualization == 'fancy') {
+    } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom2), symmetry_curve_material));
     }
     return obj;
+  }
+  get_main_material() {
+    return main_curve_material;
+  }
+  get_sym_material(i) {
+    if (params.biarcs_visualization == 'colorful') {
+      return get_curve_color_material(i);
+    }
+    return symmetry_curve_material;
+  }
+
+  only_update_geometry() {
+
   }
 
   update_curve() {
@@ -176,19 +197,23 @@ export class ReconstructedThreeBiArcCurve {
       filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, 0.005, 8, false), symmetry_curve_material);
     }
 
-    let curve_points = 64;//this.points.length * 32;
     let orig_tube = this.get_sweep_object();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = orig_tube.clone();
-      // let tube = new THREE.Mesh(tube_geom,
-      //   i == 0 ? sweep_plane_material : sweep_plane_material);
-      // i == 0 ? main_curve_material : symmetry_curve_material);
+      if (params.biarcs_visualization == 'colorful') {
+        for (let obj of tube.children) {
+          obj.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+        }
+      }
       tube.type = "ns_line";
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(tube);
       scene.add(tube);
       if (!!filling_tube) {
         let filling_tube_clone = filling_tube.clone();
+        if (params.biarcs_visualization == 'colorful') {
+          filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+        }
         filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
         this.three_curves.push(filling_tube_clone);
         scene.add(filling_tube_clone);
@@ -198,9 +223,11 @@ export class ReconstructedThreeBiArcCurve {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let tube = orig_tube.clone();
-        // let tube = new THREE.Mesh(tube_geom,
-        //   sweep_plane_material);
-        // symmetry_reflection_curve_material);
+        if (params.biarcs_visualization == 'colorful') {
+          for (let obj of tube.children) {
+            obj.material = this.get_sym_material(i);
+          }
+        }
         tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);
         tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);

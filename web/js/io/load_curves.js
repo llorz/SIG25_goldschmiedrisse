@@ -1,4 +1,5 @@
 
+import { curves } from "../state/state";
 import { Curve } from "../view/curve";
 import * as THREE from "three";
 
@@ -66,4 +67,33 @@ export function load_curves(txt) {
     curve.update_curve();
   }
   return curves;
+}
+
+export function load_state(txt) {
+  curves.length = 0;
+  txt.split(/[\r\n]+/g).forEach((line) => {
+    let parts = line.split(/\s+/);
+    if (line.startsWith("numCurves")) { }
+    else if (line.startsWith("unitCurve")) {
+      let curve = new Curve(parseInt(parts[1]),
+        parseInt(parts[2]) == 1);
+      curves.push(curve);
+    } else if (line.startsWith("reflectionPoint")) {
+      last(curves).ref_symmetry_point = parse_point(parts.slice(1));
+      // Control points.
+    } else if (line.startsWith("ptPos")) {
+      let curve = last(curves);
+      let pt = parse_point(parts.slice(1));
+      curve.add_control_point(pt);
+    } else if (line.startsWith("level")) {
+      last(curves).level = parseFloat(parts[1]);
+    } else if (line.startsWith("height")) {
+      last(curves).height = parseFloat(parts[1]);
+    } else if (line.startsWith("prc_t")) {
+      last(curves).prc_t = parseFloat(parts[1]);
+    }
+  });
+  for (let curve of curves) {
+    curve.get_bezy_curve();
+  }
 }

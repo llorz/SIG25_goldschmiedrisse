@@ -1,4 +1,5 @@
 
+import { curves } from "../state/state";
 import { Curve } from "../view/curve";
 import * as THREE from "three";
 
@@ -19,7 +20,7 @@ export function save_curves(curves) {
   let txt = "";
   txt += `numCurves ${curves.length}\n`;
   for (let curve of curves) {
-    let ref_sym = (!!curve.ref_symmetry_point)? 1 : 0;
+    let ref_sym = (!!curve.ref_symmetry_point) ? 1 : 0;
     txt += `unitCurve ${curve.control_points.length} ${curve.rotation_symmetry} ${ref_sym}\n`;
     if (ref_sym) {
       txt += `reflectionPoint ${curve.ref_symmetry_point.x} ${curve.ref_symmetry_point.z}\n`;
@@ -35,6 +36,26 @@ export function save_curves(curves) {
     for (let pt_label of curve.point_labels) {
       txt += `ptLab ${pt_label}\n`;
     }
+  }
+  return txt;
+}
+
+export function save_state() {
+  let txt = "";
+  txt += `numCurves ${curves.length}\n`;
+  for (let curve of curves) {
+    let ref_sym = (!!curve.ref_symmetry_point) ? 1 : 0;
+    txt += `unitCurve ${curve.rotation_symmetry} ${ref_sym}\n`;
+    if (ref_sym) {
+      txt += `reflectionPoint ${curve.ref_symmetry_point.x} ${curve.ref_symmetry_point.z}\n`;
+    }
+    for (let i = 0; i < 3; i++) {
+      let pt = curve.arc_curve.points[i];
+      txt += `ptPos ${pt.x} ${pt.y}\n`;
+    }
+    txt += 'level ' + curve.level + '\n';
+    txt += 'height ' + curve.height + '\n';
+    txt += 'prc_t ' + curve.prc_t + '\n';
   }
   return txt;
 }

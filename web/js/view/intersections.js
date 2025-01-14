@@ -37,6 +37,6 @@ export function show_intersections_at_level(level) {
   let level_bottom = get_level_bottom(level);
   for (let mesh of intersection_meshes) {
     mesh.position.y = level_bottom;
-    mesh.visible = mesh.userData.level == level;
+    mesh.visible = (mesh.userData.level == level && params.preview_mode != 'Preview');
   }
 }

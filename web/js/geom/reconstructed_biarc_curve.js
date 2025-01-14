@@ -69,8 +69,7 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.arcb_len = this.rb * Math.abs(this.min_angle - 2 * Math.PI);
 
     this.len = this.arca_len + this.arcb_len;
-
-    this.compute_rmf();
+    this.rmf = [];
   }
 
   prev_level_height() {
@@ -216,20 +215,27 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
       this.rmf[i].normal.applyQuaternion(q);
       this.rmf[i].binormal.applyQuaternion(q);
     }
+
+    this.rmf_resoluion = resolution;
   }
 
   get_rmf_frame(t) {
-    // Binary search for the frame.
-    let l = 0;
-    let r = this.rmf.length - 1;
-    while (r - l > 1) {
-      let m = Math.floor((l + r) / 2);
-      if (this.rmf[m].t <= t) {
-        l = m;
-      } else {
-        r = m;
-      }
+    if (this.rmf.length == 0) {
+      this.compute_rmf();
     }
+    // Binary search for the frame.
+    // let l = 0;
+    // let r = this.rmf.length - 1;
+    // while (r - l > 1) {
+    //   let m = Math.floor((l + r) / 2);
+    //   if (this.rmf[m].t <= t) {
+    //     l = m;
+    //   } else {
+    //     r = m;
+    //   }
+    // }
+    let l = Math.floor(t * (this.rmf_resoluion - 1));
+    let r = Math.min(l + 1, this.rmf_resoluion - 1);
     let tt = (t - this.rmf[l].t) / (this.rmf[r].t - this.rmf[l].t);
     let tangent = this.rmf[l].tangent.clone().multiplyScalar(1 - tt).add(this.rmf[r].tangent.clone().multiplyScalar(tt));
     let normal = this.rmf[l].normal.clone().multiplyScalar(1 - tt).add(this.rmf[r].normal.clone().multiplyScalar(tt));

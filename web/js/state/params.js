@@ -2,7 +2,7 @@
 
 export let params = {
   view: "Ortho",
-  preview_mode: 'Preview',
+  preview_mode: 'Design',
   ortho_view: "Top view",
   rotation_symmetry: 4,
   reflection_symmetry: true,
@@ -14,5 +14,5 @@ export let params = {
   current_level: 0,
   biarcs_visualization: 'tube',
 
-  use_rmf: false,
+  use_rmf: true,
 };

@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 
 import { Curve } from "../view/curve";
-import { load_curves } from "../io/load_curves";
+import { load_curves, load_state } from "../io/load_curves";
 import { sync_module } from "../native/native";
 import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
@@ -14,6 +13,7 @@ import { params } from "./params";
 import { clear_selected_obj, selected_obj } from "../interaction/mouse";
 import { show_intersections_at_level, update_intersections } from "../view/intersections";
 import { level_controller } from "../view/gui";
+import { OBJExporter } from '../io/OBJExporter';
 
 /** @type {Curve[]} */
 export let curves = [];
@@ -179,22 +179,25 @@ export function add_curve(loc) {
   curves.push(pending_curve);
   set_edit_mode(EditMode.new_curve);
 }
-export function delete_selected_curve() {
+export function delete_selected_curve(selected_obj) {
   if (!selected_obj || !selected_obj.type == "unit_curve")
     return;
   let curve = selected_obj.userData;
   clear_selected_obj();
-  curves.splice(curves.indexOf(curve), 1);
+  let ind = curves.indexOf(curve);
+  curves.splice(ind, 1);
   curve.destroy();
+  if (ind < recon_curves.length) {
+    recon_curves[ind].destroy();
+    recon_curves.splice(ind, 1);
+  }
   update_intersections();
-  reconstruct_biarcs();
 }
 
 export function add_level() {
   let new_level = max_level() + 1;
   level_controller.controller.valueController.sliderController.props.set('max', new_level);
   level_controller.controller.valueController.value.rawValue = new_level;
-  reconstruct_biarcs();
 }
 
 export function update_current_level() {
@@ -216,30 +219,44 @@ export function update_current_level() {
   show_intersections_at_level(params.current_level);
 }
 
-export function reconstruct_biarcs() {
-  for (let curve of recon_curves) {
-    curve.destroy();
-  }
-  recon_curves.length = 0;
-  for (let i = 0; i < curves.length; i++) {
-    let recon_biarc = new ReconstructedBiArcCurve(curves[i]);
+export function reconstruct_biarcs(curve = null) {
+  let ind = curves.indexOf(curve);
+  if (ind == -1) {
+    for (let curve of recon_curves) {
+      curve.destroy();
+    }
+    recon_curves.length = 0;
+    for (let i = 0; i < curves.length; i++) {
+      let recon_biarc = new ReconstructedBiArcCurve(curves[i]);
+      let recon_three_curve = new ReconstructedThreeBiArcCurve(recon_biarc);
+      recon_three_curve.update_curve();
+      recon_curves.push(recon_three_curve);
+    }
+  } else {
+    if (ind < recon_curves.length)
+      recon_curves[ind].destroy();
+    let recon_biarc = new ReconstructedBiArcCurve(curve);
     let recon_three_curve = new ReconstructedThreeBiArcCurve(recon_biarc);
     recon_three_curve.update_curve();
-    recon_curves.push(recon_three_curve);
+    if (ind < recon_curves.length)
+      recon_curves[ind] = recon_three_curve;
+    else
+      recon_curves.push(recon_three_curve);
   }
 }
 
-export function updated_height(last_top_height, new_top_height, last_mid_height, new_mid_height) {
+export function updated_height(last_top_height, last_mid_height, curve) {
+  let new_top_height = curve.top_height;
+  let new_mid_height = curve.middle_height;
   for (let recon_three_curve of recon_curves) {
+    if (recon_three_curve.curve == curve) continue;
     if (Math.abs(recon_three_curve.curve.top_height - last_top_height) < 1e-3) {
       recon_three_curve.curve.set_top_height(new_top_height);
+      recon_three_curve.update_curve();
     } else if (Math.abs(recon_three_curve.curve.middle_height - last_mid_height) < 1e-3) {
       recon_three_curve.curve.set_middle_height(new_mid_height);
+      recon_three_curve.update_curve();
     }
-  }
-  for (let recon_three_curve of recon_curves) {
-    recon_three_curve.curve.compute_biarc();
-    recon_three_curve.update_curve();
   }
 }
 
@@ -270,20 +287,13 @@ export function reconstruct_surfaces() {
   recon_surfaces.push(new ReconstructedSurface(recon_curves));
   recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
   recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
-  // for (let curve of recon_curves) {
-  //   recon_surfaces.push(new ReconstructedSurface(curve));
-  //   recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
-  //   recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
-  // }
 }
 
 export function finish_curve() {
   if (pending_curve.control_points.length <= 4) {
-    curves.splice(curves.indexOf(pending_curve), 1);
-    pending_curve.destroy();
+    delete_selected_curve(pending_curve.three_curves[0]);
     pending_curve = null;
     set_edit_mode(EditMode.none);
-    reconstruct_curves();
     return;
   }
   pending_curve.abort_last_segment();
@@ -309,8 +319,12 @@ export function clear_all() {
 
 export function load_from_curves_file(txt) {
   clear_all();
-  curves = load_curves(txt);
-  reconstruct_curves();
+  load_state(txt);
+  level_controller.controller.valueController.sliderController.props.set('max', max_level());
+  level_controller.controller.valueController.value.rawValue = 0;
+  refresh();
+  reconstruct_biarcs();
+  update_current_level();
 }
 
 export function set_control_points_visibility(is_visible) {
@@ -352,7 +366,12 @@ export function set_mode(m) {
 
 export function refresh() {
   for (let curve of curves) {
-    curve.draw_curve();
+    if (params.preview_mode == 'Design') {
+      curve.draw_curve();
+      curve.set_visibility(true);
+    } else {
+      curve.set_visibility(false);
+    }
   }
   for (let recon_three_curve of recon_curves) {
     recon_three_curve.curve.compute_biarc();
