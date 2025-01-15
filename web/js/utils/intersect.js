@@ -43,12 +43,12 @@ export class Arc {
     // p(t) = center + radius * [cos(ang(t)), sin(ang(t))].
 
     let angle = Math.atan2(p.y - this.center.y, p.x - this.center.x);
-    if (angle < this.angle_0 && angle < this.angle_1) {
+    if (angle < this.angle_0 - eps && angle < this.angle_1 - eps) {
       angle += 2 * Math.PI;
-    } else if (angle > this.angle_0 && angle > this.angle_1) {
+    } else if (angle > this.angle_0 + eps && angle > this.angle_1 + eps) {
       angle -= 2 * Math.PI;
     }
-    let t = clamp01((angle - this.angle_0) / (this.angle_1 - this.angle_0));
+    let t = (angle - this.angle_0) / (this.angle_1 - this.angle_0);
     return t;
   }
 }

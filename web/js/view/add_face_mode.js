@@ -53,6 +53,49 @@ class SymCurveIntersection {
 /** @type {SymCurveIntersection[]} */
 let new_face_verts = [];
 
+class MergedIntersection {
+  constructor() {
+    this.intersections = [];
+  }
+
+  get_point() {
+    if (this.intersections.length == 0) return null;
+    return this.intersections[0].curve.getPoint(this.intersections[0].t);
+  }
+
+  is_same(p) {
+    if (this.intersections.length == 0) return false;
+    return this.get_point().distanceTo(p) < 1e-2;
+  }
+
+  add_intersection(curve, t) {
+    this.intersections.push({ curve: curve, t: t });
+  }
+};
+
+function merge_intersections(inters) {
+  let merged = [];
+  for (let inter of inters) {
+    let found = false;
+    let p = inter.curve1.getPoint(inter.t1);
+    for (let m of merged) {
+      if (m.is_same(p)) {
+        m.add_intersection(inter.curve1, inter.t1);
+        m.add_intersection(inter.curve2, inter.t2);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      let m = new MergedIntersection();
+      m.add_intersection(inter.curve1, inter.t1);
+      m.add_intersection(inter.curve2, inter.t2);
+      merged.push(m);
+    }
+  }
+  return merged;
+}
+
 function get_all_real_inters_with_symmetries() {
   let inters = [];
   for (let i = 0; i < all_curves_with_symmetries.length; i++) {
@@ -80,11 +123,12 @@ export function init_add_new_face() {
   set_control_points_visibility(false);
   new_face_verts.length = 0;
   get_all_cruves_with_symmetries();
-  let inters = get_all_real_inters_with_symmetries();
+  let inters = merge_intersections(get_all_real_inters_with_symmetries());
   // let inters = get_all_real_intersections();
   for (let inter of inters) {
     let sphere = new THREE.Mesh(sphere_geom, control_point_material);
-    let pos = inter.curve1.getPoint(inter.t1);
+    // let pos = inter.curve1.getPoint(inter.t1);
+    let pos = inter.intersections[0].curve.getPoint(inter.intersections[0].t);
     sphere.type = "intersection_point";
     sphere.position.copy(pos);
     sphere.userData = inter;
@@ -112,30 +156,26 @@ export function abort_new_face() {
 
 function build_polygon() {
   let polygon = [];
+  let find_common_intersection = (v1, v2) => {
+    for (let inter1 of v1.intersections) {
+      for (let inter2 of v2.intersections) {
+        if (inter1.curve == inter2.curve) {
+          return { curve: inter1.curve, t1: inter1.t, t2: inter2.t };
+        }
+      }
+    }
+    return null;
+  };
   for (let i = 0; i < new_face_verts.length; i++) {
     let vert = new_face_verts[i];
     let next_vert = new_face_verts[(i + 1) % new_face_verts.length];
-    let curve, t1, t2;
-    if (vert.curve1 == next_vert.curve1) {
-      curve = vert.curve1;
-      t1 = vert.t1;
-      t2 = next_vert.t1;
-    } else if (vert.curve1 == next_vert.curve2) {
-      curve = vert.curve1;
-      t1 = vert.t1;
-      t2 = next_vert.t2;
-    } else if (vert.curve2 == next_vert.curve1) {
-      curve = vert.curve2;
-      t1 = vert.t2;
-      t2 = next_vert.t1;
-    } else if (vert.curve2 == next_vert.curve2) {
-      curve = vert.curve2;
-      t1 = vert.t2;
-      t2 = next_vert.t2;
-    } else {
-      console.info("Could not find shared curve.");
+    let common = find_common_intersection(vert, next_vert);
+    if (!common) {
+      console.log("No common intersection found");
       return [];
     }
+    let curve = common.curve;
+    let t1 = common.t1, t2 = common.t2;
     for (let k = 0; k < 20; k++) {
       let t = t1 + (t2 - t1) * k / 20;
       polygon.push(curve.getPoint(t));
@@ -159,7 +199,7 @@ export function finish_face() {
   const indices = Array.from(faces);
   geometry.setIndex(indices);
   geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-  let rot_sym = new_face_verts[0].curve1.rotation_symmetry;
+  let rot_sym = new_face_verts[0].intersections[0].curve.rotation_symmetry;
   for (let i = 0; i < rot_sym; i++) {
     let recon_surface = new THREE.Mesh(geometry, surface_material);
     recon_surface.type = "reconstructed_surface";
