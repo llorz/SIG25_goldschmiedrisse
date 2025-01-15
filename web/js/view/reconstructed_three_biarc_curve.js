@@ -216,8 +216,9 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   update_top_decoration_curves() {
-    if (this.curve.curve.control_points.length < 5) return;
     let tv_curve = this.curve.curve;
+    if (tv_curve.control_points.length < 5 ||
+      tv_curve.control_points[4].distanceTo(tv_curve.control_points[2]) < 1e-3) return;
     let flat_arc_curve = new ArcCurve(tv_curve.control_points.slice(2, 5));
 
     // let end_x = Math.max(1 - (flat_arc_curve.length() / tv_curve.arc_curve.length()), tv_curve.prc_t);
@@ -225,7 +226,7 @@ export class ReconstructedThreeBiArcCurve {
     // let target_len = (1 - end_x) * tv_curve.arc_curve.length();
     // let end_t = this.curve.get_t_for_x(end_x);
     // let pt = this.curve.getPoint(end_t);
-    
+
     let top_pt = this.curve.getPoint(1);
     let [x, y] = this.curve.get_arc_b_y_for_x(flat_arc_curve.length());
     let height_arc_curve = new ArcCurve([new THREE.Vector2(0, top_pt.y),

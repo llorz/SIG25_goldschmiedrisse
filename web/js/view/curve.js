@@ -217,7 +217,7 @@ export class Curve {
   }
 
   draw_decoration_curve() {
-    if (this.control_points.length < 5)
+    if (this.control_points.length < 5 || this.control_points[4].distanceTo(this.control_points[2]) < 1e-3)
       return;
     
     let level_bottom = get_level_bottom(this.level);

@@ -27,6 +27,12 @@ let rotation_line_material = new LineMaterial({
   linewidth: 5,
   opacity: 1.0,
 });
+let rotation_line_material_2 = new LineMaterial({
+  color: 0xccccff,
+  linewidth: 5,
+  opacity: 0.3,
+  transparent: true,
+});
 
 // Design canvas.
 let canvas = document.getElementById("canvas");
@@ -222,6 +228,13 @@ export function update_rotation_symmetry_lines(rotation_symmetry) {
   for (let i = 0; i < rotation_symmetry; i++) {
     rotation_symmetry_lines.push(line);
     scene.add(line);
+    if (rotation_symmetry % 2 == 0) {
+      let line2 = line.clone().rotateY(Math.PI / rotation_symmetry);
+      line2.material = rotation_line_material_2;
+      line2.type = "ns_line";
+      rotation_symmetry_lines.push(line2);
+      scene.add(line2);
+    }
     line = line.clone().rotateY((2 * Math.PI / rotation_symmetry));
     line.type = "ns_line";
   }
