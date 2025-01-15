@@ -15,7 +15,7 @@ sweep_plane_geom.boundingBox.getSize(size);
 sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2,
   -sweep_plane_geom.boundingBox.min.z - size.z / 2);
 
-let cylinder_geom = new THREE.CylinderGeometry(0.04, 0.04, 10, 32, 200, true);
+let cylinder_geom = new THREE.CylinderGeometry(0.007, 0.007, 10, 32, 200, true);
 cylinder_geom.rotateZ(Math.PI / 2);
 cylinder_geom.computeBoundingBox();
 let size_cyl = new THREE.Vector3();
@@ -151,10 +151,23 @@ export class ReconstructedThreeBiArcCurve {
     return geom;
   }
 
+  get_sweep_cylinder_geom() {
+    console.info(params.tube_radius);
+    let cylinder_geom = new THREE.CylinderGeometry(params.tube_radius, params.tube_radius, 10, 32, 200, true);
+    cylinder_geom.rotateZ(Math.PI / 2);
+    cylinder_geom.computeBoundingBox();
+    let size_cyl = new THREE.Vector3();
+    cylinder_geom.boundingBox.getSize(size_cyl);
+    cylinder_geom.translate(-cylinder_geom.boundingBox.min.x, -cylinder_geom.boundingBox.min.y - size_cyl.y / 2,
+      -cylinder_geom.boundingBox.min.z - size_cyl.z / 2);
+    return cylinder_geom;
+  }
+
   get_sweep_object() {
     let obj = new THREE.Group();
     if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
-      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom), symmetry_curve_material));
+      let geom = this.get_sweep_cylinder_geom();
+      obj.add(new THREE.Mesh(this.sweep_geom(geom), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));

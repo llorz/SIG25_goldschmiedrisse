@@ -372,6 +372,7 @@ export function set_mode(m) {
 }
 
 export function refresh() {
+  update_intersections();
   for (let curve of curves) {
     if (params.preview_mode == 'Design') {
       curve.draw_curve();
@@ -385,7 +386,6 @@ export function refresh() {
     recon_three_curve.update_curve();
   }
   set_designing_area_height(get_level_bottom(params.current_level));
-  show_intersections_at_level(params.current_level);
 }
 
 export function export_recon_obj() {

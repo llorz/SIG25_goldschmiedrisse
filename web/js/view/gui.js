@@ -57,7 +57,7 @@ pane.addBinding(params, 'preview_mode', {
     title: x == 0 ? 'Design' : 'Preview',
     value: x == 0 ? 'Design' : 'Preview',
   }),
-  label: 'View',
+  label: 'Mode',
 }).on('change', (ev) => {
   if (ev.value == "Design") {
     document.getElementById("preview_area").style.display = "none";
@@ -72,6 +72,34 @@ pane.addBinding(params, 'preview_mode', {
     refresh();
   }
 });
+
+let ortho_view = pane.addBlade({
+  view: 'buttongrid',
+  groupName: 'ortho_view',
+  size: [2, 1],
+  cells: (x, y) => ({
+    title: [
+      ['Top view', 'Side view'],
+    ][y][x],
+  }),
+  label: 'View',
+}).on('click', (ev) => {
+  if (ev.index[0] == 0) {
+    camera2d.position.set(0, 100, 0);
+    camera2d.up.set(0, 1, 0);
+    orth_camera_controls.target.set(0, 0, 0);
+    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
+    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+  } else {
+    camera2d.position.set(0, 0, 1);
+    camera2d.up.set(0, 0, 1);
+    orth_camera_controls.target.set(0, 0, 0);
+    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+  }
+  set_control_points_visibility(params.control_points_visible);
+});
+top_view_options.push(ortho_view);
 
 let view_options_folder = pane.addFolder({
   title: "Show",
@@ -127,33 +155,17 @@ surface_params.addBlade({
   refresh();
 });
 
-let ortho_view = pane.addBlade({
-  view: 'buttongrid',
-  groupName: 'ortho_view',
-  size: [2, 1],
-  cells: (x, y) => ({
-    title: [
-      ['Top view', 'Side view'],
-    ][y][x],
-  }),
-  label: 'View',
-}).on('click', (ev) => {
-  if (ev.index[0] == 0) {
-    camera2d.position.set(0, 100, 0);
-    camera2d.up.set(0, 1, 0);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-  } else {
-    camera2d.position.set(0, 0, 1);
-    camera2d.up.set(0, 0, 1);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-  }
-  set_control_points_visibility(params.control_points_visible);
+pane.addBlade({
+  view: 'slider',
+  label: 'Tube radius',
+  min: 0.001,
+  max: 0.04,
+  value: 0.007,
+}).on('change', (ev) => {
+  params.tube_radius = ev.value;
+  refresh();
 });
-top_view_options.push(ortho_view);
+
 let new_curve_options_folder = pane.addFolder({
   title: "New curve options",
   expanded: true
@@ -303,3 +315,4 @@ left_menu.addButton({
 }).on('click', (ev) => {
   export_recon_obj();
 });
+

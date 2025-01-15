@@ -286,11 +286,14 @@ export function update_front_view_cam() {
   for (let curve of curves) {
     top_height = Math.max(top_height, curve.height);
   }
+  let max_width = 0.01;
+  for (let curve of curves) {
+    max_width = Math.max(max_width, curve.max_width());
+  }
   front_view_cam.position.set(0, top_height / 2, 1);
   front_view_cam.up.set(0, 0, 1);
-  front_view_cam.zoom = 2 / top_height;
+  front_view_cam.zoom = Math.min(2 / top_height, 1 / max_width);
   front_view_controls.target.set(0, top_height / 2, 0);
-  
 }
 
 let sweep_plane_geom = new THREE.PlaneGeometry(100, 0.1, 100 * 20, 1);

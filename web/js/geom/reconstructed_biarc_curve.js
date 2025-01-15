@@ -49,8 +49,8 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     let l1 = p_mid.clone().sub(p0).normalize();
     let l1_rot = new THREE.Vector2(-l1.y, l1.x);
     let l1_p = (p0.clone().add(p_mid)).multiplyScalar(0.5);
-    // Find intersection with y = prev_level_height() (l1_p + t * l1_rot).y == prev_level_height().
-    let t1 = (this.prev_level_height() - l1_p.y) / l1_rot.y;
+    // Find intersection with y = p0.y (l1_p + t * l1_rot).y == p0.y.
+    let t1 = (p0.y - l1_p.y) / l1_rot.y;
     // Center of the first arc.
     this.ca = l1_p.clone().add(l1_rot.clone().multiplyScalar(t1));
     this.ra = p_mid.clone().sub(this.ca).length();
@@ -60,7 +60,7 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     let l2 = p_top.clone().sub(p_mid).normalize();
     let l2_rot = new THREE.Vector2(-l2.y, l2.x);
     let l2_p = (p_mid.clone().add(p_top)).multiplyScalar(0.5);
-    // Find intersection with y = this.top_height (l2_p + t * l2_rot).y == this.top_height.
+    // Find intersection with y = p_top.y (l2_p + t * l2_rot).y == p_top.y.
     let t2 = (this.top_height - l2_p.y) / l2_rot.y;
     // Center of the second arc.
     this.cb = l2_p.clone().add(l2_rot.clone().multiplyScalar(t2));

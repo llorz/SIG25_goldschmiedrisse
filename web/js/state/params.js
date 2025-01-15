@@ -5,6 +5,7 @@ export let params = {
   preview_mode: 'Design',
   ortho_view: "Top view",
   rotation_symmetry: 4,
+  tube_radius: 0.007,
   reflection_symmetry: 'first point',
   control_points_visible: true,
   reconstructed_surfaces_visible: true,

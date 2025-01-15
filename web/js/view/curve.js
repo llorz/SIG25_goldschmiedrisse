@@ -50,6 +50,19 @@ export class Curve {
     this.arc_curve = null;
   }
 
+  max_width() {
+    let min_x = Infinity, max_x = -Infinity;
+    for (let curve of this.three_curves) {
+      if (!curve.visible) {
+        continue;
+      }
+      let box = new THREE.Box3().setFromObject(curve);
+      min_x = Math.min(min_x, box.min.x);
+      max_x = Math.max(max_x, box.max.x);
+    }
+    return Math.max(max_x, -min_x);
+  }
+
   get_bezy_curve() {
     if (this.arc_curve === null) {
       this.arc_curve = new ArcCurve(this.control_points);
