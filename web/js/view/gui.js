@@ -185,6 +185,7 @@ new_curve_options_folder.addBlade({
   view: 'list',
   label: 'Reflection sym',
   options: [{ text: 'first point', value: 'first point' }, { text: 'last point', value: 'last point' },
+    { text: 'y axis', value: 'y axis' },
   { text: 'none', value: 'none' },
   ],
   value: 'first point',

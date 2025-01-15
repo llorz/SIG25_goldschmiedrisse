@@ -92,6 +92,8 @@ export class Curve {
       if (this.ref_symmetry_type == "first point" || this.ref_symmetry_type == "last point") {
         this.ref_symmetry_point = new THREE.Vector3();
         this.ref_symmetry_point.copy(this.control_points[0]);
+      } else if (this.ref_symmetry_type == "y axis") {
+        this.ref_symmetry_point = new THREE.Vector3(0, 0, 1);
       }
     }
     // By default first point is a ground point.
