@@ -220,14 +220,16 @@ export class ReconstructedThreeBiArcCurve {
     let tv_curve = this.curve.curve;
     let flat_arc_curve = new ArcCurve(tv_curve.control_points.slice(2, 5));
 
-    let end_x = Math.max(1 - (flat_arc_curve.length() / tv_curve.arc_curve.length()), tv_curve.prc_t);
+    // let end_x = Math.max(1 - (flat_arc_curve.length() / tv_curve.arc_curve.length()), tv_curve.prc_t);
     // target_len <= flat_arc_curve.length()
-    let target_len = (1 - end_x) * tv_curve.arc_curve.length();
-
-    let end_t = this.curve.get_t_for_x(end_x);
-    let pt = this.curve.getPoint(end_t), top_pt = this.curve.getPoint(1);
+    // let target_len = (1 - end_x) * tv_curve.arc_curve.length();
+    // let end_t = this.curve.get_t_for_x(end_x);
+    // let pt = this.curve.getPoint(end_t);
+    
+    let top_pt = this.curve.getPoint(1);
+    let [x, y] = this.curve.get_arc_b_y_for_x(flat_arc_curve.length());
     let height_arc_curve = new ArcCurve([new THREE.Vector2(0, top_pt.y),
-    new THREE.Vector2(0, top_pt.y - 1.0), new THREE.Vector2(target_len, pt.y)]);
+    new THREE.Vector2(0, top_pt.y - 1.0), new THREE.Vector2(x, y)]);
 
     let tube = new THREE.Mesh(new THREE.TubeGeometry(new DecorationArcCurve(height_arc_curve, flat_arc_curve), 32, params.tube_radius, 8, false),
       symmetry_curve_material);

@@ -126,6 +126,26 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     return s / this.len;
   }
 
+  get_arc_b_y_for_x(x) {
+    let target_x = this.arc_curve.length() - x;
+    // Solve for y in the equation (x-cb.x)^2 + (y-cb.y)^2 = rb^2.
+    let a = 1, b = -2 * this.cb.y, c = (target_x - this.cb.x) ** 2 + this.cb.y ** 2 - this.rb ** 2;
+    let delta = b * b - 4 * a * c;
+    let y = (-b - Math.sqrt(Math.max(delta, 0))) / (2 * a);
+
+    let b2 = -2 * this.cb.x;
+    let c2 = (y - this.cb.y) ** 2 + this.cb.x ** 2 - this.rb ** 2;
+    let x1 = (-b2 - Math.sqrt(Math.max(b2 * b2 - 4 * c2, 0))) / 2;
+    let x2 = (-b2 + Math.sqrt(Math.max(b2 * b2 - 4 * c2, 0))) / 2;
+    let closest_x;
+    if (Math.abs(x1 - target_x) < Math.abs(x2 - target_x)) {
+      closest_x = x1;
+    } else {
+      closest_x = x2;
+    }
+    return [this.arc_curve.length() - closest_x, y];
+  }
+
   getPoint(t, optionalTarget = new THREE.Vector3()) {
     let point = optionalTarget;
     let s = t * this.len;
