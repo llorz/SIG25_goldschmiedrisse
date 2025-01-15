@@ -48,14 +48,18 @@ export function save_state() {
     txt += `unitCurve ${curve.rotation_symmetry} ${ref_sym}\n`;
     if (ref_sym) {
       txt += `reflectionPoint ${curve.ref_symmetry_point.x} ${curve.ref_symmetry_point.z}\n`;
+      txt += `ref_symmetry_type ${curve.ref_symmetry_type}\n`;
     }
-    for (let i = 0; i < 3; i++) {
-      let pt = curve.arc_curve.points[i];
-      txt += `ptPos ${pt.x} ${pt.y}\n`;
+    for (let i = 0; i < curve.control_points.length; i++) {
+      let pt = curve.control_points[i];
+      txt += `ptPos ${pt.x} ${pt.z}\n`;
     }
     txt += 'level ' + curve.level + '\n';
     txt += 'height ' + curve.height + '\n';
     txt += 'prc_t ' + curve.prc_t + '\n';
+    txt +='decoration_t ' + curve.decoration_t + '\n';
+    txt += 'decoration_height ' + curve.decoration_height + '\n';
+
   }
   return txt;
 }

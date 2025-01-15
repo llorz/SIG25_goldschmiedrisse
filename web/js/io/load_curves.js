@@ -81,6 +81,8 @@ export function load_state(txt) {
     } else if (line.startsWith("reflectionPoint")) {
       last(curves).ref_symmetry_point = parse_point(parts.slice(1));
       // Control points.
+    } else if (line.startsWith("ref_symmetry_type")) {
+      last(curves).ref_symmetry_type = parts[1];
     } else if (line.startsWith("ptPos")) {
       let curve = last(curves);
       let pt = parse_point(parts.slice(1));
@@ -91,6 +93,10 @@ export function load_state(txt) {
       last(curves).height = parseFloat(parts[1]);
     } else if (line.startsWith("prc_t")) {
       last(curves).prc_t = parseFloat(parts[1]);
+    } else if (line.startsWith("decoration_t")) {
+      last(curves).decoration_t = parseFloat(parts[1]);
+    } else if (line.startsWith("decoration_height")) {
+      last(curves).decoration_height = parseFloat(parts[1]);
     }
   });
   for (let curve of curves) {
