@@ -39,10 +39,25 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     return new ReconstructedBiArcCurve(this.curve, this.arc_curve.apply_3d_transformation(mat));
   }
 
+  get_bottom_height() {
+    if (this.curve.decoration_t == 0) {
+      return this.prev_level_height();
+    }
+    return this.curve.decoration_height;
+  }
+  get_middle_height() {
+    let t = (this.curve.prc_t - this.curve.decoration_t) / (1 - this.curve.decoration_t);
+    return this.get_bottom_height() * (1 - t) + t * this.top_height;
+  }
+  get_top_height_from_middle(middle) {
+    let t = (this.curve.prc_t - this.curve.decoration_t) / (1 - this.curve.decoration_t);
+    return (middle - this.get_bottom_height() * (1 - t)) / t;
+  }
+
   compute_biarc() {
     let flat_curve_len = this.arc_curve.length();
-    let middle_height = this.prev_level_height() * (1 - this.curve.prc_t) + this.curve.prc_t * this.top_height;
-    let p0 = new THREE.Vector2(0, this.prev_level_height());
+    let middle_height = this.get_middle_height();
+    let p0 = new THREE.Vector2(flat_curve_len * this.curve.decoration_t, this.get_bottom_height());
     let p_mid = new THREE.Vector2(flat_curve_len * this.curve.prc_t, middle_height);
     let p_top = new THREE.Vector2(flat_curve_len, this.top_height);
 
@@ -81,16 +96,15 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.curve.height = height;
     // set_level_height(this.level, this.top_height);
     let t = this.curve.prc_t;
-    this.middle_height = this.prev_level_height() * (1 - t) + t * this.top_height;
+    this.middle_height = this.get_middle_height();
     this.compute_biarc();
   }
 
   set_middle_height(height) {
     this.middle_height = height;
     let t = this.curve.prc_t;
-    this.top_height = (this.middle_height - this.prev_level_height() * (1 - t)) / t;
+    this.top_height = this.get_top_height_from_middle(height);
     this.curve.height = this.top_height
-    // set_level_height(this.level, this.top_height);
     this.compute_biarc();
   }
 

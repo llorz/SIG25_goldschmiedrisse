@@ -115,7 +115,7 @@ export class ArcCurve extends THREE.Curve {
 
   d_dt(t) {
     if (this.ra == 0) {
-      return new THREE.Vector3(this.points[2].x - this.points[0].x, 0, this.points[2].y - this.points[0].y); 
+      return new THREE.Vector3(this.points[2].x - this.points[0].x, 0, this.points[2].y - this.points[0].y);
     }
 
     let angle = this.angle_a_0 * (1 - t) + this.angle_a_1 * t;
@@ -131,7 +131,27 @@ export class ArcCurve extends THREE.Curve {
 
     let angle = this.angle_a_0 * (1 - t) + this.angle_a_1 * t;
     tangent.set(-Math.sin(angle), 0, Math.cos(angle)).normalize();
+    if (this.angle_a_1 < this.angle_a_0) {
+      tangent.negate();
+    }
 
     return tangent;
+  }
+
+  getNormal(t, optionalTarget = new THREE.Vector3()) {
+    let normal = optionalTarget;
+    let tangent = this.getTangent(t);
+    normal.set(-tangent.z, 0, tangent.x);
+    return normal;
+    // if (this.ra == 0) {
+    //   let tangent = this.getTangent(t);
+    //   normal.set(-tangent.z, 0, tangent.x);
+    //   return normal;
+    // }
+
+    // let angle = this.angle_a_0 * (1 - t) + this.angle_a_1 * t;
+    // normal.set(-Math.cos(angle), 0, -Math.sin(angle)).normalize();
+
+    return normal;
   }
 }

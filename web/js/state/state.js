@@ -63,6 +63,7 @@ export let EditMode = {
   move_height_control_point: "move_height_control_point",
   move_tangent_control_point: "move_tangent_control_point",
   new_face: "new_face",
+  edit_decoration_point: "edit_decoration_point",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }

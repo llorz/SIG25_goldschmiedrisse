@@ -4,8 +4,10 @@ import { get_active_camera, scene } from './visual';
 
 import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { params } from '../state/params';
-import { get_level_height, mode, updated_height } from '../state/state';
+import { get_level_bottom, get_level_height, mode, updated_height } from '../state/state';
 import { get_curve_color, get_curve_color_material } from '../state/color_generator';
+import { DecorationArcCurve } from '../geom/decoration_arc_curve';
+import { ArcCurve } from '../geom/arc_curve';
 
 let sweep_plane_geom =// new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3);
   new THREE.PlaneGeometry(100, 0.1, 200, 1);
@@ -81,6 +83,9 @@ export class ReconstructedThreeBiArcCurve {
   constructor(curve) {
     /** @type {ReconstructedBiArcCurve} */
     this.curve = curve;
+
+    this.decoration_curve = this.get_decoration_curve();
+
     this.ref_symmetry_point = this.curve.ref_symmetry_point;
     this.rotation_symmetry = this.curve.rotation_symmetry;
     this.level = this.curve.level;
@@ -92,6 +97,16 @@ export class ReconstructedThreeBiArcCurve {
 
     this.three_curves = [];
     this.create_control_points();
+  }
+
+  get_decoration_curve() {
+    if (this.curve.curve.decoration_t == 0) return null;
+    let flat_arc = this.curve.curve.arc_curve;
+    let bottom_height = get_level_bottom(this.curve.level);
+    let height_arc_curve = new ArcCurve([new THREE.Vector2(0, bottom_height),
+    new THREE.Vector2(0, 1),
+    new THREE.Vector2(this.curve.curve.decoration_t * flat_arc.length(), bottom_height + this.curve.curve.decoration_height)]);
+    return new DecorationArcCurve(height_arc_curve, flat_arc);
   }
 
   get_reflection_mat() {
@@ -152,7 +167,6 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   get_sweep_cylinder_geom() {
-    console.info(params.tube_radius);
     let cylinder_geom = new THREE.CylinderGeometry(params.tube_radius, params.tube_radius, 10, 32, 200, true);
     cylinder_geom.rotateZ(Math.PI / 2);
     cylinder_geom.computeBoundingBox();
@@ -201,6 +215,32 @@ export class ReconstructedThreeBiArcCurve {
     }
   }
 
+  update_decoration_curves() {
+    if (!this.decoration_curve) return;
+    let tube = new THREE.Mesh(new THREE.TubeGeometry(this.decoration_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    for (let i = 0; i < this.rotation_symmetry; i++) {
+      let filling_tube_clone = tube.clone();
+      if (params.biarcs_visualization == 'colorful') {
+        filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+      }
+      filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+      this.three_curves.push(filling_tube_clone);
+      scene.add(filling_tube_clone);
+    }
+
+    if (!!this.ref_symmetry_point) {
+      let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
+      for (let i = 0; i < this.rotation_symmetry; i++) {
+        let filling_tube_clone = tube.clone();
+          filling_tube_clone.material = this.get_sym_material(i);
+          filling_tube_clone.applyMatrix4(ref_mat);
+          filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+          this.three_curves.push(filling_tube_clone);
+          scene.add(filling_tube_clone);
+      }
+    }
+  }
+
   update_curve() {
     // if (this.three_curves.length > 0) {
     //   this.only_update_geometry();
@@ -218,12 +258,14 @@ export class ReconstructedThreeBiArcCurve {
     this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
     this.control_points[1].position.copy(this.curve.getPoint(1));
 
+    this.update_decoration_curves();
+
     let filling_tube = null;
     let level_height = get_level_height(this.curve.curve.level);
     if (Math.abs(this.curve.curve.height - level_height) > 1e-3) {
       let curve_top = this.curve.getPoint(1);
       let line_curve = new THREE.LineCurve3(curve_top, new THREE.Vector3(curve_top.x, level_height, curve_top.z));
-      filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, 0.04, 8, false), symmetry_curve_material);
+      filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
     }
 
     let orig_tube = this.get_sweep_object();
@@ -264,6 +306,7 @@ export class ReconstructedThreeBiArcCurve {
         scene.add(tube);
         if (!!filling_tube) {
           let filling_tube_clone = filling_tube.clone();
+          filling_tube_clone.material = this.get_sym_material(i);
           filling_tube_clone.applyMatrix4(ref_mat);
           filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
           this.three_curves.push(filling_tube_clone);

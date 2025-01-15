@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { Curve } from '../view/curve.js';
 import { closest_rotation_line, get_snapping_point } from '../utils/snapping.js';
 import { add_new_face_vertex, remove_new_face_vertex } from '../view/add_face_mode.js';
+import { move_decoration_point } from './edit_decoration_point.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
 let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
@@ -23,7 +24,7 @@ function is_selectable(obj) {
     && obj.visible;
 }
 
-const ray_cast = new THREE.Raycaster();
+export const ray_cast = new THREE.Raycaster();
 
 let point_down_location = new THREE.Vector2();
 export let selected_obj = null;
@@ -110,6 +111,12 @@ canvas.onpointerdown = (e) => {
         selectedOutlinePass.selectedObjects.push(obj);
       }
     }
+  } else if (edit_mode == EditMode.edit_decoration_point) {
+    let obj = find_selected(point_down_location, false);
+    if (obj && obj.type == "decoration_point") {
+      disable_controls();
+      selected_obj = obj;
+    }
   }
 };
 canvas.onpointerup = (e) => {
@@ -149,6 +156,11 @@ canvas.onpointerup = (e) => {
       pending_curve.add_new_segment(flat_point);
       finish_curve();
     }
+  } else if (edit_mode == EditMode.edit_decoration_point) {
+    if (current_select != selected_obj) {
+      selected_obj = null;
+      selectedOutlinePass.selectedObjects = [];
+    }
   }
 };
 
@@ -173,10 +185,6 @@ canvas.onpointermove = (e) => {
 
   if (edit_mode == EditMode.new_curve) {
     // Add new point in a curve.
-    // let closest = closest_rotation_line(flat_point);
-    // if (flat_point.distanceTo(closest) < 0.02) {
-    //   flat_point = closest;
-    // }
     let closest = get_snapping_point(flat_point, pending_curve);
     if (closest) {
       flat_point = closest;
@@ -189,10 +197,6 @@ canvas.onpointermove = (e) => {
       let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -get_level_bottom());
       ray_cast.ray.intersectPlane(intersection_plane, flat_point);
     }
-    // let closest = closest_rotation_line(flat_point);
-    // if (flat_point.distanceTo(closest) < 0.02) {
-    //   flat_point = closest;
-    // }
     let closest = get_snapping_point(flat_point, selected_obj.userData);
     if (closest) {
       flat_point = closest;
@@ -217,7 +221,7 @@ canvas.onpointermove = (e) => {
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_tangent_control_point(selected_obj, flat_point);
     reconstruct_surfaces();
+  } else if (edit_mode == EditMode.edit_decoration_point && selected_obj) {
+    move_decoration_point(ray_cast);
   }
-
-
 };

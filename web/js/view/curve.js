@@ -47,6 +47,9 @@ export class Curve {
     this.height = get_level_height(level);
     this.prc_t = 0.5;
 
+    this.decoration_t = 0;
+    this.decoration_height = 0;
+
     this.arc_curve = null;
   }
 
