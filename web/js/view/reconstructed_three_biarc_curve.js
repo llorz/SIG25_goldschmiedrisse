@@ -215,9 +215,23 @@ export class ReconstructedThreeBiArcCurve {
     }
   }
 
-  update_decoration_curves() {
-    if (!this.decoration_curve) return;
-    let tube = new THREE.Mesh(new THREE.TubeGeometry(this.decoration_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+  update_top_decoration_curves() {
+    if (this.curve.curve.control_points.length < 5) return;
+    let tv_curve = this.curve.curve;
+    let flat_arc_curve = new ArcCurve(tv_curve.control_points.slice(2, 5));
+
+    let end_x = Math.max(1 - (flat_arc_curve.length() / tv_curve.arc_curve.length()), tv_curve.prc_t);
+    // target_len <= flat_arc_curve.length()
+    let target_len = (1 - end_x) * tv_curve.arc_curve.length();
+
+    let end_t = this.curve.get_t_for_x(end_x);
+    let pt = this.curve.getPoint(end_t), top_pt = this.curve.getPoint(1);
+    let height_arc_curve = new ArcCurve([new THREE.Vector2(0, top_pt.y),
+    new THREE.Vector2(0, top_pt.y - 1.0), new THREE.Vector2(target_len, pt.y)]);
+
+    let tube = new THREE.Mesh(new THREE.TubeGeometry(new DecorationArcCurve(height_arc_curve, flat_arc_curve), 32, params.tube_radius, 8, false),
+      symmetry_curve_material);
+    tube.type = "ns_line";
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let filling_tube_clone = tube.clone();
       if (params.biarcs_visualization == 'colorful') {
@@ -232,11 +246,39 @@ export class ReconstructedThreeBiArcCurve {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let filling_tube_clone = tube.clone();
-          filling_tube_clone.material = this.get_sym_material(i);
-          filling_tube_clone.applyMatrix4(ref_mat);
-          filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
-          this.three_curves.push(filling_tube_clone);
-          scene.add(filling_tube_clone);
+        filling_tube_clone.material = this.get_sym_material(i);
+        filling_tube_clone.applyMatrix4(ref_mat);
+        filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        this.three_curves.push(filling_tube_clone);
+        scene.add(filling_tube_clone);
+      }
+    }
+  }
+
+  update_decoration_curves() {
+    if (!this.decoration_curve) return;
+    let tube = new THREE.Mesh(new THREE.TubeGeometry(this.decoration_curve, 32, params.tube_radius, 8, false),
+      symmetry_curve_material);
+    tube.type = "ns_line";
+    for (let i = 0; i < this.rotation_symmetry; i++) {
+      let filling_tube_clone = tube.clone();
+      if (params.biarcs_visualization == 'colorful') {
+        filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+      }
+      filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+      this.three_curves.push(filling_tube_clone);
+      scene.add(filling_tube_clone);
+    }
+
+    if (!!this.ref_symmetry_point) {
+      let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
+      for (let i = 0; i < this.rotation_symmetry; i++) {
+        let filling_tube_clone = tube.clone();
+        filling_tube_clone.material = this.get_sym_material(i);
+        filling_tube_clone.applyMatrix4(ref_mat);
+        filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        this.three_curves.push(filling_tube_clone);
+        scene.add(filling_tube_clone);
       }
     }
   }
@@ -259,6 +301,7 @@ export class ReconstructedThreeBiArcCurve {
     this.control_points[1].position.copy(this.curve.getPoint(1));
 
     this.update_decoration_curves();
+    this.update_top_decoration_curves();
 
     let filling_tube = null;
     let level_height = get_level_height(this.curve.curve.level);

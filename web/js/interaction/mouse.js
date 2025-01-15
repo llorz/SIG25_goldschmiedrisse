@@ -2,7 +2,7 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { camera2d, get_active_camera, scene, selectedOutlinePass } from '../view/visual.js';
 import { outlinePass } from '../view/visual.js';
-import { curves, finish_curve, get_level_bottom, mode, Mode, recon_curves, reconstruct_biarcs, reconstruct_surfaces } from '../state/state.js';
+import { curves, finish_curve, get_level_bottom, mode, Mode, recon_curves, reconstruct_biarcs } from '../state/state.js';
 import { disable_controls, enable_controls } from '../view/visual.js';
 
 import { edit_mode, EditMode, set_edit_mode, pending_curve, add_curve } from '../state/state.js';
@@ -154,7 +154,8 @@ canvas.onpointerup = (e) => {
       add_curve(flat_point);
     } else if (edit_mode == EditMode.new_curve) {
       pending_curve.add_new_segment(flat_point);
-      finish_curve();
+      if (pending_curve.control_points.length > 6)
+        finish_curve();
     }
   } else if (edit_mode == EditMode.edit_decoration_point) {
     if (current_select != selected_obj) {
@@ -220,7 +221,6 @@ canvas.onpointermove = (e) => {
     plane.setFromNormalAndCoplanarPoint(n, selected_obj.position);
     ray_cast.ray.intersectPlane(plane, flat_point);
     selected_obj.userData.move_tangent_control_point(selected_obj, flat_point);
-    reconstruct_surfaces();
   } else if (edit_mode == EditMode.edit_decoration_point && selected_obj) {
     move_decoration_point(ray_cast);
   }

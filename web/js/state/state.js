@@ -268,37 +268,8 @@ export function updated_height(last_top_height, last_mid_height, curve) {
   }
 }
 
-export function reconstruct_curves() {
-  for (let curve of recon_curves) {
-    curve.destroy();
-  }
-  recon_curves.length = 0;
-  for (let surface of recon_surfaces) {
-    surface.destroy();
-  }
-  recon_surfaces.length = 0;
-
-  for (let curve of curves) {
-    recon_curves.push(new ReconstructedCurve(curve.control_points, curve.rotation_symmetry, curve.ref_symmetry_point,
-      curve.point_labels));
-    recon_curves[recon_curves.length - 1].calc_control_points();
-    recon_curves[recon_curves.length - 1].update_curve();
-  }
-  set_control_points_visibility(params.control_points_visible);
-}
-
-export function reconstruct_surfaces() {
-  for (let surface of recon_surfaces) {
-    surface.destroy();
-  }
-  recon_surfaces.length = 0;
-  recon_surfaces.push(new ReconstructedSurface(recon_curves));
-  recon_surfaces[recon_surfaces.length - 1].calculate_and_show();
-  recon_surfaces[recon_surfaces.length - 1].set_visibility(params.reconstructed_surfaces_visible);
-}
-
 export function finish_curve() {
-  if (pending_curve.control_points.length <= 4) {
+  if (pending_curve.control_points.length <= 3) {
     delete_selected_curve(pending_curve.three_curves[0]);
     pending_curve = null;
     set_edit_mode(EditMode.none);

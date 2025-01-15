@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene } from './visual';
 import { BezierSegmentsCurve, bezy } from '../geom/bezier_segments_curve';
 import { sync_module } from '../native/native';
-import { get_level_bottom, get_level_height, reconstruct_biarcs, reconstruct_curves } from '../state/state';
+import { get_level_bottom, get_level_height, reconstruct_biarcs } from '../state/state';
 import { BiArcCurve } from '../geom/biarc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { update_intersections } from './intersections';
@@ -29,8 +29,6 @@ export class Curve {
   constructor(rot_symmetry, ref_symmetry, level = 0) {
     /** @type {THREE.Vector3[]} Control points for the bezier curve. */
     this.control_points = [];
-    // Labels for the control points (ground = 0, top = 1, middle = 2).
-    this.point_labels = [];
 
     // Three js visualization stuff.
     this.three_curves = [];
@@ -47,8 +45,11 @@ export class Curve {
     this.height = get_level_height(level);
     this.prc_t = 0.5;
 
+    // Decoration at the bottom of the curve.
     this.decoration_t = 0;
     this.decoration_height = 0;
+
+    // Decoration at the top of the curve.
 
     this.arc_curve = null;
   }
@@ -96,10 +97,6 @@ export class Curve {
         this.ref_symmetry_point = new THREE.Vector3(0, 0, 1);
       }
     }
-    // By default first point is a ground point.
-    this.point_labels.push(0);
-    // And the second is a top point.
-    this.point_labels.push(1);
   }
 
   set_control_point_pos(idx, new_loc) {
@@ -123,18 +120,9 @@ export class Curve {
   move_last_point(new_loc) {
     let n = this.control_points.length;
     this.set_control_point_pos(n - 1, new_loc);
-    // let prev_pos = this.control_points[n - 4];
-    // this.set_control_point_pos(n - 2,
-    //   new THREE.Vector3(prev_pos.x * 0.2 + new_loc.x * 0.8, 0, prev_pos.z * 0.2 + new_loc.z * 0.8));
-    // this.set_control_point_pos(n - 3,
-    //   new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
-
     let prev_pos = this.control_points[n - 3];
     this.set_control_point_pos(n - 2,
       prev_pos.clone().lerp(new_loc, 0.2));
-    // new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, new_loc.y, prev_pos.z * 0.8 + new_loc.z * 0.2));
-    // this.set_control_point_pos(n - 3,
-    //   new THREE.Vector3(prev_pos.x * 0.8 + new_loc.x * 0.2, 0, prev_pos.z * 0.8 + new_loc.z * 0.2));
 
     if (this.ref_symmetry_type == "last point") {
       this.ref_symmetry_point.copy(this.control_points[n - 1]);
@@ -144,26 +132,18 @@ export class Curve {
   }
 
   add_new_segment(loc) {
-    for (let i = 0; i < 3; i++)
+    for (let i = 0; i < 2; i++)
       this.add_control_point(loc);
-
-    if (this.point_labels[this.point_labels.length - 1] == 2) {
-      this.point_labels.push(1);
-    } else {
-      this.point_labels.push(2);
-    }
 
     this.update_curve();
   }
 
   abort_last_segment() {
     let n = this.control_points.length;
-    this.control_points.splice(n - 3, 3);
+    this.control_points.splice(n - 2, 2);
     scene.remove(this.three_control_points[n - 1]);
     scene.remove(this.three_control_points[n - 2]);
-    scene.remove(this.three_control_points[n - 3]);
-    this.three_control_points.splice(n - 3, 3);
-    this.point_labels.splice(this.point_labels.length - 1, 1);
+    this.three_control_points.splice(n - 2, 2);
     this.update_curve();
   }
 
@@ -236,6 +216,38 @@ export class Curve {
     this.arc_curve.setPoints(this.control_points);
   }
 
+  draw_decoration_curve() {
+    if (this.control_points.length < 5)
+      return;
+    
+    let level_bottom = get_level_bottom(this.level);
+    let arc = new ArcCurve(this.control_points.slice(2,5));
+    let tube_geom = new THREE.TubeGeometry(arc, 50, 0.005, 8, false);
+    for (let i = 0; i < this.rotation_symmetry; i++) {
+      let tube = new THREE.Mesh(tube_geom,
+        i == 0 ? this.get_main_material() : this.get_sym_material(i));
+      tube.type = i == 0 ? "unit_curve" : "ns_line";
+      tube.userData = this;
+
+      tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+      tube.translateY(level_bottom);
+      this.three_curves.push(tube);
+      scene.add(tube);
+    }
+    if (!!this.ref_symmetry_point) {
+      let ref_mat = this.get_reflection_mat();
+      for (let i = 0; i < this.rotation_symmetry; i++) {
+        let tube = new THREE.Mesh(tube_geom, this.get_sym_material(i));
+        tube.type = "ns_line";
+        tube.applyMatrix4(ref_mat);
+        tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        tube.translateY(level_bottom);
+        this.three_curves.push(tube);
+        scene.add(tube);
+      }
+    }
+  }
+
   draw_curve() {
     this.update_control_points_height();
     for (let curve of this.three_curves) {
@@ -244,8 +256,9 @@ export class Curve {
     }
     let level_bottom = get_level_bottom(this.level);
     this.three_curves.length = 0;
-    this.get_bezy_curve().setPoints(this.control_points);
-    let curve_points = this.control_points.length * 32;
+    // Create a new one, don't set points.
+    this.arc_curve = new ArcCurve(this.control_points);
+    let curve_points = 50;
     let tube_geom = new THREE.TubeGeometry(this.arc_curve, curve_points, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
@@ -270,6 +283,7 @@ export class Curve {
         scene.add(tube);
       }
     }
+    this.draw_decoration_curve();
 
     // Add lines showing the tangent at each control point.
     for (let p of this.three_control_points_lines) {
@@ -278,23 +292,25 @@ export class Curve {
     }
     this.three_control_points_lines.length = 0;
 
-    for (let i = 0; i < this.control_points.length - 1; i += 3) {
-      let p = this.control_points[i];
-      let p2 = this.control_points[i + 1];
-      let p3 = this.control_points[i + 2];
-      // let p4 = this.control_points[i + 3];
-      let line1 = new THREE.LineCurve(p, p2);
-      // let line2 = new THREE.LineCurve(p3, p4);
-      let mesh1 = new THREE.Mesh(new THREE.TubeGeometry(line1, 16, 0.005, 8, false), tangent_line_material);
-      // let mesh2 = new THREE.Mesh(new THREE.TubeGeometry(line2, 16, 0.005, 8, false), tangent_line_material);
-      mesh1.type = "ns_line";
-      // mesh2.type = "ns_line";
-      mesh1.translateY(0.001);
-      // mesh2.translateY(0.001);
-      scene.add(mesh1);
-      // scene.add(mesh2);
-      this.three_control_points_lines.push(mesh1);
-      // this.three_control_points_lines.push(mesh2);
+    let p = this.control_points[0];
+    let p2 = this.control_points[1];
+    let line1 = new THREE.LineCurve(p, p2);
+    let mesh1 = new THREE.Mesh(new THREE.TubeGeometry(line1, 16, 0.005, 8, false), tangent_line_material);
+    mesh1.type = "ns_line";
+    mesh1.translateY(0.001);
+    scene.add(mesh1);
+    this.three_control_points_lines.push(mesh1);
+
+
+    if (this.control_points.length > 3) {
+      let p3 = this.control_points[2];
+      let p4 = this.control_points[3];
+      let line2 = new THREE.LineCurve(p3, p4);
+      let mesh2 = new THREE.Mesh(new THREE.TubeGeometry(line2, 16, 0.005, 8, false), tangent_line_material);
+      mesh2.type = "ns_line";
+      mesh2.translateY(0.001);
+      scene.add(mesh2);
+      this.three_control_points_lines.push(mesh2);
     }
 
     this.set_control_points_visibility(params.control_points_visible);

@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam } from "./visual.js";
-import { add_level, curves, export_recon_obj, load_from_curves_file, recon_curves, reconstruct_surfaces, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { add_level, curves, export_recon_obj, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
@@ -303,13 +303,6 @@ left_menu.addButton({
   api_state.options = options;
   curve_list.importState(api_state);
 });
-
-left_menu.addButton({
-  title: 'Test',
-}).on('click', (ev) => {
-  reconstruct_surfaces();
-});
-
 
 left_menu.addButton({
   title: "Export OBJ",
