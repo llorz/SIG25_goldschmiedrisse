@@ -287,21 +287,27 @@ left_menu.addBinding(params, 'save_curve_name', {
 left_menu.addButton({
   title: 'Save',
 }).on('click', (ev) => {
-  let saved_curves_names = localStorage.getItem("saved_curves_names");
-  if (!saved_curves_names)
-    saved_curves_names = params.save_curve_name;
-  else {
-    if (saved_curves_names.split(",").indexOf(params.save_curve_name) < 0) {
-      saved_curves_names += "," + params.save_curve_name;
-    }
-  }
-  localStorage.setItem("saved_curves_names", saved_curves_names);
+  // let saved_curves_names = localStorage.getItem("saved_curves_names");
+  // if (!saved_curves_names)
+  //   saved_curves_names = params.save_curve_name;
+  // else {
+  //   if (saved_curves_names.split(",").indexOf(params.save_curve_name) < 0) {
+  //     saved_curves_names += "," + params.save_curve_name;
+  //   }
+  // }
+  // localStorage.setItem("saved_curves_names", saved_curves_names);
   let text = save_state();
-  localStorage.setItem(params.save_curve_name, text);
-  let api_state = curve_list.exportState();
-  let options = get_curves_list();
-  api_state.options = options;
-  curve_list.importState(api_state);
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = params.save_curve_name + '.uc';
+  link.click();
+  // localStorage.setItem(params.save_curve_name, text);
+  // let api_state = curve_list.exportState();
+  // let options = get_curves_list();
+  // api_state.options = options;
+  // curve_list.importState(api_state);
 });
 
 left_menu.addButton({
