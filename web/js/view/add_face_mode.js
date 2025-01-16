@@ -190,7 +190,10 @@ function build_polygon(poly_verts) {
         let t = k / 20;
         let pt = arc.getPoint(t);
         fixed.push(polygon.length);
-        polygon.push(pt);
+        // let pt1 = vert.get_point();
+        // let pt2 = next_vert.get_point();
+        // polygon.push(pt1.lerp(pt2, t));
+        polygon.push(new THREE.Vector3(pt.x, height, pt.z));
       }
       continue;
     }
@@ -213,7 +216,7 @@ export function finish_face() {
   let [poly, fixed] = build_polygon(new_face_verts);
   if (poly.length == 0) return;
 
-  let res = sync_module.calculate_minimal_surface(poly, []);
+  let res = sync_module.calculate_minimal_surface(poly, fixed);
   let [verts, faces, normals] = res;
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
@@ -300,6 +303,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     if (ind < 0 || ind >= sorted.get(curve).length) {
       if (face_verts.length > 1 &&
         Math.abs(face_verts[0].get_point().y - face_verts[face_verts.length - 1].get_point().y) < 1e-3) {
+          // Change to true to do bottom and top faces.
         finished_face = false;
       }
       break;
@@ -343,8 +347,8 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
   }
 }
 
-function add_face(poly) {
-  let res = sync_module.calculate_minimal_surface(poly, []);
+function add_face(poly, fixed) {
+  let res = sync_module.calculate_minimal_surface(poly, fixed);
   let [verts, faces, normals] = res;
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
@@ -367,11 +371,15 @@ export function find_all_faces() {
   for (let curve of all_curves_with_symmetries) {
     for (let i = 0, l = sorted.get(curve).length; i < l; i++) {
       let poly_verts = trace_face(sorted, curve, i, used_segments, 1);
-      if (poly_verts.length > 0)
-        add_face(build_polygon(poly_verts)[0]);
-      // poly_verts = trace_face(sorted, curve, i, used_segments, -1);
-      // if (poly_verts.length > 0)
-      //   add_face(build_polygon(poly_verts)[0]);
+      if (poly_verts.length > 0) {
+        let [poly, fixed] = build_polygon(poly_verts);
+        add_face(poly, fixed);
+      }
+      poly_verts = trace_face(sorted, curve, i, used_segments, -1);
+      if (poly_verts.length > 0) {
+        let [poly, fixed] = build_polygon(poly_verts);
+        add_face(poly, fixed);
+      }
     }
   }
 }

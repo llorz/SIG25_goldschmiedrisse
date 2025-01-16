@@ -117,6 +117,12 @@ canvas.onpointerdown = (e) => {
       disable_controls();
       selected_obj = obj;
     }
+  } else if (edit_mode == EditMode.change_layer_bottom) {
+    let obj = find_selected(point_down_location, false);
+    if (obj && obj.type == "layer_bottom") {
+      disable_controls();
+      selected_obj = obj;
+    }
   }
 };
 canvas.onpointerup = (e) => {

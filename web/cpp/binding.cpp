@@ -182,14 +182,16 @@ val calculate_minimal_surface(val boundary, val fixed_indices) {
                      boundary[i]["z"].as<double>());
   }
   std::vector<int> fixed;
-  for (int i  =0 ; i < fixed_indices["length"].as<unsigned>(); i++) {
+  for (int i = 0; i < fixed_indices["length"].as<unsigned>(); i++) {
     fixed.push_back(fixed_indices[i].as<int>());
   }
   Eigen::MatrixXd bla = to_eig_mat(pts);
+  std::cout << "pts size: " << bla.rows() << std::endl;
   auto [V, F] = triangulate_polygon(bla);
   set_boundary_verts(bla, F, V);
-  V = run_mc_iteration(V, F, fixed);
-  V = run_mc_iteration(V, F, fixed);
+  for (int i = 0; i < 10; i++) {
+    V = run_mc_iteration(V, F, fixed);
+  }
   Eigen::MatrixXd N;
   igl::per_vertex_normals(V, F, N);
   emscripten::val res = val::global("Array").new_();

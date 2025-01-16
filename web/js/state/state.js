@@ -24,6 +24,10 @@ export let recon_curves = [];
 export let filling_curves = [];
 export let recon_surfaces = [];
 
+export let available_layer_heights = [0];
+// The bottom height of each layer.
+export let layers_bottom = [0];
+
 export function max_level() {
   let max = 0;
   for (let curve of curves) {
@@ -52,7 +56,13 @@ export function set_level_height(level, height) {
   levels_height[level] = height;
 }
 export function get_level_bottom(level = params.current_level) {
-  return get_level_height(level - 1);
+  return level < layers_bottom.length ? layers_bottom[level] : get_level_height(level - 1);
+}
+export function set_level_bottom(level, bottom) {
+  if (level < layers_bottom.length) {
+    layers_bottom[level] = bottom;
+  }
+  layers_bottom.push(bottom);
 }
 
 export let EditMode = {
@@ -64,6 +74,7 @@ export let EditMode = {
   move_tangent_control_point: "move_tangent_control_point",
   new_face: "new_face",
   edit_decoration_point: "edit_decoration_point",
+  change_layer_bottom: "change_layer_bottom",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }
@@ -110,6 +121,21 @@ export function get_all_real_intersections() {
   return inters;
 }
 
+export function update_available_layer_heights() {
+  available_layer_heights = [0];
+  for (let curve of curves) {
+    available_layer_heights.push(curve.height);
+  }
+  let intersections = get_all_real_intersections();
+  for (let inter of intersections) {
+    available_layer_heights.push(inter.curve1.curve.getPoint(inter.t1).y);
+  }
+  // Remove duplicates.
+  available_layer_heights = available_layer_heights.filter((v, i, a) => a.indexOf(v) === i);
+  // Sort.
+  available_layer_heights.sort((a, b) => a - b);
+}
+
 export class Intersection {
   /**
    * 
@@ -153,10 +179,10 @@ export function find_intersections() {
       for (let [t1, t2] of res) {
         intersections.push(new Intersection(curves[i], curves[j], t1, t2, i, j, curves[i].level));
         if (Math.abs(t1 - curves[i].prc_t) < Math.abs(closest_t[i] - curves[i].prc_t)) {
-          closest_t[i] = t1;
+          // closest_t[i] = t1;
         }
         if (Math.abs(t2 - curves[j].prc_t) < Math.abs(closest_t[j] - curves[j].prc_t)) {
-          closest_t[j] = t2;
+          // closest_t[j] = t2;
         }
       }
     }
