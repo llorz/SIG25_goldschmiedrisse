@@ -1,5 +1,5 @@
 
-import { curves } from "../state/state";
+import { curves, layers_bottom, reset_layer_bottom } from "../state/state";
 import { Curve } from "../view/curve";
 import * as THREE from "three";
 
@@ -71,6 +71,7 @@ export function load_curves(txt) {
 
 export function load_state(txt) {
   curves.length = 0;
+  layers_bottom.length = 0;
   txt.split(/[\r\n]+/g).forEach((line) => {
     let parts = line.split(/\s+/);
     if (line.startsWith("numCurves")) { }
@@ -97,9 +98,32 @@ export function load_state(txt) {
       last(curves).decoration_t = parseFloat(parts[1]);
     } else if (line.startsWith("decoration_height")) {
       last(curves).decoration_height = parseFloat(parts[1]);
+    } else if (line.startsWith("layer_bottom")) {
+      layers_bottom.push(parseFloat(parts[1]));
     }
   });
   for (let curve of curves) {
     curve.get_bezy_curve();
+  }
+
+  if (layers_bottom.length == 0) {
+    layers_bottom.push(0);
+    let max_level_height = new Map();
+    let max_level = 0;
+    // Find max height of each level.
+    for (let curve of curves) {
+      if (max_level_height.has(curve.level)) {
+        max_level_height.set(curve.level,
+          Math.max(max_level_height.get(curve.level), curve.height));
+      } else {
+        max_level_height.set(curve.level, curve.height);
+      }
+      max_level = Math.max(max_level, curve.level);
+    }
+    // Initialize the layers bottom height.
+    reset_layer_bottom(max_level);
+    for (let i = 1; i <= max_level; i++) {
+      layers_bottom[i] = max_level_height.get(i - 1);
+    }
   }
 }

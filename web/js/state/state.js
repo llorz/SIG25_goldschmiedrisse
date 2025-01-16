@@ -24,9 +24,11 @@ export let recon_curves = [];
 export let filling_curves = [];
 export let recon_surfaces = [];
 
-export let available_layer_heights = [0];
 // The bottom height of each layer.
 export let layers_bottom = [0];
+export function reset_layer_bottom(max_level = 1) {
+  layers_bottom = [...new Array(max_level + 1)].map(x=>0);
+}
 
 export function max_level() {
   let max = 0;
@@ -47,7 +49,7 @@ export function get_level_height(level) {
     }
   }
   if (height == 0)
-    return get_level_height(level - 1) + 1;
+    return get_level_bottom(level) + 1;
   return height;
 }
 
@@ -105,14 +107,16 @@ export function get_all_real_intersections() {
   for (let i = 0; i < curves.length; i++) {
     let self_inters = analytic_self_intersection(curves[i], true);
     for (let inter of self_inters) {
-      let t = inter.t;
+      let t = recon_curves[i].curve.get_t_for_x(inter.t);
       inters.push(new RealIntersection(recon_curves[i], recon_curves[i], t, t));
     }
 
     for (let j = i + 1; j < curves.length; j++) {
       if (curves[i].level != curves[j].level) continue;
       let res = analytic_curves_intersection(curves[i], curves[j], true);
-      for (let [t1, t2] of res) {
+      for (let inter of res) {
+        let t1 = recon_curves[i].curve.get_t_for_x(inter[0]);
+        let t2 = recon_curves[j].curve.get_t_for_x(inter[1]);
         if (recon_curves[i].curve.getPoint(t1).distanceTo(recon_curves[j].curve.getPoint(t2)) < 1e-3)
           inters.push(new RealIntersection(recon_curves[i], recon_curves[j], t1, t2));
       }
@@ -121,8 +125,8 @@ export function get_all_real_intersections() {
   return inters;
 }
 
-export function update_available_layer_heights() {
-  available_layer_heights = [0];
+export function get_available_layer_heights() {
+  let available_layer_heights = [0];
   for (let curve of curves) {
     available_layer_heights.push(curve.height);
   }
@@ -134,6 +138,7 @@ export function update_available_layer_heights() {
   available_layer_heights = available_layer_heights.filter((v, i, a) => a.indexOf(v) === i);
   // Sort.
   available_layer_heights.sort((a, b) => a - b);
+  return available_layer_heights;
 }
 
 export class Intersection {
@@ -225,10 +230,15 @@ export function add_level() {
   let new_level = max_level() + 1;
   level_controller.controller.valueController.sliderController.props.set('max', new_level);
   level_controller.controller.valueController.value.rawValue = new_level;
+  let max_height = 0;
+  for (let curve of curves) {
+    max_height = Math.max(max_height, curve.height);
+  }
+  layers_bottom.push(max_height);
 }
 
 export function update_current_level() {
-  set_designing_area_height(get_level_height(params.current_level - 1));
+  set_designing_area_height(get_level_bottom(params.current_level));
   for (let curve of curves) {
     if (curve.level != params.current_level) {
       curve.set_visibility(false);
@@ -269,6 +279,16 @@ export function reconstruct_biarcs(curve = null) {
       recon_curves[ind] = recon_three_curve;
     else
       recon_curves.push(recon_three_curve);
+  }
+}
+
+export function udpated_layer_bottom(level, bottom) {
+  for (let recon_three_curve of recon_curves) {
+    if (recon_three_curve.curve.level == level) {
+      recon_three_curve.curve.curve.draw_curve();
+      recon_three_curve.curve.compute_biarc();
+      recon_three_curve.update_curve();
+    }
   }
 }
 

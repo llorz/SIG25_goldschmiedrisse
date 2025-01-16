@@ -1,5 +1,5 @@
 
-import { curves } from "../state/state";
+import { curves, layers_bottom } from "../state/state";
 import { Curve } from "../view/curve";
 import * as THREE from "three";
 
@@ -60,6 +60,9 @@ export function save_state() {
     txt +='decoration_t ' + curve.decoration_t + '\n';
     txt += 'decoration_height ' + curve.decoration_height + '\n';
 
+  }
+  for (let layer of layers_bottom) {
+    txt += 'layer_bottom ' + layer + '\n';
   }
   return txt;
 }

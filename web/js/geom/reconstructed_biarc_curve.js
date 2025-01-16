@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { ArcCurve } from './arc_curve';
-import { get_level_height, set_level_height } from '../state/state';
+import { get_level_bottom, get_level_height, set_level_height } from '../state/state';
 import { Curve } from '../view/curve';
 import { clamp11 } from '../utils/math_funcs';
 import { get_reflection_mat, get_rotation_mat } from '../utils/intersect';
@@ -88,7 +88,7 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
   }
 
   prev_level_height() {
-    return get_level_height(this.level - 1);
+    return get_level_bottom(this.level);
   }
 
   set_top_height(height) {

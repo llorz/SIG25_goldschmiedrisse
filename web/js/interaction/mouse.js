@@ -12,6 +12,7 @@ import { Curve } from '../view/curve.js';
 import { closest_rotation_line, get_snapping_point } from '../utils/snapping.js';
 import { add_new_face_vertex, remove_new_face_vertex } from '../view/add_face_mode.js';
 import { move_decoration_point } from './edit_decoration_point.js';
+import { move_layer_height } from './change_layer_height.js';
 
 let non_selectable_objects_names = ["center_circle", "designing_area"];
 let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
@@ -168,6 +169,9 @@ canvas.onpointerup = (e) => {
       selected_obj = null;
       selectedOutlinePass.selectedObjects = [];
     }
+  } else if (edit_mode == EditMode.change_layer_bottom) {
+    selected_obj = null;
+    selectedOutlinePass.selectedObjects = [];
   }
 };
 
@@ -229,5 +233,7 @@ canvas.onpointermove = (e) => {
     selected_obj.userData.move_tangent_control_point(selected_obj, flat_point);
   } else if (edit_mode == EditMode.edit_decoration_point && selected_obj) {
     move_decoration_point(ray_cast);
+  } else if (edit_mode == EditMode.change_layer_bottom && selected_obj) {
+    move_layer_height(ray_cast);
   }
 };
