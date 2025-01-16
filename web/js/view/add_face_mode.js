@@ -217,12 +217,13 @@ export function finish_face() {
   if (poly.length == 0) return;
 
   let res = sync_module.calculate_minimal_surface(poly, fixed);
-  let [verts, faces, normals] = res;
+  let [verts, faces, normals, uv] = res;
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
   const indices = Array.from(faces);
   geometry.setIndex(indices);
   geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   let rot_sym = new_face_verts[0].intersections[0].curve.rotation_symmetry;
   for (let i = 0; i < rot_sym; i++) {
     let recon_surface = new THREE.Mesh(geometry, surface_material);

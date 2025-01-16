@@ -76,7 +76,7 @@ val test_stuff(emscripten::val curve, int symmetry, val ref_symmetry) {
       bla.row(i) = resa[i];
     }
 
-    auto [V, F] = triangulate_polygon(bla);
+    auto [V, F, UV] = triangulate_polygon(bla);
     set_boundary_verts(bla, F, V);
     V = run_mc_iteration(V, F);
 
@@ -187,7 +187,7 @@ val calculate_minimal_surface(val boundary, val fixed_indices) {
   }
   Eigen::MatrixXd bla = to_eig_mat(pts);
   std::cout << "pts size: " << bla.rows() << std::endl;
-  auto [V, F] = triangulate_polygon(bla);
+  auto [V, F, UV] = triangulate_polygon(bla);
   set_boundary_verts(bla, F, V);
   for (int i = 0; i < 10; i++) {
     V = run_mc_iteration(V, F, fixed);
@@ -198,6 +198,7 @@ val calculate_minimal_surface(val boundary, val fixed_indices) {
   res.call<void>("push", eig_to_js_array(V));
   res.call<void>("push", eig_to_js_array(F));
   res.call<void>("push", eig_to_js_array(N));
+  res.call<void>("push", eig_to_js_array(UV));
   return res;
 }
 

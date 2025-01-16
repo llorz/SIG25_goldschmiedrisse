@@ -21,7 +21,7 @@ find_plane(const Eigen::MatrixXd &V) {
   return res;
 }
 
-std::tuple<Eigen::MatrixXd, Eigen::MatrixXi>
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXd>
 triangulate_polygon(const Eigen::MatrixXd &V) {
   auto centroid = V.colwise().mean();
   auto mat = find_plane(V);
@@ -39,5 +39,5 @@ Eigen::MatrixXd proj = (V.rowwise() - centroid) * mat.transpose();
   igl::triangle::triangulate(proj, E, H, "a0.003qY", out_v, out_f);
   Eigen::MatrixXd out_v3d = out_v * mat;
   out_v3d.rowwise() += centroid;
-  return std::make_tuple(out_v3d, out_f);
+  return std::make_tuple(out_v3d, out_f, out_v);
 }

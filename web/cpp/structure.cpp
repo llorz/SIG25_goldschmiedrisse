@@ -342,7 +342,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXd>
 build_face(const MultiGraphFaces &graph, int i) {
   const auto &face = graph.faces[i];
   auto bla = get_face_points(graph, i);
-  auto [V, F] = triangulate_polygon(bla);
+  auto [V, F, UV] = triangulate_polygon(bla);
   set_boundary_verts(bla, F, V);
   V = run_mc_iteration(V, F);
   V = run_mc_iteration(V, F);

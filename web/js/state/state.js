@@ -8,7 +8,7 @@ import { ReconstructedCurve } from "../view/reconstructed_three_curve";
 import { camera2d, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
 import { ReconstructedBiArcCurve } from "../geom/reconstructed_biarc_curve";
 import { ReconstructedThreeBiArcCurve } from "../view/reconstructed_three_biarc_curve";
-import { analytic_curves_intersection, analytic_self_intersection } from "../utils/intersect";
+import { analytic_curves_intersection, analytic_self_intersection, get_rotation_mat } from "../utils/intersect";
 import { params } from "./params";
 import { clear_selected_obj, selected_obj } from "../interaction/mouse";
 import { show_intersections_at_level, update_intersections } from "../view/intersections";
@@ -27,7 +27,7 @@ export let recon_surfaces = [];
 // The bottom height of each layer.
 export let layers_bottom = [0];
 export function reset_layer_bottom(max_level = 1) {
-  layers_bottom = [...new Array(max_level + 1)].map(x=>0);
+  layers_bottom = [...new Array(max_level + 1)].map(x => 0);
 }
 
 export function max_level() {
@@ -61,10 +61,19 @@ export function get_level_bottom(level = params.current_level) {
   return level < layers_bottom.length ? layers_bottom[level] : get_level_height(level - 1);
 }
 export function set_level_bottom(level, bottom) {
-  if (level < layers_bottom.length) {
-    layers_bottom[level] = bottom;
+  // if (level < layers_bottom.length) {
+  //   layers_bottom[level] = bottom;
+  // }
+  // layers_bottom.push(bottom);
+  let diff = bottom - layers_bottom[level];
+  for (let i = level; i < layers_bottom.length; i++) {
+    layers_bottom[i] += diff;
   }
-  layers_bottom.push(bottom);
+  for (let curve of curves) {
+    if (curve.level >= level) {
+      curve.height += diff;
+    }
+  }
 }
 
 export let EditMode = {
@@ -123,6 +132,55 @@ export function get_all_real_intersections() {
     }
   }
   return inters;
+}
+
+export function get_all_feature_points() {
+  let inters = get_all_real_intersections();
+  let feature_points = [];
+  for (let inter of inters) {
+    let pt = inter.curve1.curve.getPoint(inter.t1);
+    let rot_sym = inter.curve1.rotation_symmetry;
+    for (let rot = 0; rot < rot_sym; rot++) {
+      feature_points.push({
+        pt: pt.clone().applyMatrix4(get_rotation_mat(rot_sym, rot)),
+        level: inter.curve1.curve.level
+      });
+    }
+  }
+  for (let i = 0; i < curves.length; i++) {
+    let pt = recon_curves[i].curve.getPoint(0);
+    let pt1 = recon_curves[i].curve.getPoint(1);
+    let rot_sym = recon_curves[i].rotation_symmetry;
+    for (let rot = 0; rot < rot_sym; rot++) {
+      feature_points.push({
+        pt: pt.clone().applyMatrix4(get_rotation_mat(rot_sym, rot)),
+        level: recon_curves[i].curve.level
+      });
+      feature_points.push({
+        pt: pt1.clone().applyMatrix4(get_rotation_mat(rot_sym, rot)),
+        level: recon_curves[i].curve.level
+      });
+    }
+  }
+  return feature_points;
+}
+
+export function update_supporting_pillars() {
+  let feature_points = get_all_feature_points();
+  for (let curve of curves) {
+    if (curve.level == 0) continue;
+    let highest = 0;
+    curve.supporting_pillar_point = null;
+    for (let feature_pt of feature_points) {
+      if (feature_pt.level >= curve.level) continue;
+      if (Math.abs((curve.control_points[0].x - feature_pt.pt.x) ** 2 +
+        (curve.control_points[0].z - feature_pt.pt.z) ** 2) < 1e-3 &&
+        feature_pt.pt.y >= highest) {
+        curve.supporting_pillar_point = feature_pt.pt;
+        highest = feature_pt.pt.y;
+      }
+    }
+  }
 }
 
 export function get_available_layer_heights() {
@@ -280,16 +338,18 @@ export function reconstruct_biarcs(curve = null) {
     else
       recon_curves.push(recon_three_curve);
   }
+  update_supporting_pillars();
 }
 
 export function udpated_layer_bottom(level, bottom) {
   for (let recon_three_curve of recon_curves) {
     if (recon_three_curve.curve.level == level) {
       recon_three_curve.curve.curve.draw_curve();
-      recon_three_curve.curve.compute_biarc();
-      recon_three_curve.update_curve();
     }
+    recon_three_curve.curve.compute_biarc();
+    recon_three_curve.update_curve();
   }
+  update_supporting_pillars();
 }
 
 export function updated_height(last_top_height, last_mid_height, curve) {
@@ -355,9 +415,10 @@ export function load_from_curves_file(txt) {
   load_state(txt);
   level_controller.controller.valueController.sliderController.props.set('max', max_level());
   level_controller.controller.valueController.value.rawValue = 0;
-  refresh();
   reconstruct_biarcs();
+  update_supporting_pillars();
   update_current_level();
+  refresh();
 }
 
 export function set_control_points_visibility(is_visible) {
@@ -400,7 +461,7 @@ export function set_mode(m) {
 export function refresh() {
   update_intersections();
   for (let curve of curves) {
-    if (params.preview_mode == 'Design') {
+    if (params.preview_mode == 'Design' && curve.level == params.current_level) {
       curve.draw_curve();
       curve.set_visibility(true);
     } else {

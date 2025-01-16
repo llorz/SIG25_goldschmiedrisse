@@ -49,6 +49,9 @@ export class Curve {
     this.decoration_t = 0;
     this.decoration_height = 0;
 
+    /** @type{THREE.Vector3?} */
+    this.supporting_pillar_point = null;
+
     // Decoration at the top of the curve.
 
     this.arc_curve = null;

@@ -180,8 +180,10 @@ export class ReconstructedThreeBiArcCurve {
   get_sweep_object() {
     let obj = new THREE.Group();
     if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
-      let geom = this.get_sweep_cylinder_geom();
-      obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
+      // let geom = this.get_sweep_cylinder_geom();
+      // obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
+      obj.add(new THREE.Mesh(
+        new THREE.TubeGeometry(this.curve, 32, params.tube_radius, 8, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
@@ -286,6 +288,36 @@ export class ReconstructedThreeBiArcCurve {
     }
   }
 
+  update_supporting_pillar() {
+    let sup_point = this.curve.curve.supporting_pillar_point;
+    let first_pt = this.curve.getPoint(0);
+    if (!sup_point ||
+      Math.abs(sup_point.distanceTo(first_pt)) < 1e-2) return;
+
+    let line_curve = new THREE.LineCurve3(sup_point, first_pt);
+    let filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    for (let i = 0; i < this.rotation_symmetry; i++) {
+      let filling_tube_clone = filling_tube.clone();
+      if (params.biarcs_visualization == 'colorful') {
+        filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+      }
+      filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+      this.three_curves.push(filling_tube_clone);
+      scene.add(filling_tube_clone);
+    }
+    if (!!this.ref_symmetry_point) {
+      let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
+      for (let i = 0; i < this.rotation_symmetry; i++) {
+        let filling_tube_clone = filling_tube.clone();
+        filling_tube_clone.material = this.get_sym_material(i);
+        filling_tube_clone.applyMatrix4(ref_mat);
+        filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        this.three_curves.push(filling_tube_clone);
+        scene.add(filling_tube_clone);
+      }
+    }
+  }
+
   update_curve() {
     // if (this.three_curves.length > 0) {
     //   this.only_update_geometry();
@@ -303,6 +335,7 @@ export class ReconstructedThreeBiArcCurve {
     this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
     this.control_points[1].position.copy(this.curve.getPoint(1));
 
+    this.update_supporting_pillar();
     this.update_decoration_curves();
     this.update_top_decoration_curves();
 

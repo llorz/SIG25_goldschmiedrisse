@@ -1,5 +1,5 @@
 
-import { curves, layers_bottom, reset_layer_bottom } from "../state/state";
+import { curves, layers_bottom, reset_layer_bottom, update_supporting_pillars } from "../state/state";
 import { Curve } from "../view/curve";
 import * as THREE from "three";
 
