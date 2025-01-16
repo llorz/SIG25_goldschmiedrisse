@@ -174,18 +174,22 @@ val find_t_for_x(val bezier, val xs) {
   return res;
 }
 
-val calculate_minimal_surface(val boundary) {
+val calculate_minimal_surface(val boundary, val fixed_indices) {
   std::vector<Eigen::Vector3d> pts;
   for (int i = 0; i < boundary["length"].as<unsigned>(); i++) {
     pts.emplace_back(boundary[i]["x"].as<double>(),
                      boundary[i]["y"].as<double>(),
                      boundary[i]["z"].as<double>());
   }
+  std::vector<int> fixed;
+  for (int i  =0 ; i < fixed_indices["length"].as<unsigned>(); i++) {
+    fixed.push_back(fixed_indices[i].as<int>());
+  }
   Eigen::MatrixXd bla = to_eig_mat(pts);
   auto [V, F] = triangulate_polygon(bla);
   set_boundary_verts(bla, F, V);
-  V = run_mc_iteration(V, F);
-  V = run_mc_iteration(V, F);
+  V = run_mc_iteration(V, F, fixed);
+  V = run_mc_iteration(V, F, fixed);
   Eigen::MatrixXd N;
   igl::per_vertex_normals(V, F, N);
   emscripten::val res = val::global("Array").new_();

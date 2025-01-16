@@ -10,7 +10,7 @@ import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
 import { surface_material } from "./reconstructed_surface.js";
-import { init_add_new_face } from "./add_face_mode.js";
+import { find_all_faces, init_add_new_face } from "./add_face_mode.js";
 
 export let pane = new Pane({
   title: "Menu",
@@ -185,7 +185,7 @@ new_curve_options_folder.addBlade({
   view: 'list',
   label: 'Reflection sym',
   options: [{ text: 'first point', value: 'first point' }, { text: 'last point', value: 'last point' },
-    { text: 'y axis', value: 'y axis' },
+  { text: 'y axis', value: 'y axis' },
   { text: 'none', value: 'none' },
   ],
   value: 'first point',
@@ -215,6 +215,11 @@ pane.addButton({
   init_add_new_face();
 });
 
+pane.addButton({
+  title: 'Construct all faces',
+}).on('click', (ev) => {
+  find_all_faces();
+});
 
 /*******************************************************************************************/
 
@@ -264,20 +269,36 @@ let button = left_menu.addButton({
     load_from_curves_file(localStorage.getItem(curve_list.value));
 });
 left_menu.addButton({
-  title: 'Delete',
-}).on('click', (ev) => {
-  let names = get_saved_curves_names();
-  let idx = names.indexOf(curve_list.value);
-  if (idx >= 0) {
-    names.splice(idx, 1);
-    localStorage.setItem("saved_curves_names", names.join(","));
-    localStorage.removeItem(curve_list.value);
-    let api_state = curve_list.exportState();
-    let options = get_curves_list();
-    api_state.options = options;
-    curve_list.importState(api_state);
-  }
+  title: 'Load from file',
+}).on('click', ev => {
+  // Show a dialog for choosing a file.
+  var input = document.createElement("input");
+  input.type = "file";
+  input.click();
+  input.onchange = (e) => {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      load_from_curves_file(e.target.result);
+    };
+    reader.readAsText(file);
+  };
 });
+// left_menu.addButton({
+//   title: 'Delete',
+// }).on('click', (ev) => {
+//   let names = get_saved_curves_names();
+//   let idx = names.indexOf(curve_list.value);
+//   if (idx >= 0) {
+//     names.splice(idx, 1);
+//     localStorage.setItem("saved_curves_names", names.join(","));
+//     localStorage.removeItem(curve_list.value);
+//     let api_state = curve_list.exportState();
+//     let options = get_curves_list();
+//     api_state.options = options;
+//     curve_list.importState(api_state);
+//   }
+// });
 left_menu.addBlade({
   view: 'separator',
 });

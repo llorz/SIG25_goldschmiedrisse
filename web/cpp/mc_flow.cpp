@@ -22,7 +22,7 @@ std::vector<int> get_unknowns(const Eigen::MatrixXd& V, const std::vector<int> &
 }
 
 
-Eigen::MatrixXd run_mc_iteration(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, int n_iter) {
+Eigen::MatrixXd run_mc_iteration(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const std::vector<int>& fixed, int n_iter) {
   Eigen::SparseMatrix<double> L, M;
   igl::cotmatrix(V, F, L);
   igl::massmatrix(V, F, igl::MASSMATRIX_TYPE_VORONOI, M);
@@ -31,7 +31,8 @@ Eigen::MatrixXd run_mc_iteration(const Eigen::MatrixXd &V, const Eigen::MatrixXi
   // (M - t L)x_{n+1} = M x_n
 
   Eigen::SparseMatrix<double> A = M - 0.1 * L;
-  auto boundary_verts = get_boundary_verts(F);
+  auto boundary_verts = fixed.size() > 0? fixed : get_boundary_verts(F);
+
   Eigen::VectorXi eig_known(boundary_verts.size());
   int index = 0;
   for (auto& b : boundary_verts) {
@@ -57,6 +58,6 @@ Eigen::MatrixXd run_mc_iteration(const Eigen::MatrixXd &V, const Eigen::MatrixXi
 
 
 void set_boundary_verts(const Eigen::MatrixXd& poly, const Eigen::MatrixXi &F, Eigen::MatrixXd& V) {
-  std::vector<int> boundary_verts = get_boundary_verts(F);
+  // std::vector<int> boundary_verts = get_boundary_verts(F);
   V(Eigen::seq(0, poly.rows() - 1), Eigen::all) = poly;
 }

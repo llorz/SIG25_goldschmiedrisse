@@ -296,6 +296,14 @@ export function clear_all() {
   set_edit_mode(EditMode.none);
 }
 
+export function clear_all_surfaces() {
+  for (let surface of recon_surfaces) {
+    surface.geometry.dispose();
+    scene.remove(surface);
+  }
+  recon_surfaces.length = 0;
+}
+
 export function load_from_curves_file(txt) {
   clear_all();
   load_state(txt);
