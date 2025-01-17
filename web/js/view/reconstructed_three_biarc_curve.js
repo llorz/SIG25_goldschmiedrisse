@@ -183,7 +183,7 @@ export class ReconstructedThreeBiArcCurve {
       // let geom = this.get_sweep_cylinder_geom();
       // obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
       obj.add(new THREE.Mesh(
-        new THREE.TubeGeometry(this.curve, 32, params.tube_radius, 8, false), symmetry_curve_material));
+        new THREE.TubeGeometry(this.curve, 200, params.tube_radius, 8, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
