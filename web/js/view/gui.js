@@ -175,6 +175,15 @@ pane.addBinding(params, 'tube_height_segments', {
   params.tube_height_segments = ev.value;
   refresh();
 });
+pane.addBinding(params, 'tube_circular_segments', {
+  label: 'Circular segments',
+  step: 1,
+  min: 8,
+  max: 100,
+}).on('change', (ev) => {
+  params.tube_circular_segments = ev.value;
+  refresh();
+});
 pane.addBinding(params, 'tube_wireframe', {
   label: 'Wireframe',
 }).on('change', (ev) => {

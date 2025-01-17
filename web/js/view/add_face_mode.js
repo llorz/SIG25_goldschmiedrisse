@@ -66,7 +66,7 @@ class MergedIntersection {
 
   is_same(p) {
     if (this.intersections.length == 0) return false;
-    return this.get_point().distanceTo(p) < 1e-2;
+    return this.get_point().distanceTo(p) < 1e-3;
   }
 
   add_intersection(curve, t) {
@@ -273,6 +273,9 @@ function next_curve_and_dir(sorted, curve, curve_inter, dir) {
       other_curve = curve_inter.inter.intersections[0].curve;
       other_curve_t = curve_inter.inter.intersections[0].t;
     }
+  }
+  if (!other_curve) {
+    console.info("No other curve found");
   }
   let pt = curve.getPoint(curve_inter.t).normalize();
   pt.y = 0;
