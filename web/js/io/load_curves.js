@@ -83,7 +83,7 @@ export function load_state(txt) {
       last(curves).ref_symmetry_point = parse_point(parts.slice(1));
       // Control points.
     } else if (line.startsWith("ref_symmetry_type")) {
-      last(curves).ref_symmetry_type = parts[1];
+      last(curves).ref_symmetry_type = parts.slice(1, parts.length).join(' ');
     } else if (line.startsWith("ptPos")) {
       let curve = last(curves);
       let pt = parse_point(parts.slice(1));
