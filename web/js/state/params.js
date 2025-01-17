@@ -6,6 +6,8 @@ export let params = {
   ortho_view: "Top view",
   rotation_symmetry: 4,
   tube_radius: 0.007,
+  tube_height_segments: 200,
+  tube_wireframe: false,
   reflection_symmetry: 'first point',
   control_points_visible: true,
   reconstructed_surfaces_visible: true,

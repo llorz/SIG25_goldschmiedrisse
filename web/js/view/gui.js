@@ -11,6 +11,7 @@ import { sync_module } from "../native/native.js";
 import * as THREE from "three";
 import { surface_material } from "./reconstructed_surface.js";
 import { find_all_faces, init_add_new_face } from "./add_face_mode.js";
+import { set_wire_frame } from "./reconstructed_three_biarc_curve.js";
 
 export let pane = new Pane({
   title: "Menu",
@@ -163,6 +164,22 @@ pane.addBlade({
   value: 0.007,
 }).on('change', (ev) => {
   params.tube_radius = ev.value;
+  refresh();
+});
+pane.addBinding(params, 'tube_height_segments', {
+  label: 'Height segments',
+  step: 1,
+  min: 30,
+  max: 1000,
+}).on('change', (ev) => {
+  params.tube_height_segments = ev.value;
+  refresh();
+});
+pane.addBinding(params, 'tube_wireframe', {
+  label: 'Wireframe',
+}).on('change', (ev) => {
+  params.tube_wireframe = ev.value;
+  set_wire_frame();
   refresh();
 });
 
