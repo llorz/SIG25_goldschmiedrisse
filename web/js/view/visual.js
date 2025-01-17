@@ -191,7 +191,7 @@ export let front_view_controls = new MapControls(front_view_cam, front_view_rend
 
 export let get_active_camera = () => mode === Mode.orthographic ? camera2d : camera3d;
 
-let designing_area = new THREE.Mesh(
+export let designing_area = new THREE.Mesh(
   new THREE.CircleGeometry(1, 64),
   new THREE.MeshBasicMaterial({
     // color: 0xeb9090, 

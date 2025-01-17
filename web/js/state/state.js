@@ -5,7 +5,7 @@ import { load_curves, load_state } from "../io/load_curves";
 import { sync_module } from "../native/native";
 import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
-import { camera2d, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
+import { camera2d, designing_area, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
 import { ReconstructedBiArcCurve } from "../geom/reconstructed_biarc_curve";
 import { ReconstructedThreeBiArcCurve } from "../view/reconstructed_three_biarc_curve";
 import { analytic_curves_intersection, analytic_self_intersection, get_rotation_mat } from "../utils/intersect";
@@ -73,6 +73,7 @@ export function load_background_image(file) {
     scene.add(background_image_plane);
     background_image = texture;
   });
+  designing_area.visible = false;
 
 }
 
