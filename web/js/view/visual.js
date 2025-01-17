@@ -234,6 +234,12 @@ export function update_rotation_symmetry_lines(rotation_symmetry) {
       line2.type = "ns_line";
       rotation_symmetry_lines.push(line2);
       scene.add(line2);
+    } else {
+      let line2 = line.clone().rotateY(Math.PI);
+      line2.material = rotation_line_material_2;
+      line2.type = "ns_line";
+      rotation_symmetry_lines.push(line2);
+      scene.add(line2);
     }
     line = line.clone().rotateY((2 * Math.PI / rotation_symmetry));
     line.type = "ns_line";
