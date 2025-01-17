@@ -231,6 +231,8 @@ export function update_supporting_pillars() {
         highest = feature_pt.pt.y;
       }
     }
+    curve.supporting_pillar_point = new THREE.Vector3(
+      curve.control_points[0].x, highest, curve.control_points[0].z);
   }
 }
 
