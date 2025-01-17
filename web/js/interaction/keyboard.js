@@ -8,6 +8,7 @@ import { accept_height_change, cancel_height_change, start_changing_height } fro
 import { accept_edit_prc_point, cancel_edit_prc_point, edit_prc_point } from './set_prc';
 import { accept_edit_vertical_line_top, cancel_edit_vertical_line_top, edit_vertical_line_top, remove_vertical_line } from './add_vertical_line';
 import { accept_scale, init_scale } from './scale_background_image';
+import { params } from '../state/params';
 
 addEventListener('keydown', (event) => {
   if (event.key == "Escape") {
@@ -53,7 +54,7 @@ addEventListener('keydown', (event) => {
     edit_prc_point();
   } else if (event.key == 'h' && selected_obj && selected_obj.type == 'unit_curve') {
     edit_vertical_line_top();
-  } else if (event.key == 'g') {
+  } else if (event.key == 'g' && params.preview_mode == 'Design' && edit_mode == EditMode.none) {
     start_changing_height();
   } else if (event.key == 's' && background_image_plane) {
     set_edit_mode(EditMode.start_scale_background_image);
