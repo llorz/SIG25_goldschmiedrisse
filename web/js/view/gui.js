@@ -156,7 +156,7 @@ surface_params.addBlade({
   refresh();
 });
 
-pane.addBlade({
+surface_params.addBlade({
   view: 'slider',
   label: 'Tube radius',
   min: 0.001,
@@ -166,7 +166,7 @@ pane.addBlade({
   params.tube_radius = ev.value;
   refresh();
 });
-pane.addBinding(params, 'tube_height_segments', {
+surface_params.addBinding(params, 'tube_height_segments', {
   label: 'Height segments',
   step: 1,
   min: 30,
@@ -175,7 +175,7 @@ pane.addBinding(params, 'tube_height_segments', {
   params.tube_height_segments = ev.value;
   refresh();
 });
-pane.addBinding(params, 'tube_circular_segments', {
+surface_params.addBinding(params, 'tube_circular_segments', {
   label: 'Circular segments',
   step: 1,
   min: 3,
@@ -184,7 +184,7 @@ pane.addBinding(params, 'tube_circular_segments', {
   params.tube_circular_segments = ev.value;
   refresh();
 });
-pane.addBinding(params, 'tube_wireframe', {
+surface_params.addBinding(params, 'tube_wireframe', {
   label: 'Wireframe',
 }).on('change', (ev) => {
   params.tube_wireframe = ev.value;

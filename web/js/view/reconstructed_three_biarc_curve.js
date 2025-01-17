@@ -4,7 +4,7 @@ import { get_active_camera, scene } from './visual';
 
 import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { params } from '../state/params';
-import { get_level_bottom, get_level_height, mode, updated_height } from '../state/state';
+import { curves, get_level_bottom, get_level_height, mode, updated_height } from '../state/state';
 import { get_curve_color, get_curve_color_material } from '../state/color_generator';
 import { DecorationArcCurve } from '../geom/decoration_arc_curve';
 import { ArcCurve } from '../geom/arc_curve';
@@ -197,11 +197,15 @@ export class ReconstructedThreeBiArcCurve {
     return obj;
   }
   get_main_material() {
+    if (params.biarcs_visualization == 'colorful') {
+      return get_curve_color_material(curves.indexOf(this.curve.curve));
+    }
     return main_curve_material;
   }
   get_sym_material(i) {
     if (params.biarcs_visualization == 'colorful') {
-      return get_curve_color_material(i);
+      // return get_curve_color_material(i);
+      return get_curve_color_material(curves.indexOf(this.curve.curve));
     }
     return symmetry_curve_material;
   }

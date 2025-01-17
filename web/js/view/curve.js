@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene } from './visual';
 import { BezierSegmentsCurve, bezy } from '../geom/bezier_segments_curve';
 import { sync_module } from '../native/native';
-import { get_level_bottom, get_level_height, reconstruct_biarcs } from '../state/state';
+import { curves, get_level_bottom, get_level_height, reconstruct_biarcs } from '../state/state';
 import { BiArcCurve } from '../geom/biarc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { update_intersections } from './intersections';
@@ -200,11 +200,15 @@ export class Curve {
   }
 
   get_main_material() {
+    if (params.biarcs_visualization == 'colorful') {
+      return get_curve_color_material(curves.indexOf(this));
+    }
     return main_curve_material;
   }
   get_sym_material(i) {
     if (params.biarcs_visualization == 'colorful') {
-      return get_curve_color_material(i);
+      return get_curve_color_material(curves.indexOf(this));
+      // return get_curve_color_material(i);
     }
     return symmetry_curve_material;
   }
@@ -225,9 +229,9 @@ export class Curve {
   draw_decoration_curve() {
     if (this.control_points.length < 5 || this.control_points[4].distanceTo(this.control_points[2]) < 1e-3)
       return;
-    
+
     let level_bottom = get_level_bottom(this.level);
-    let arc = new ArcCurve(this.control_points.slice(2,5));
+    let arc = new ArcCurve(this.control_points.slice(2, 5));
     let tube_geom = new THREE.TubeGeometry(arc, 50, 0.005, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,

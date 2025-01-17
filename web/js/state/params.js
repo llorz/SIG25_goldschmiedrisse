@@ -7,7 +7,7 @@ export let params = {
   rotation_symmetry: 4,
   tube_radius: 0.007,
   tube_height_segments: 200,
-  tube_circular_segments: 16,
+  tube_circular_segments: 40,
   tube_wireframe: false,
   reflection_symmetry: 'first point',
   control_points_visible: true,
