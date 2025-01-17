@@ -14,8 +14,10 @@ import { add_new_face_vertex, remove_new_face_vertex } from '../view/add_face_mo
 import { move_decoration_point } from './edit_decoration_point.js';
 import { move_layer_height } from './change_layer_height.js';
 import { move_prc_point } from './set_prc.js';
+import { move_vertical_line_top } from './add_vertical_line.js';
+import { edit_background_image_scale, init_scale } from './scale_background_image.js';
 
-let non_selectable_objects_names = ["center_circle", "designing_area"];
+let non_selectable_objects_names = ["center_circle", "designing_area", "background_image"];
 let non_selectable_types = ["ns_line", "ns_point", "reconstructed_surface"];
 
 let plane_y0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -125,6 +127,12 @@ canvas.onpointerdown = (e) => {
       disable_controls();
       selected_obj = obj;
     }
+  } else if (edit_mode == EditMode.edit_vertical_line_top) {
+    let obj = find_selected(point_down_location, false);
+    if (obj && obj.type == "vertical_line_top") {
+      disable_controls();
+      selected_obj = obj;
+    }
   } else if (edit_mode == EditMode.change_layer_bottom) {
     let obj = find_selected(point_down_location, false);
     if (obj && obj.type == "layer_bottom") {
@@ -176,10 +184,10 @@ canvas.onpointerup = (e) => {
       selected_obj = null;
       selectedOutlinePass.selectedObjects = [];
     }
-  } else if (edit_mode == EditMode.edit_prc_point) {
-    selected_obj = null;
-    selectedOutlinePass.selectedObjects = [];
-  } else if (edit_mode == EditMode.change_layer_bottom) {
+  } else if (edit_mode == EditMode.edit_prc_point ||
+    edit_mode == EditMode.edit_vertical_line_top ||
+    edit_mode == EditMode.change_layer_bottom
+  ) {
     selected_obj = null;
     selectedOutlinePass.selectedObjects = [];
   }
@@ -187,6 +195,18 @@ canvas.onpointerup = (e) => {
 
 canvas.onpointermove = (e) => {
   let pointer_location = get_pointer_location(e);
+  if (edit_mode == EditMode.start_scale_background_image) {
+    let flat_point = new THREE.Vector3();
+  ray_cast.setFromCamera(pointer_location, get_active_camera());
+  let intersection_plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  ray_cast.ray.intersectPlane(intersection_plane, flat_point);
+    init_scale(flat_point);
+    return;
+  } else if (edit_mode == EditMode.scale_background_image) {
+    ray_cast.setFromCamera(pointer_location, get_active_camera());
+    edit_background_image_scale(ray_cast);
+  }
+
   if (!is_mouse_down) {
     let intersections = find_intersections(pointer_location);
     // Highlight the hovered object.
@@ -245,6 +265,8 @@ canvas.onpointermove = (e) => {
     move_decoration_point(ray_cast);
   } else if (edit_mode == EditMode.edit_prc_point && selected_obj) {
     move_prc_point(ray_cast);
+  } else if (edit_mode == EditMode.edit_vertical_line_top && selected_obj) {
+    move_vertical_line_top(ray_cast);
   } else if (edit_mode == EditMode.change_layer_bottom && selected_obj) {
     move_layer_height(ray_cast);
   }

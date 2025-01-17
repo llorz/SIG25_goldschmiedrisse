@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 
-import { finish_curve, edit_mode, EditMode, delete_selected_curve, mode } from '../state/state';
+import { finish_curve, edit_mode, EditMode, delete_selected_curve, mode, set_edit_mode, background_image_plane } from '../state/state';
 import { abort_new_face, finish_face } from '../view/add_face_mode';
 import { selected_obj } from './mouse';
 import { accept_edit_decoration_point, cancel_edit_decoration_point, delete_decoration_point, edit_decoration_point } from './edit_decoration_point';
 import { accept_height_change, cancel_height_change, start_changing_height } from './change_layer_height';
 import { accept_edit_prc_point, cancel_edit_prc_point, edit_prc_point } from './set_prc';
+import { accept_edit_vertical_line_top, cancel_edit_vertical_line_top, edit_vertical_line_top, remove_vertical_line } from './add_vertical_line';
+import { accept_scale, init_scale } from './scale_background_image';
 
 addEventListener('keydown', (event) => {
   if (event.key == "Escape") {
@@ -17,14 +19,20 @@ addEventListener('keydown', (event) => {
       cancel_edit_decoration_point();
     } else if (edit_mode == EditMode.edit_prc_point) {
       cancel_edit_prc_point();
+    } else if (edit_mode == EditMode.edit_vertical_line_top) {
+      cancel_edit_vertical_line_top();
     } else if (edit_mode == EditMode.change_layer_bottom) {
       cancel_height_change();
+    } else if (edit_mode == EditMode.scale_background_image) {
+      accept_scale();
     }
   } else if (event.key == "Delete" || event.key == "Backspace") {
     if (edit_mode == EditMode.new_curve) {
       finish_curve();
     } else if (edit_mode == EditMode.edit_decoration_point) {
       delete_decoration_point();
+    } else if (edit_mode == EditMode.edit_vertical_line_top) {
+      remove_vertical_line();
     }
     delete_selected_curve(selected_obj);
   } else if (event.key == 'Enter') {
@@ -34,6 +42,8 @@ addEventListener('keydown', (event) => {
       accept_edit_decoration_point();
     } else if (edit_mode == EditMode.edit_prc_point) {
       accept_edit_prc_point();
+    } else if (edit_mode == EditMode.edit_vertical_line_top) {
+      accept_edit_vertical_line_top();
     } else if (edit_mode == EditMode.change_layer_bottom) {
       accept_height_change();
     }
@@ -41,7 +51,11 @@ addEventListener('keydown', (event) => {
     edit_decoration_point();
   } else if (event.key == 'r' && selected_obj && selected_obj.type == 'unit_curve') {
     edit_prc_point();
+  } else if (event.key == 'h' && selected_obj && selected_obj.type == 'unit_curve') {
+    edit_vertical_line_top();
   } else if (event.key == 'g') {
     start_changing_height();
+  } else if (event.key == 's' && background_image_plane) {
+    set_edit_mode(EditMode.start_scale_background_image);
   }
 });

@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam } from "./visual.js";
-import { add_level, curves, export_recon_obj, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
@@ -178,7 +178,7 @@ pane.addBinding(params, 'tube_height_segments', {
 pane.addBinding(params, 'tube_circular_segments', {
   label: 'Circular segments',
   step: 1,
-  min: 8,
+  min: 3,
   max: 100,
 }).on('change', (ev) => {
   params.tube_circular_segments = ev.value;
@@ -308,6 +308,23 @@ left_menu.addButton({
       load_from_curves_file(e.target.result);
     };
     reader.readAsText(file);
+  };
+});
+left_menu.addButton({
+  title: 'Load background image',
+}).on('click', ev => {
+  // Show a dialog for choosing a file.
+  var input = document.createElement("input");
+  input.type = "file";
+  input.click();
+  input.onchange = (e) => {
+    var file = e.target.files[0];
+    load_background_image(file);
+    // var reader = new FileReader();
+    // reader.onload = function (e) {
+    //   load_from_curves_file(e.target.result);
+    // };
+    // reader.readAsDataURL(file);
   };
 });
 // left_menu.addButton({

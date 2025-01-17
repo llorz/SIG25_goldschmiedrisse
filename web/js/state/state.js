@@ -34,6 +34,48 @@ export function reset_layer_bottom(max_level = 1) {
   layers_bottom = [...new Array(max_level + 1)].map(x => 0);
 }
 
+/** @type {THREE.Mesh} */
+export let background_image_plane = null;
+export let background_image = null;
+
+export function load_background_image(file) {
+  if (background_image_plane) {
+    scene.remove(background_image_plane);
+    background_image_plane.geometry.dispose();
+    background_image_plane.material.dispose();
+  }
+  if (background_image) {
+    background_image.dispose();
+  }
+  let texture = new THREE.TextureLoader().load(URL.createObjectURL(file), function () {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+
+    let width = texture.image.width;
+    let height = texture.image.height;
+    let aspect = width / height;
+
+    let geometry = new THREE.PlaneGeometry(width, height);
+    if (width > height) {
+      geometry.scale(2 / height, 2 / height, 1);
+    } else {
+      geometry.scale(2 / width, 2 / width, 1);
+    }
+    let material = new THREE.MeshBasicMaterial({ map: texture });
+    background_image_plane = new THREE.Mesh(geometry, material);
+    background_image_plane.rotation.x = -Math.PI / 2;
+    background_image_plane.position.y = -0.01;
+    background_image_plane.name = "background_image";
+    background_image_plane.material.side = THREE.DoubleSide;
+    background_image_plane.material.transparent = true;
+    background_image_plane.material.opacity = 1.0;
+    scene.add(background_image_plane);
+    background_image = texture;
+  });
+
+}
+
 export function max_level() {
   let max = 0;
   for (let curve of curves) {
@@ -91,6 +133,9 @@ export let EditMode = {
   edit_decoration_point: "edit_decoration_point",
   change_layer_bottom: "change_layer_bottom",
   edit_prc_point: "edit_prc_point",
+  edit_vertical_line_top: "edit_vertical_line_top",
+  start_scale_background_image: "start_scale_background_image",
+  scale_background_image: "scale_background_image",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }

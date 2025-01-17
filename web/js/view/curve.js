@@ -52,6 +52,9 @@ export class Curve {
     /** @type{THREE.Vector3?} */
     this.supporting_pillar_point = null;
 
+    /** @type{number} height of the vertical line, 0 - no vertical line */
+    this.vertical_line_top = 0;
+
     // Decoration at the top of the curve.
 
     this.arc_curve = null;
