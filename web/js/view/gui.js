@@ -176,7 +176,7 @@ new_curve_options_folder.addBinding(params, 'rotation_symmetry', {
   label: 'Rotation Symmetry',
   step: 1,
   min: 1,
-  max: 10,
+  max: 20,
 }).on('change', (ev) => {
   update_rotation_symmetry_lines(ev.value);
 });

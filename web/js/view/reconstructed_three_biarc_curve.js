@@ -350,10 +350,10 @@ export class ReconstructedThreeBiArcCurve {
     let orig_tube = this.get_sweep_object();
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = orig_tube.clone();
-      if (params.biarcs_visualization == 'colorful') {
-        for (let obj of tube.children) {
+      for (let obj of tube.children) {
+        if (params.biarcs_visualization == 'colorful')
           obj.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
-        }
+        obj.type = "ns_line";
       }
       tube.type = "ns_line";
       tube.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
@@ -365,6 +365,7 @@ export class ReconstructedThreeBiArcCurve {
           filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
         }
         filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
+        filling_tube_clone.type = "ns_line";
         this.three_curves.push(filling_tube_clone);
         scene.add(filling_tube_clone);
       }
@@ -373,10 +374,10 @@ export class ReconstructedThreeBiArcCurve {
       let ref_mat = this.get_reflection_mat(this.ref_symmetry_point);
       for (let i = 0; i < this.rotation_symmetry; i++) {
         let tube = orig_tube.clone();
-        if (params.biarcs_visualization == 'colorful') {
-          for (let obj of tube.children) {
-            obj.material = this.get_sym_material(i);
-          }
+        for (let obj of tube.children) {
+          if (params.biarcs_visualization == 'colorful')
+            obj.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
+          obj.type = "ns_line";
         }
         tube.type = "ns_line";
         tube.applyMatrix4(ref_mat);

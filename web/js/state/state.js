@@ -17,6 +17,10 @@ import { OBJExporter } from '../io/OBJExporter';
 
 /** @type {Curve[]} */
 export let curves = [];
+
+/** @type {Curve} curve currently being added */
+export let pending_curve = null;
+
 // The height of each curve.
 /** @type {ReconstructedThreeBiArcCurve[]} */
 export let recon_curves = [];
@@ -86,6 +90,7 @@ export let EditMode = {
   new_face: "new_face",
   edit_decoration_point: "edit_decoration_point",
   change_layer_bottom: "change_layer_bottom",
+  edit_prc_point: "edit_prc_point",
 };
 export let edit_mode = EditMode.none;
 export function set_edit_mode(m) { edit_mode = m; }
@@ -253,6 +258,9 @@ export function find_intersections() {
 
   // Update prc_t.
   for (let i = 0; i < curves.length; i++) {
+    if (edit_mode != EditMode.new_curve || curves[i] != pending_curve) {
+      continue;
+    }
     if (closest_t[i] >= 0) {
       curves[i].prc_t = closest_t[i];
     } else {
@@ -261,8 +269,7 @@ export function find_intersections() {
   }
 }
 
-/** @type {Curve} */
-export let pending_curve = null;
+
 export function add_curve(loc) {
   pending_curve = new Curve(params.rotation_symmetry, params.reflection_symmetry, params.current_level);
   pending_curve.init(loc);
@@ -396,7 +403,8 @@ export function clear_all() {
   }
   recon_curves.length = 0;
   for (let surface of recon_surfaces) {
-    surface.destroy();
+    surface.geometry.dispose();
+    scene.remove(surface);
   }
   recon_surfaces.length = 0;
   set_edit_mode(EditMode.none);
@@ -477,11 +485,18 @@ export function refresh() {
 
 export function export_recon_obj() {
   let tmp_scene = new THREE.Scene();
+  let group1 = new THREE.Group();
   for (let recon_curve of recon_curves) {
     for (let obj of recon_curve.three_curves) {
-      tmp_scene.add(obj.clone());
+      group1.add(obj.clone());
     }
   }
+  tmp_scene.add(group1);
+  let group2 = new THREE.Group();
+  for (let recon_surface of recon_surfaces) {
+    group2.add(recon_surface.clone());
+  }
+  tmp_scene.add(group2);
   const exporter = new OBJExporter();
   const data = exporter.parse(tmp_scene);
   const blob = new Blob([data], { type: 'text/plain' });
