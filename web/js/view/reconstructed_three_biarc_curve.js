@@ -310,6 +310,7 @@ export class ReconstructedThreeBiArcCurve {
       if (params.biarcs_visualization == 'colorful') {
         filling_tube_clone.material = i == 0 ? this.get_main_material() : this.get_sym_material(i);
       }
+      filling_tube_clone.type = "ns_line";
       filling_tube_clone.rotateY((2 * Math.PI / this.rotation_symmetry) * i);
       this.three_curves.push(filling_tube_clone);
       scene.add(filling_tube_clone);

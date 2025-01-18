@@ -177,26 +177,25 @@ function build_polygon(poly_verts) {
       // return [];
       // Linearly interpolate between the points.
       let pt1 = vert.get_point();
-      let height = pt1.y;
-      pt1 = new THREE.Vector2(pt1.x, pt1.z);
-      let tan1 = new THREE.Vector2(-pt1.y, pt1.x);
+      // let height = pt1.y;
+      // pt1 = new THREE.Vector2(pt1.x, pt1.z);
+      // let tan1 = new THREE.Vector2(-pt1.y, pt1.x);
       let pt2 = next_vert.get_point();
-      pt2 = new THREE.Vector2(pt2.x, pt2.z);
-      if (tan1.dot(pt2.clone().sub(pt1)) < 0) {
-        tan1.negate();
-      }
-      let arc = new ArcCurve([pt1, pt1.clone().add(tan1), pt2]);
+      // pt2 = new THREE.Vector2(pt2.x, pt2.z);
+      // if (tan1.dot(pt2.clone().sub(pt1)) < 0) {
+      //   tan1.negate();
+      // }
+      // let arc = new ArcCurve([pt1, pt1.clone().add(tan1), pt2]);
+      let are_same_height = Math.abs(pt1.y - pt2.y) < 1e-3;
       for (let k = 0; k < 20; k++) {
         let t = k / 20;
-        let pt = arc.getPoint(t);
-        if (k == 0) {
+        // let pt = arc.getPoint(t);
+        if (k == 0 || !are_same_height) {
           fixed.push(polygon.length);  
         }
         // fixed.push(polygon.length);
-        // let pt1 = vert.get_point();
-        // let pt2 = next_vert.get_point();
-        // polygon.push(pt1.lerp(pt2, t));
-        polygon.push(new THREE.Vector3(pt.x, height, pt.z));
+        polygon.push(pt1.clone().lerp(pt2, t));
+        // polygon.push(new THREE.Vector3(pt.x, height, pt.z));
       }
       continue;
     }
