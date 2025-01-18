@@ -394,6 +394,7 @@ export function reconstruct_biarcs(curve = null) {
       recon_curves.push(recon_three_curve);
   }
   update_supporting_pillars();
+  clear_all_surfaces();
 }
 
 export function udpated_layer_bottom(level, bottom) {
@@ -427,6 +428,7 @@ export function updated_height(last_top_height, last_mid_height, curve) {
       recon_three_curve.update_curve();
     }
   }
+  clear_all_surfaces();
 }
 
 export function finish_curve() {

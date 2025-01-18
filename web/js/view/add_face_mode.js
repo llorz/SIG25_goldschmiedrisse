@@ -284,6 +284,10 @@ function next_curve_and_dir(sorted, curve, curve_inter, dir) {
   pt.y = 0;
   /** @type {THREE.Vector3} */
   let curve_tan = curve.getTangent(curve_inter.t - dir * 1e-3).normalize();
+  if (curve_tan.dot(new THREE.Vector3(0, 1, 0)) < 0) {
+    pt.negate();
+  }
+
   /** @type {THREE.Vector3} */
   let other_curve_tan = other_curve.getTangent(other_curve_t).normalize();
 
@@ -297,6 +301,15 @@ function next_curve_and_dir(sorted, curve, curve_inter, dir) {
 
 }
 
+/**
+ * 
+ * @param {MergedIntersection[]} sorted 
+ * @param {ReconstructedBiArcCurve} curve 
+ * @param {number} i 
+ * @param {boolean} used_segments 
+ * @param {number} start_dir 
+ * @returns 
+ */
 function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
   let curve_inter = sorted.get(curve)[i];
   let face_verts = [curve_inter.inter];
@@ -311,7 +324,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
       if (face_verts.length > 1 &&
         Math.abs(face_verts[0].get_point().y - face_verts[face_verts.length - 1].get_point().y) < 1e-3) {
           // Change to true to do bottom and top faces.
-        finished_face = true;
+        finished_face = false;
       }
       break;
     }
