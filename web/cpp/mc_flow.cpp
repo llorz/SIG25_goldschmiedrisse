@@ -89,7 +89,6 @@ Eigen::MatrixXd run_mc_iteration(const Eigen::MatrixXd &V,
 
     res(eig_unknown, std::vector<int>{0, 2}) = sol;
   }
-
   return res;
 }
 

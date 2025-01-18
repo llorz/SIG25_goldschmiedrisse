@@ -217,9 +217,6 @@ export class Curve {
     let bottom = get_level_bottom(this.level);
     for (let i = 0; i < this.control_points.length; i++) {
       let p = this.control_points[i];
-      if (Math.abs(p.y - bottom) < 0.001) {
-        return;
-      }
       p.y = bottom;
       this.three_control_points[i].position.y = bottom;
     }
@@ -323,6 +320,7 @@ export class Curve {
       this.three_control_points_lines.push(mesh2);
     }
 
+    this.set_visibility(params.preview_mode != 'Preview' && this.level == params.current_level);
     this.set_control_points_visibility(params.control_points_visible);
   }
 

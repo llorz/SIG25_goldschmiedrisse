@@ -517,12 +517,7 @@ export function set_mode(m) {
 export function refresh() {
   update_intersections();
   for (let curve of curves) {
-    if (params.preview_mode == 'Design' && curve.level == params.current_level) {
-      curve.draw_curve();
-      curve.set_visibility(true);
-    } else {
-      curve.set_visibility(false);
-    }
+    curve.draw_curve();
   }
   for (let recon_three_curve of recon_curves) {
     recon_three_curve.curve.compute_biarc();

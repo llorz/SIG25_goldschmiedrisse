@@ -36,7 +36,7 @@ Eigen::MatrixXd proj = (V.rowwise() - centroid) * mat.transpose();
   Eigen::MatrixXd H;
   Eigen::MatrixXd out_v;
   Eigen::MatrixXi out_f;
-  igl::triangle::triangulate(proj, E, H, "a0.003qY", out_v, out_f);
+  igl::triangle::triangulate(proj, E, H, "a0.001qY", out_v, out_f);
   Eigen::MatrixXd out_v3d = out_v * mat;
   out_v3d.rowwise() += centroid;
   return std::make_tuple(out_v3d, out_f, out_v);

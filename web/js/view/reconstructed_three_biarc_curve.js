@@ -185,10 +185,10 @@ export class ReconstructedThreeBiArcCurve {
   get_sweep_object() {
     let obj = new THREE.Group();
     if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
-      // let geom = this.get_sweep_cylinder_geom();
-      // obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
-      obj.add(new THREE.Mesh(
-        new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
+      let geom = this.get_sweep_cylinder_geom();
+      obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
+      // obj.add(new THREE.Mesh(
+      //   new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));

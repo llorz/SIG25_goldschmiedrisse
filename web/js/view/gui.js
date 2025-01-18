@@ -9,8 +9,7 @@ import { save_curves, save_state } from "../io/save_curves.js";
 import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
-import { surface_material } from "./reconstructed_surface.js";
-import { find_all_faces, init_add_new_face } from "./add_face_mode.js";
+import { find_all_faces, init_add_new_face, reconstructed_surface_material } from "./add_face_mode.js";
 import { set_wire_frame } from "./reconstructed_three_biarc_curve.js";
 
 export let pane = new Pane({
@@ -189,6 +188,8 @@ surface_params.addBinding(params, 'tube_wireframe', {
 }).on('change', (ev) => {
   params.tube_wireframe = ev.value;
   set_wire_frame();
+  reconstructed_surface_material.wireframe = ev.value;
+  reconstructed_surface_material.needsUpdate = true;
   refresh();
 });
 

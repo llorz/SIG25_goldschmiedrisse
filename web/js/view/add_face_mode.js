@@ -7,7 +7,7 @@ import { ReconstructedBiArcCurve } from '../geom/reconstructed_biarc_curve';
 import { sync_module } from '../native/native';
 import { ArcCurve } from '../geom/arc_curve';
 
-const surface_material = new THREE.MeshStandardMaterial({
+export const reconstructed_surface_material = new THREE.MeshStandardMaterial({
   side: THREE.DoubleSide,
   color: 0xbde0fe,
   opacity: 0.8,
@@ -189,7 +189,10 @@ function build_polygon(poly_verts) {
       for (let k = 0; k < 20; k++) {
         let t = k / 20;
         let pt = arc.getPoint(t);
-        fixed.push(polygon.length);
+        if (k == 0) {
+          fixed.push(polygon.length);  
+        }
+        // fixed.push(polygon.length);
         // let pt1 = vert.get_point();
         // let pt2 = next_vert.get_point();
         // polygon.push(pt1.lerp(pt2, t));
@@ -226,7 +229,7 @@ export function finish_face() {
   geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   let rot_sym = new_face_verts[0].intersections[0].curve.rotation_symmetry;
   for (let i = 0; i < rot_sym; i++) {
-    let recon_surface = new THREE.Mesh(geometry, surface_material);
+    let recon_surface = new THREE.Mesh(geometry, reconstructed_surface_material);
     recon_surface.type = "reconstructed_surface";
     recon_surface.applyMatrix4(get_rotation_mat(rot_sym, i));
     scene.add(recon_surface);
@@ -308,7 +311,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
       if (face_verts.length > 1 &&
         Math.abs(face_verts[0].get_point().y - face_verts[face_verts.length - 1].get_point().y) < 1e-3) {
           // Change to true to do bottom and top faces.
-        finished_face = false;
+        finished_face = true;
       }
       break;
     }
@@ -359,7 +362,7 @@ function add_face(poly, fixed) {
   const indices = Array.from(faces);
   geometry.setIndex(indices);
   geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-  let recon_surface = new THREE.Mesh(geometry, surface_material);
+  let recon_surface = new THREE.Mesh(geometry, reconstructed_surface_material);
   recon_surface.type = "reconstructed_surface";
   scene.add(recon_surface);
   recon_surfaces.push(recon_surface);
