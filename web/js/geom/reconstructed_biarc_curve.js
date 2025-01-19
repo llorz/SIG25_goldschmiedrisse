@@ -4,6 +4,7 @@ import { get_level_bottom, get_level_height, set_level_height } from '../state/s
 import { Curve } from '../view/curve';
 import { clamp11 } from '../utils/math_funcs';
 import { get_reflection_mat, get_rotation_mat } from '../utils/intersect';
+import { compute_rmf, get_rmf_frame } from './rmf';
 
 export class ReconstructedBiArcCurve extends THREE.Curve {
 
@@ -205,82 +206,11 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     return tangent;
   }
 
-  compute_rmf(resolution = 100) {
-    this.rmf = [{
-      t: 0,
-      tangent: this.getTangent(0),
-      normal: this.getPoint(0).normalize(),
-      binormal: new THREE.Vector3()
-    }];
-    // this.rmf[0].normal.x = -this.rmf[0].tangent.z;
-    // this.rmf[0].normal.z = this.rmf[0].tangent.x;
-    this.rmf[0].normal.y = 0;
-    this.rmf[0].normal.normalize();
-    this.rmf[0].binormal.crossVectors(this.rmf[0].tangent, this.rmf[0].normal);
-    for (let i = 0; i < resolution - 1; i++) {
-      let t_i = i / (resolution - 1);
-      let t_ip1 = (i + 1) / (resolution - 1);
-      let x_i = this.getPoint(t_i);
-      let x_ip1 = this.getPoint(t_ip1);
-      // First reflection.
-      let v_1 = x_ip1.clone().sub(x_i).normalize();
-      let n_i = this.rmf[i].normal;
-      // Reflect n_i and t_I through the plane perpendicular to v_1.
-      let n_il = n_i.clone().sub(v_1.clone().multiplyScalar(2 * n_i.dot(v_1)));
-      let t_il = this.rmf[i].tangent.clone().sub(v_1.clone().multiplyScalar(2 * this.rmf[i].tangent.dot(v_1)));
-
-      // Second reflection.
-      let tang_p1 = this.getTangent(t_ip1);
-      let v_2 = tang_p1.clone().sub(t_il).normalize();
-      let n_ip1 = n_il.clone().sub(v_2.clone().multiplyScalar(2 * n_il.dot(v_2)));
-      let bin_ip1 = new THREE.Vector3();
-      bin_ip1.crossVectors(tang_p1, n_ip1);
-      this.rmf.push({ t: t_ip1, tangent: tang_p1, normal: n_ip1, binormal: bin_ip1 });
-    }
-
-    // Calculate minimal twist to get the correct normal in the end.
-    let target_normal = this.getPoint(1);
-    target_normal.y = 0;
-    target_normal.normalize();
-
-    let ang = Math.atan2(target_normal.dot(this.rmf[resolution - 1].binormal),
-      target_normal.dot(this.rmf[resolution - 1].normal));
-    // Rotate the normal and binormal at each frame by ang / resolution.
-    for (let i = 1; i < resolution; i++) {
-      let q = new THREE.Quaternion();
-      q.setFromAxisAngle(this.rmf[i].tangent, (i / (resolution - 1)) * ang);
-      this.rmf[i].normal.applyQuaternion(q);
-      this.rmf[i].binormal.applyQuaternion(q);
-    }
-
-    this.rmf_resoluion = resolution;
-  }
-
   get_rmf_frame(t) {
     if (this.rmf.length == 0) {
-      this.compute_rmf();
+      this.rmf = compute_rmf(this, 100);
     }
-    // Binary search for the frame.
-    // let l = 0;
-    // let r = this.rmf.length - 1;
-    // while (r - l > 1) {
-    //   let m = Math.floor((l + r) / 2);
-    //   if (this.rmf[m].t <= t) {
-    //     l = m;
-    //   } else {
-    //     r = m;
-    //   }
-    // }
-    let l = Math.floor(t * (this.rmf_resoluion - 1));
-    let r = Math.min(l + 1, this.rmf_resoluion - 1);
-    let tt = (t - this.rmf[l].t) / (this.rmf[r].t - this.rmf[l].t);
-    let tangent = this.rmf[l].tangent.clone().multiplyScalar(1 - tt).add(this.rmf[r].tangent.clone().multiplyScalar(tt));
-    let normal = this.rmf[l].normal.clone().multiplyScalar(1 - tt).add(this.rmf[r].normal.clone().multiplyScalar(tt));
-    let binormal = this.rmf[l].binormal.clone().multiplyScalar(1 - tt).add(this.rmf[r].binormal.clone().multiplyScalar(tt));
-    return {
-      position: this.getPoint(t),
-      tangent: tangent, normal: normal, binormal: binormal
-    };
+    return get_rmf_frame(this, this.rmf, t);
   }
 
   getFrame(t) {

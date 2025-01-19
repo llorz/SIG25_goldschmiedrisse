@@ -113,18 +113,18 @@ const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight4.position.set(-1, 0, 0);
 scene.add(directionalLight4);
 
-const cubeTextureLoader = new THREE.CubeTextureLoader()
-const environmentMap = cubeTextureLoader.load([
-  px,
-  nx,
-  py,
-  ny,
-  pz,
-  nz,
-], () => {
-  environmentMap.encoding = THREE.sRGBEncoding;
-  scene.environment = environmentMap;
-});
+// const cubeTextureLoader = new THREE.CubeTextureLoader()
+// const environmentMap = cubeTextureLoader.load([
+//   px,
+//   nx,
+//   py,
+//   ny,
+//   pz,
+//   nz,
+// ], () => {
+//   environmentMap.encoding = THREE.sRGBEncoding;
+//   scene.environment = environmentMap;
+// });
 
 
 // Cameras.

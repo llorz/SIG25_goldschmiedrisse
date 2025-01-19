@@ -8,6 +8,7 @@ import { curves, get_level_bottom, get_level_height, mode, updated_height } from
 import { get_curve_color, get_curve_color_material } from '../state/color_generator';
 import { DecorationArcCurve } from '../geom/decoration_arc_curve';
 import { ArcCurve } from '../geom/arc_curve';
+import { compute_rmf, sweep_geom_along_curve } from '../geom/rmf';
 
 let sweep_plane_geom =// new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3);
   new THREE.PlaneGeometry(100, 0.1, 200, 1);
@@ -112,7 +113,9 @@ export class ReconstructedThreeBiArcCurve {
     let height_arc_curve = new ArcCurve([new THREE.Vector2(0, bottom_height),
     new THREE.Vector2(0, 1),
     new THREE.Vector2(this.curve.curve.decoration_t * flat_arc.length(), bottom_height + this.curve.curve.decoration_height)]);
-    return new DecorationArcCurve(height_arc_curve, flat_arc);
+    let curve = new DecorationArcCurve(height_arc_curve, flat_arc);
+    curve.rmf = compute_rmf(curve);
+    return curve;
   }
 
   get_reflection_mat() {
@@ -194,14 +197,25 @@ export class ReconstructedThreeBiArcCurve {
     return cylinder_geom;
   }
 
+  get_sweep_geom() {
+    if (params.biarcs_visualization == 'cube') {
+      return this.get_sweep_cube_geom();
+    }
+    return this.get_sweep_cylinder_geom();
+  }
+
   get_sweep_object() {
     let obj = new THREE.Group();
     if (params.biarcs_visualization != 'ribbon') {
       // let geom = this.get_sweep_cylinder_geom();
-      let geom = (params.biarcs_visualization == 'cube'
-        ? this.get_sweep_cube_geom()
-        : this.get_sweep_cylinder_geom());
-      obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
+      let geom = this.get_sweep_geom();
+      if (this.decoration_curve) {
+        this.curve.rmf = compute_rmf(this.curve,
+          { init_frame: this.decoration_curve.rmf[this.decoration_curve.rmf.length - 1] });
+      }
+      obj.add(new THREE.Mesh(sweep_geom_along_curve(geom, this.curve, params.use_rmf),
+        symmetry_curve_material));
+      // obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
       // obj.add(new THREE.Mesh(
       //   new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
@@ -225,22 +239,6 @@ export class ReconstructedThreeBiArcCurve {
     return symmetry_curve_material;
   }
 
-  only_update_geometry() {
-    this.control_points[0].position.copy(this.curve.getPoint(this.curve.arca_len / this.curve.len));
-    this.control_points[1].position.copy(this.curve.getPoint(1));
-    if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
-      this.sweep_geom(cylinder_geom, this.three_curves[0].children[0].geometry);
-      this.three_curves[0].children[0].geometry.attributes.position.needsUpdate = true;
-    } else {
-      this.sweep_geom(cylinder_geom3, this.three_curves[0].children[0].geometry);
-      this.three_curves[0].children[0].geometry.attributes.position.needsUpdate = true;
-      this.sweep_geom(sweep_plane_geom, this.three_curves[0].children[1].geometry);
-      this.three_curves[0].children[1].geometry.attributes.position.needsUpdate = true;
-      this.sweep_geom(cylinder_geom2, this.three_curves[0].children[2].geometry);
-      this.three_curves[0].children[2].geometry.attributes.position.needsUpdate = true;
-    }
-  }
-
   update_top_decoration_curves() {
     let tv_curve = this.curve.curve;
     if (tv_curve.control_points.length < 5 ||
@@ -258,8 +256,10 @@ export class ReconstructedThreeBiArcCurve {
     let height_arc_curve = new ArcCurve([new THREE.Vector2(0, top_pt.y),
     new THREE.Vector2(0, top_pt.y - 1.0), new THREE.Vector2(x, y)]);
 
-    let tube = new THREE.Mesh(new THREE.TubeGeometry(new DecorationArcCurve(height_arc_curve, flat_arc_curve), 32, params.tube_radius, 8, false),
-      symmetry_curve_material);
+    // let tube = new THREE.Mesh(new THREE.TubeGeometry(new DecorationArcCurve(height_arc_curve, flat_arc_curve), 32, params.tube_radius, 8, false),
+    //   symmetry_curve_material);
+    let geom = sweep_geom_along_curve(this.get_sweep_geom(), new DecorationArcCurve(height_arc_curve, flat_arc_curve), params.use_rmf);
+    let tube = new THREE.Mesh(geom, symmetry_curve_material);
     tube.type = "ns_line";
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let filling_tube_clone = tube.clone();
@@ -286,8 +286,10 @@ export class ReconstructedThreeBiArcCurve {
 
   update_decoration_curves() {
     if (!this.decoration_curve) return;
-    let tube = new THREE.Mesh(new THREE.TubeGeometry(this.decoration_curve, 32, params.tube_radius, 8, false),
-      symmetry_curve_material);
+    // let tube = new THREE.Mesh(new THREE.TubeGeometry(this.decoration_curve, 32, params.tube_radius, 8, false),
+    // symmetry_curve_material);
+    let geom = sweep_geom_along_curve(this.get_sweep_geom(), this.decoration_curve, params.use_rmf);
+    let tube = new THREE.Mesh(geom, symmetry_curve_material);
     tube.type = "ns_line";
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let filling_tube_clone = tube.clone();
@@ -319,7 +321,9 @@ export class ReconstructedThreeBiArcCurve {
       Math.abs(sup_point.distanceTo(first_pt)) < 1e-2) return;
 
     let line_curve = new THREE.LineCurve3(sup_point, first_pt);
-    let filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    // let filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    let geom = sweep_geom_along_curve(this.get_sweep_geom(), line_curve, params.use_rmf);
+    let filling_tube = new THREE.Mesh(geom, symmetry_curve_material);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let filling_tube_clone = filling_tube.clone();
       if (params.biarcs_visualization == 'colorful') {
@@ -364,10 +368,6 @@ export class ReconstructedThreeBiArcCurve {
   }
 
   update_curve() {
-    // if (this.three_curves.length > 0) {
-    //   this.only_update_geometry();
-    //   return;
-    // }
     for (let group of this.three_curves) {
       for (let curve of group.children) {
         curve.geometry.dispose();

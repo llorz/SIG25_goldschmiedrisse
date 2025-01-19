@@ -168,7 +168,7 @@ surface_params.addBlade({
   options: [{ text: 'tube', value: 'tube' }, { text: 'cube', value: 'cube' }, { text: 'ribbon', value: 'ribbon' },
   { text: 'colorful', value: 'colorful' },
   ],
-  value: 'tube',
+  value: 'cube',
 }).on('change', (ev) => {
   params.biarcs_visualization = ev.value;
   refresh();
