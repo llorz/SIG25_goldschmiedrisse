@@ -1,6 +1,6 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam } from "./visual.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme } from "./visual.js";
 import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
@@ -103,8 +103,27 @@ top_view_options.push(ortho_view);
 
 let view_options_folder = pane.addFolder({
   title: "Show",
-  expanded: true
+  expanded: false
 });
+
+// view_options_folder.addBinding(params, 'theme', {
+//   view: 'radiogrid',
+//   groupName: 'theme',
+//   size: [2, 1],
+//   cells: (x, y) => ({
+//     title: x == 0 ? 'Light' : 'Dark',
+//     value: x == 0 ? 'Light' : 'Dark',
+//   }),
+//   label: 'Camera',
+// }).on('change', (ev) => {
+//   if (ev.value == "Light") {
+//     params.theme = 'Light';
+//   } else {
+//     params.theme = 'Dark';
+//   }
+//   set_viewer_theme();
+// })
+// ;
 view_options_folder.addBinding(params, 'control_points_visible', {
   label: 'Control points',
 }).on('change', (ev) => {
@@ -130,7 +149,7 @@ view_options_folder.addBlade({
 
 let surface_params = pane.addFolder({
   title: "Surface parameters",
-  expanded: true
+  expanded: false
 });
 surface_params.addBinding(params, "surface_color", {
   view: 'color',
@@ -193,6 +212,18 @@ surface_params.addBinding(params, 'tube_wireframe', {
   refresh();
 });
 
+surface_params.addButton({
+  title: 'Add face',
+}).on('click', (ev) => {
+  init_add_new_face();
+});
+
+surface_params.addButton({
+  title: 'Construct all faces',
+}).on('click', (ev) => {
+  find_all_faces();
+});
+
 let new_curve_options_folder = pane.addFolder({
   title: "New curve options",
   expanded: true
@@ -235,18 +266,6 @@ export let level_controller = pane.addBinding(params, 'current_level', {
   update_current_level();
 });
 
-
-pane.addButton({
-  title: 'Add face',
-}).on('click', (ev) => {
-  init_add_new_face();
-});
-
-pane.addButton({
-  title: 'Construct all faces',
-}).on('click', (ev) => {
-  find_all_faces();
-});
 
 /*******************************************************************************************/
 

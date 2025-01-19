@@ -6,7 +6,7 @@ import { clear_all_intersection_points } from "../view/add_face_mode";
 import { scene, set_designing_area_height } from "../view/visual";
 import { clear_intersections, update_intersections } from "../view/intersections";
 
-let sphere_geom = new THREE.SphereGeometry(0.04);
+let sphere_geom = new THREE.SphereGeometry(0.02);
 let control_point_material = new THREE.MeshBasicMaterial({ color: 0xF3752B });
 
 /** @type {THREE.Object3D} */

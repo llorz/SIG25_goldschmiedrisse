@@ -84,6 +84,19 @@ front_view_renderer.setSize(front_view_w, front_view_h);
 front_view_renderer.setPixelRatio(window.devicePixelRatio);
 front_view_renderer.setClearColor(0xffffff, 1);
 
+export function set_viewer_theme() {
+  if (params.theme == "Light") {
+    renderer.setClearColor(0xffffff, 1);
+    top_view_renderer.setClearColor(0xffffff, 1);
+    front_view_renderer.setClearColor(0xffffff, 1);
+  } else {
+    renderer.setClearColor(0x0a0a0a, 1);
+    top_view_renderer.setClearColor(0x0a0a0a, 1);
+    front_view_renderer.setClearColor(0x0a0a0a, 1);
+  }
+}
+set_viewer_theme();
+
 // Lights.
 const light = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(light);

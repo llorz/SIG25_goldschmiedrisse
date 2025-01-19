@@ -18,5 +18,7 @@ export let params = {
   current_level: 0,
   biarcs_visualization: 'tube',
 
+  theme: 'Light',
+
   use_rmf: true,
 };
