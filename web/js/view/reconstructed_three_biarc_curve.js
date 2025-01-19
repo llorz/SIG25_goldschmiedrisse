@@ -61,6 +61,7 @@ let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side:
 let symmetry_curve_material = new THREE.MeshStandardMaterial({
   // color: 0xFFD700, 
   color: 0xc77dff,
+  // color: 0xA1662F,
   side: THREE.DoubleSide,
   opacity: 1., transparent: true,
   // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5,
@@ -171,8 +172,19 @@ export class ReconstructedThreeBiArcCurve {
     return geom;
   }
 
+  get_sweep_cube_geom() {
+    let sweep_cube_geom = new THREE.BoxGeometry(10, params.tube_radius, params.tube_radius, 200, 1, 1);
+    sweep_cube_geom.computeBoundingBox();
+    let size_cube = new THREE.Vector3();
+    sweep_cube_geom.boundingBox.getSize(size_cube);
+    sweep_cube_geom.translate(-sweep_cube_geom.boundingBox.min.x, -sweep_cube_geom.boundingBox.min.y - size_cube.y / 2,
+      -sweep_cube_geom.boundingBox.min.z - size_cube.z / 2);
+    return sweep_cube_geom;
+  }
+
   get_sweep_cylinder_geom() {
-    let cylinder_geom = new THREE.CylinderGeometry(params.tube_radius, params.tube_radius, 10, 32, 200, true);
+    let cylinder_geom = new THREE.CylinderGeometry(params.tube_radius, params.tube_radius, 10,
+      params.tube_circular_segments, params.tube_height_segments, false);
     cylinder_geom.rotateZ(Math.PI / 2);
     cylinder_geom.computeBoundingBox();
     let size_cyl = new THREE.Vector3();
@@ -184,11 +196,14 @@ export class ReconstructedThreeBiArcCurve {
 
   get_sweep_object() {
     let obj = new THREE.Group();
-    if (params.biarcs_visualization == 'tube' || params.biarcs_visualization == 'colorful') {
+    if (params.biarcs_visualization != 'ribbon') {
       // let geom = this.get_sweep_cylinder_geom();
-      // obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
-      obj.add(new THREE.Mesh(
-        new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
+      let geom = (params.biarcs_visualization == 'cube'
+        ? this.get_sweep_cube_geom()
+        : this.get_sweep_cylinder_geom());
+      obj.add(new THREE.Mesh(this.sweep_geom(geom, geom), symmetry_curve_material));
+      // obj.add(new THREE.Mesh(
+      //   new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
       obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
       obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));

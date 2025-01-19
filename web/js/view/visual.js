@@ -10,12 +10,12 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
 import { curves, Mode, mode } from '../state/state';
 import { params } from '../state/params';
-// import px from './environment_maps/less_fancy_church/nx.png';
-// import ny from './environment_maps/less_fancy_church/ny.png';
-// import pz from './environment_maps/less_fancy_church/nz.png';
-// import nx from './environment_maps/less_fancy_church/px.png';
-// import py from './environment_maps/less_fancy_church/py.png';
-// import nz from './environment_maps/less_fancy_church/pz.png';
+import px from './environment_maps/less_fancy_church/nx.png';
+import ny from './environment_maps/less_fancy_church/ny.png';
+import pz from './environment_maps/less_fancy_church/nz.png';
+import nx from './environment_maps/less_fancy_church/px.png';
+import py from './environment_maps/less_fancy_church/py.png';
+import nz from './environment_maps/less_fancy_church/pz.png';
 
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
@@ -100,28 +100,31 @@ set_viewer_theme();
 // Lights.
 const light = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(light);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.4);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight.position.set(100, 100, 100);
 scene.add(directionalLight);
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.4);
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight2.position.set(0, 0, -1);
 scene.add(directionalLight2);
-const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.4);
+const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight3.position.set(1, 0, 0);
 scene.add(directionalLight3);
-const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1.4);
+const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight4.position.set(-1, 0, 0);
 scene.add(directionalLight4);
 
-// const cubeTextureLoader = new THREE.CubeTextureLoader()
-// const environmentMap = cubeTextureLoader.load([
-//   px,
-//   nx,
-//   py,
-//   ny,
-//   pz,
-//   nz,
-// ]);
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const environmentMap = cubeTextureLoader.load([
+  px,
+  nx,
+  py,
+  ny,
+  pz,
+  nz,
+], () => {
+  environmentMap.encoding = THREE.sRGBEncoding;
+  scene.environment = environmentMap;
+});
 
 
 // Cameras.
@@ -154,15 +157,15 @@ front_view_cam.up.set(0, 0, 1);
 
 // Init composer and render pass.
 const composer = new EffectComposer(renderer);
-// SSAO.
-// const ssaoPass = new SSAOPass(scene, camera3d, w, h);
-// ssaoPass.kernelRadius = 16;
-// ssaoPass.minDistance = 0.005;
-// ssaoPass.maxDistance = 0.1;
-// composer.addPass(ssaoPass);
 // Render.
 const renderPass = new RenderPass(scene, camera2d);
 composer.addPass(renderPass);
+// SSAO.
+const ssaoPass = new SSAOPass(scene, camera3d, w, h);
+ssaoPass.kernelRadius = 16;
+ssaoPass.minDistance = 0.005;
+ssaoPass.maxDistance = 0.1;
+composer.addPass(ssaoPass);
 
 export const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera2d);
 outlinePass.edgeThickness = 3.0;
@@ -287,7 +290,7 @@ function animate() {
     resizeCanvasToDisplaySize(front_view_renderer, front_view_cam, null);
   }
   if (mode === Mode.orthographic) {
-    scene.background = null;
+    // scene.background = null;
     controls.enabled = false;
     orth_camera_controls.enabled = controls_enabled;
     orth_camera_controls.update();

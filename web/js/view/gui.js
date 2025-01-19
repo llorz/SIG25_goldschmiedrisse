@@ -165,7 +165,7 @@ surface_params.addBinding(params, "use_rmf", {
 surface_params.addBlade({
   view: 'list',
   label: 'Biarc visualization',
-  options: [{ text: 'tube', value: 'tube' }, { text: 'ribbon', value: 'ribbon' },
+  options: [{ text: 'tube', value: 'tube' }, { text: 'cube', value: 'cube' }, { text: 'ribbon', value: 'ribbon' },
   { text: 'colorful', value: 'colorful' },
   ],
   value: 'tube',
@@ -178,7 +178,7 @@ surface_params.addBlade({
   view: 'slider',
   label: 'Tube radius',
   min: 0.001,
-  max: 0.04,
+  max: 0.1,
   value: 0.007,
 }).on('change', (ev) => {
   params.tube_radius = ev.value;
