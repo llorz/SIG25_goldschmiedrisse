@@ -70,8 +70,8 @@ export let renderer = new THREE.WebGLRenderer({
 renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(0xffffff, 1);
-renderer.toneMapping = THREE.LinearToneMapping;
-// renderer.toneMappingExposure = 1;
+// renderer.toneMapping = THREE.ACESFilmicToneMapping;
+// renderer.toneMappingExposure = 0.5;
 
 let top_view_renderer = new THREE.WebGLRenderer({
   canvas: top_view_canvas,
@@ -134,6 +134,7 @@ scene.add(directionalLight4);
 
 // const environment = new RoomEnvironment();
 // const pmremGenerator = new THREE.PMREMGenerator(renderer);
+// scene.background = new THREE.Color(0x777777);
 // scene.environment = pmremGenerator.fromScene(environment).texture;
 
 

@@ -468,6 +468,9 @@ export function load_from_curves_file(txt) {
   level_controller.controller.valueController.sliderController.props.set('max', max_level());
   level_controller.controller.valueController.value.rawValue = 0;
   reconstruct_biarcs();
+  for (let curve of curves) {
+    curve.update_control_points_height();
+  }
   update_supporting_pillars();
   refresh();
   update_orbit_controls_target_and_pos();

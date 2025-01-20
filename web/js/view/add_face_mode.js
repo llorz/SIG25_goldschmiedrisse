@@ -66,7 +66,7 @@ class MergedIntersection {
 
   is_same(p) {
     if (this.intersections.length == 0) return false;
-    return this.get_point().distanceTo(p) < 1e-3;
+    return this.get_point().distanceTo(p) < 1e-2;
   }
 
   add_intersection(curve, t) {
@@ -107,7 +107,7 @@ function get_all_real_inters_with_symmetries() {
       for (let inter of res) {
         let t1 = curve1.get_t_for_x(inter[0]);
         let t2 = curve2.get_t_for_x(inter[1]);
-        if (curve1.getPoint(t1).distanceTo(curve2.getPoint(t2)) > 1e-3)
+        if (curve1.getPoint(t1).distanceTo(curve2.getPoint(t2)) > 1e-2)
           continue;
 
         inters.push(new SymCurveIntersection(curve1, t1, curve2, t2));

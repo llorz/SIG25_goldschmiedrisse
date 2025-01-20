@@ -55,7 +55,7 @@ export function closest_control_point(p, skip_curve) {
 }
 
 export function get_snapping_point(p, skip_curve = null, eps = 0.02) {
-  if (p.length() < eps) {
+  if (Math.sqrt(p.x * p.x + p.z * p.z) < eps) {
     return new THREE.Vector3(0, p.y, 0);
   }
   let closest_p = closest_control_point(p, skip_curve);

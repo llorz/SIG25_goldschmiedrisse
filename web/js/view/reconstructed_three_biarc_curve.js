@@ -72,7 +72,7 @@ let symmetry_curve_material = new THREE.MeshStandardMaterial({
   // color: 0x7e45a8,
 
   // color: 0xA1662F,
-  // color: 0xaaaaaa,
+  // color: 0xcccccc,
   side: THREE.DoubleSide,
   opacity: 1., transparent: true,
   // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5,
