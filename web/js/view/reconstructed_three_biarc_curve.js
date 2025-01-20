@@ -63,10 +63,11 @@ let symmetry_curve_material = new THREE.MeshStandardMaterial({
   // color: 0xFFD700,
 
   // Original purple.
-  color: 0xc77dff,
+  // color: 0xc77dff,
 
   // Light blue.
   // color: 0x7FA7D8,
+  color: 0xa8a7a8,
 
   // Other shades of purple.
   // color: 0x7e45a8,
@@ -94,6 +95,10 @@ function last_elem(arr) {
 export function set_wire_frame() {
   symmetry_curve_material.wireframe = params.tube_wireframe;
   main_curve_material.wireframe = params.tube_wireframe;
+}
+
+export function updated_color(color) {
+  symmetry_curve_material.color.set(color);
 }
 
 export class ReconstructedThreeBiArcCurve {
@@ -496,7 +501,7 @@ export class ReconstructedThreeBiArcCurve {
     let is_camera_not_vertical = mode == "side_view" ||
       Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) > 1e-3;
     for (let cp of this.control_points) {
-      cp.visible = is_camera_not_vertical && is_visible && params.control_points_visible && params.reconstructed_biarc_visible;
+      cp.visible = is_camera_not_vertical && is_visible && params.control_points_visible && params.reconstructed_biarc_visible && params.preview_mode == 'Design';
     }
   }
 }

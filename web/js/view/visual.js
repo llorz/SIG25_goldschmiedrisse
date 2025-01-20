@@ -27,15 +27,18 @@ import { get_rotation_mat } from '../utils/intersect';
 import { frameObject } from '../utils/camerautils';
 
 let rotation_line_material = new LineMaterial({
-  color: 0xccccff,
-  linewidth: 5,
+  // color: 0x6666ff,
+  // color: 0x888888,
+  color: 0xaa7777,
+  linewidth: 2,
   opacity: 1.0,
 });
 let rotation_line_material_2 = new LineMaterial({
-  color: 0xccccff,
-  linewidth: 5,
-  opacity: 0.3,
-  transparent: true,
+  // color: 0x7c7c7c,
+  color: 0x779977,
+  linewidth: 2,
+  opacity: 1.0,
+  // transparent: true,
 });
 
 // Design canvas.
@@ -71,10 +74,10 @@ export let renderer = new THREE.WebGLRenderer({
 renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(0xffffff, 1);
-// renderer.toneMapping = THREE.ACESFilmicToneMapping;
-// renderer.toneMappingExposure = 0.5;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.7;
 
-let top_view_renderer = new THREE.WebGLRenderer({
+export let top_view_renderer = new THREE.WebGLRenderer({
   canvas: top_view_canvas,
   powerPreference: "high-performance",
   antialias: true,
@@ -82,7 +85,10 @@ let top_view_renderer = new THREE.WebGLRenderer({
 top_view_renderer.setSize(top_view_w, top_view_h);
 top_view_renderer.setPixelRatio(window.devicePixelRatio);
 top_view_renderer.setClearColor(0xffffff, 1);
-let front_view_renderer = new THREE.WebGLRenderer({
+top_view_renderer.toneMapping = THREE.ACESFilmicToneMapping;
+top_view_renderer.toneMappingExposure = 0.7;
+
+export let front_view_renderer = new THREE.WebGLRenderer({
   canvas: front_view_canvas,
   powerPreference: "high-performance",
   antialias: true,
@@ -90,6 +96,8 @@ let front_view_renderer = new THREE.WebGLRenderer({
 front_view_renderer.setSize(front_view_w, front_view_h);
 front_view_renderer.setPixelRatio(window.devicePixelRatio);
 front_view_renderer.setClearColor(0xffffff, 1);
+front_view_renderer.toneMapping = THREE.ACESFilmicToneMapping;
+front_view_renderer.toneMappingExposure = 0.7;
 
 export function set_viewer_theme() {
   if (params.theme == "Light") {
@@ -105,20 +113,20 @@ export function set_viewer_theme() {
 set_viewer_theme();
 
 // Lights.
-const light = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(light);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-directionalLight.position.set(100, 100, 100);
-scene.add(directionalLight);
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
-directionalLight2.position.set(0, 0, -1);
-scene.add(directionalLight2);
-const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
-directionalLight3.position.set(1, 0, 0);
-scene.add(directionalLight3);
-const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1.0);
-directionalLight4.position.set(-1, 0, 0);
-scene.add(directionalLight4);
+// const light = new THREE.AmbientLight(0xffffff, 0.5);
+// scene.add(light);
+// const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+// directionalLight.position.set(100, 100, 100);
+// scene.add(directionalLight);
+// const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+// directionalLight2.position.set(0, 0, -1);
+// scene.add(directionalLight2);
+// const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
+// directionalLight3.position.set(1, 0, 0);
+// scene.add(directionalLight3);
+// const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1.0);
+// directionalLight4.position.set(-1, 0, 0);
+// scene.add(directionalLight4);
 
 // const cubeTextureLoader = new THREE.CubeTextureLoader()
 // const environmentMap = cubeTextureLoader.load([
@@ -133,10 +141,12 @@ scene.add(directionalLight4);
 //   scene.environment = environmentMap;
 // });
 
-// const environment = new RoomEnvironment();
-// const pmremGenerator = new THREE.PMREMGenerator(renderer);
-// scene.background = new THREE.Color(0x777777);
-// scene.environment = pmremGenerator.fromScene(environment).texture;
+const environment = new RoomEnvironment();
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+const pmremGenerator_top_view = new THREE.PMREMGenerator(top_view_renderer);
+const pmremGenerator_front_view = new THREE.PMREMGenerator(front_view_renderer);
+scene.background = new THREE.Color(0x777777);
+scene.environment = pmremGenerator.fromScene(environment).texture;
 
 
 
@@ -226,12 +236,14 @@ export let designing_area = new THREE.Mesh(
   new THREE.CircleGeometry(1, 64),
   new THREE.MeshBasicMaterial({
     // color: 0xeb9090, 
-    color: 0xffccd5,
-    side: THREE.DoubleSide, opacity: 0.3, transparent: true
+    // color: 0xffccd5,
+    color: 0x727272,
+    side: THREE.DoubleSide, opacity: 1.0, transparent: true
   }));
 designing_area.name = "designing_area";
 designing_area.rotateX(Math.PI / 2);
 designing_area.position.y = -1e-3;
+designing_area.visible = false;
 scene.add(designing_area);
 let rotation_symmetry_lines = [];
 
@@ -242,10 +254,11 @@ export function set_designing_area_height(height) {
   }
 }
 export function set_design_area_visibility(visible) {
-  designing_area.visible = visible;
-  for (let line of rotation_symmetry_lines) {
-    line.visible = visible;
-  }
+  designing_area.visible = false;
+  // designing_area.visible = visible;
+  // for (let line of rotation_symmetry_lines) {
+  //   line.visible = visible;
+  // }
 }
 export function update_rotation_symmetry_lines(rotation_symmetry) {
   for (let line of rotation_symmetry_lines) {
@@ -323,8 +336,10 @@ function animate() {
   fxaaPass.material.uniforms['resolution'].value.set(
     1 / (canvas.offsetWidth * pixelRatio),
     1 / (canvas.offsetHeight * pixelRatio));
+  scene.background = new THREE.Color(0x777777);
+  scene.environment = pmremGenerator.fromScene(environment).texture;
+
   if (mode === Mode.orthographic) {
-    // scene.background = null;
     controls.enabled = false;
     update_orbit_controls_target();
     orth_camera_controls.enabled = controls_enabled;
@@ -334,7 +349,6 @@ function animate() {
     selectedOutlinePass.renderCamera = camera2d;
     // renderer.render(scene, camera2d);
   } else {
-    // scene.background = environmentMap;
     orth_camera_controls.enabled = false;
     controls.enabled = controls_enabled;
     controls.update();
@@ -345,7 +359,10 @@ function animate() {
   }
   composer.render();
   if (params.preview_mode == "Preview") {
+    scene.background = new THREE.Color(0x666666);
+    scene.environment = pmremGenerator_top_view.fromScene(environment).texture;
     top_view_renderer.render(scene, top_view_cam);
+    scene.environment = pmremGenerator_front_view.fromScene(environment).texture;
     front_view_renderer.render(scene, front_view_cam);
   }
   requestAnimationFrame(animate);

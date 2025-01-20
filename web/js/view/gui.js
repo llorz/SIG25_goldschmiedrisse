@@ -1,6 +1,6 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos } from "./visual.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos, designing_area } from "./visual.js";
 import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
@@ -10,7 +10,7 @@ import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
 import { find_all_faces, init_add_new_face, reconstructed_surface_material } from "./add_face_mode.js";
-import { set_wire_frame } from "./reconstructed_three_biarc_curve.js";
+import { set_wire_frame, updated_color } from "./reconstructed_three_biarc_curve.js";
 import { frame_curves_ortho_cam } from "../utils/camerautils.js";
 
 export let pane = new Pane({
@@ -165,11 +165,17 @@ let surface_params = pane.addFolder({
   title: "Surface parameters",
   expanded: false
 });
+surface_params.addBinding(params, "curves_color", {
+  view: 'color',
+  label: 'Curves color'
+}).on('change', (ev) => {
+  updated_color(ev.value);
+});
 surface_params.addBinding(params, "surface_color", {
   view: 'color',
   label: 'Surface Color'
 }).on('change', (ev) => {
-  surface_material.color.set(ev.value);
+  reconstructed_surface_material.color.set(ev.value);
 });
 surface_params.addBinding(params, "use_rmf", {
   label: 'Use RMF'

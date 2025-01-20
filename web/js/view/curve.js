@@ -10,14 +10,14 @@ import { update_intersections } from './intersections';
 import { params } from '../state/params';
 import { get_curve_color, get_curve_color_material, get_random_color } from '../state/color_generator';
 
-const sphere_geom = new THREE.SphereGeometry(0.013, 32, 32);
+const sphere_geom = new THREE.SphereGeometry(0.02, 32, 32);
 const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
 const curve_material = new THREE.MeshBasicMaterial({ color: 0x0 });
-let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
-let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
-let symmetry_curve_material = new THREE.MeshLambertMaterial({
-  color: 0xeeeeee, side: THREE.DoubleSide,
+let intersection_material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+const tangent_line_material = new THREE.MeshStandardMaterial({ color: 0x77ff77 });
+let main_curve_material = new THREE.MeshStandardMaterial({ color: 0xff7777, side: THREE.DoubleSide });
+let symmetry_curve_material = new THREE.MeshStandardMaterial({
+  color: 0x7a7a7a, side: THREE.DoubleSide,
   opacity: 1.0, transparent: true
 });
 let symmetry_reflection_curve_material = new THREE.MeshLambertMaterial({
@@ -229,7 +229,7 @@ export class Curve {
 
     let level_bottom = get_level_bottom(this.level);
     let arc = new ArcCurve(this.control_points.slice(2, 5));
-    let tube_geom = new THREE.TubeGeometry(arc, 50, 0.005, 8, false);
+    let tube_geom = new THREE.TubeGeometry(arc, 50, params.flat_curve_radius, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? this.get_main_material() : this.get_sym_material(i));
@@ -266,7 +266,7 @@ export class Curve {
     // Create a new one, don't set points.
     this.arc_curve = new ArcCurve(this.control_points);
     let curve_points = 50;
-    let tube_geom = new THREE.TubeGeometry(this.arc_curve, curve_points, 0.005, 8, false);
+    let tube_geom = new THREE.TubeGeometry(this.arc_curve, curve_points, params.flat_curve_radius, 8, false);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let tube = new THREE.Mesh(tube_geom,
         i == 0 ? this.get_main_material() : this.get_sym_material(i));
@@ -302,7 +302,7 @@ export class Curve {
     let p = this.control_points[0];
     let p2 = this.control_points[1];
     let line1 = new THREE.LineCurve(p, p2);
-    let mesh1 = new THREE.Mesh(new THREE.TubeGeometry(line1, 16, 0.005, 8, false), tangent_line_material);
+    let mesh1 = new THREE.Mesh(new THREE.TubeGeometry(line1, 16, params.flat_curve_radius, 8, false), tangent_line_material);
     mesh1.type = "ns_line";
     mesh1.translateY(0.001);
     scene.add(mesh1);
@@ -313,7 +313,7 @@ export class Curve {
       let p3 = this.control_points[2];
       let p4 = this.control_points[3];
       let line2 = new THREE.LineCurve(p3, p4);
-      let mesh2 = new THREE.Mesh(new THREE.TubeGeometry(line2, 16, 0.005, 8, false), tangent_line_material);
+      let mesh2 = new THREE.Mesh(new THREE.TubeGeometry(line2, 16, params.flat_curve_radius, 8, false), tangent_line_material);
       mesh2.type = "ns_line";
       mesh2.translateY(0.001);
       scene.add(mesh2);
