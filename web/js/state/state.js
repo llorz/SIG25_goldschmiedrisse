@@ -5,7 +5,7 @@ import { load_curves, load_state } from "../io/load_curves";
 import { sync_module } from "../native/native";
 import { ReconstructedSurface } from "../view/reconstructed_surface";
 import { ReconstructedCurve } from "../view/reconstructed_three_curve";
-import { camera2d, designing_area, enable_controls, scene, set_designing_area_height, update_rotation_symmetry_lines } from "../view/visual";
+import { camera2d, designing_area, enable_controls, scene, set_designing_area_height, update_orbit_controls_target_and_pos, update_rotation_symmetry_lines } from "../view/visual";
 import { ReconstructedBiArcCurve } from "../geom/reconstructed_biarc_curve";
 import { ReconstructedThreeBiArcCurve } from "../view/reconstructed_three_biarc_curve";
 import { analytic_curves_intersection, analytic_self_intersection, get_rotation_mat } from "../utils/intersect";
@@ -350,25 +350,6 @@ export function add_level() {
   layers_bottom.push(max_height);
 }
 
-export function update_current_level() {
-  set_designing_area_height(get_level_bottom(params.current_level));
-  for (let curve of curves) {
-    if (curve.level != params.current_level) {
-      curve.set_visibility(false);
-    } else {
-      curve.set_visibility(true);
-    }
-  }
-  for (let recon_curve of recon_curves) {
-    if (recon_curve.curve.level != params.current_level) {
-      recon_curve.set_control_points_visibility(false);
-    } else {
-      recon_curve.set_control_points_visibility(true);
-    }
-  }
-  show_intersections_at_level(params.current_level);
-}
-
 export function reconstruct_biarcs(curve = null) {
   let ind = curves.indexOf(curve);
   if (ind == -1) {
@@ -475,8 +456,8 @@ export function load_from_curves_file(txt) {
   level_controller.controller.valueController.value.rawValue = 0;
   reconstruct_biarcs();
   update_supporting_pillars();
-  update_current_level();
   refresh();
+  update_orbit_controls_target_and_pos();
 }
 
 export function set_control_points_visibility(is_visible) {
@@ -484,7 +465,7 @@ export function set_control_points_visibility(is_visible) {
     curve.set_control_points_visibility(is_visible && curve.level == params.current_level);
   }
   for (let curve of recon_curves) {
-    curve.set_control_points_visibility(is_visible && curve.curve.level == params.current_level);
+    curve.set_control_points_visibility(is_visible);
   }
   // if (mode == Mode.orthographic) {
   //   if (Math.abs(camera2d.position.y - 1) < 0.01) {

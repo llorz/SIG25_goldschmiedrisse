@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme } from "./visual.js";
-import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility, update_current_level } from "../state/state.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos } from "./visual.js";
+import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
 import { Mode, mode } from "../state/state.js";
@@ -11,6 +11,7 @@ import { sync_module } from "../native/native.js";
 import * as THREE from "three";
 import { find_all_faces, init_add_new_face, reconstructed_surface_material } from "./add_face_mode.js";
 import { set_wire_frame } from "./reconstructed_three_biarc_curve.js";
+import { frame_curves_ortho_cam } from "../utils/camerautils.js";
 
 export let pane = new Pane({
   title: "Menu",
@@ -90,16 +91,29 @@ let ortho_view = pane.addBlade({
     orth_camera_controls.target.set(0, 0, 0);
     orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
     orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+    orth_camera_controls.update();
+    refresh();
   } else {
     camera2d.position.set(0, 0, 1);
     camera2d.up.set(0, 0, 1);
     orth_camera_controls.target.set(0, 0, 0);
     orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
     orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+    frame_curves_ortho_cam(camera2d, orth_camera_controls);
+    orth_camera_controls.update();
+    refresh();
   }
   set_control_points_visibility(params.control_points_visible);
 });
 top_view_options.push(ortho_view);
+
+let frame_cam_button = pane.addButton({
+  title: 'Frame object',
+  hidden: true,
+}).on('click', (ev) => {
+  update_orbit_controls_target_and_pos();
+});
+side_view_options.push(frame_cam_button);
 
 let view_options_folder = pane.addFolder({
   title: "Show",
@@ -179,7 +193,7 @@ surface_params.addBlade({
   label: 'Tube radius',
   min: 0.001,
   max: 0.1,
-  value: 0.007,
+  value: 0.02,
 }).on('change', (ev) => {
   params.tube_radius = ev.value;
   refresh();
@@ -255,7 +269,8 @@ pane.addButton({
   title: 'add level',
 }).on('click', (ev) => {
   add_level();
-  update_current_level();
+  // update_current_level();
+  refresh();
 });
 export let level_controller = pane.addBinding(params, 'current_level', {
   label: 'Level',
@@ -263,7 +278,8 @@ export let level_controller = pane.addBinding(params, 'current_level', {
   min: 0,
   max: 0,
 }).on('change', (ev) => {
-  update_current_level();
+  // update_current_level();
+  refresh();
 });
 
 

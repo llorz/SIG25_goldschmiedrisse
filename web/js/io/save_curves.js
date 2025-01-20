@@ -59,6 +59,7 @@ export function save_state() {
     txt += 'prc_t ' + curve.prc_t + '\n';
     txt +='decoration_t ' + curve.decoration_t + '\n';
     txt += 'decoration_height ' + curve.decoration_height + '\n';
+    txt += 'vertical_line_top ' + curve.vertical_line_top + '\n';
 
   }
   for (let layer of layers_bottom) {

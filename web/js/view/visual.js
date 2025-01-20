@@ -16,11 +16,14 @@ import pz from './environment_maps/less_fancy_church/nz.png';
 import nx from './environment_maps/less_fancy_church/px.png';
 import py from './environment_maps/less_fancy_church/py.png';
 import nz from './environment_maps/less_fancy_church/pz.png';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { get_rotation_mat } from '../utils/intersect';
+import { frameObject } from '../utils/camerautils';
 
 let rotation_line_material = new LineMaterial({
   color: 0xccccff,
@@ -67,6 +70,9 @@ export let renderer = new THREE.WebGLRenderer({
 renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(0xffffff, 1);
+renderer.toneMapping = THREE.LinearToneMapping;
+// renderer.toneMappingExposure = 1;
+
 let top_view_renderer = new THREE.WebGLRenderer({
   canvas: top_view_canvas,
   powerPreference: "high-performance",
@@ -126,6 +132,11 @@ scene.add(directionalLight4);
 //   scene.environment = environmentMap;
 // });
 
+// const environment = new RoomEnvironment();
+// const pmremGenerator = new THREE.PMREMGenerator(renderer);
+// scene.environment = pmremGenerator.fromScene(environment).texture;
+
+
 
 // Cameras.
 export let camera3d = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
@@ -161,11 +172,11 @@ const composer = new EffectComposer(renderer);
 const renderPass = new RenderPass(scene, camera2d);
 composer.addPass(renderPass);
 // SSAO.
-const ssaoPass = new SSAOPass(scene, camera3d, w, h);
-ssaoPass.kernelRadius = 16;
-ssaoPass.minDistance = 0.005;
-ssaoPass.maxDistance = 0.1;
-composer.addPass(ssaoPass);
+// const ssaoPass = new SSAOPass(scene, camera3d, w, h);
+// ssaoPass.kernelRadius = 16;
+// ssaoPass.minDistance = 0.005;
+// ssaoPass.maxDistance = 0.1;
+// composer.addPass(ssaoPass);
 
 export const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera2d);
 outlinePass.edgeThickness = 3.0;
@@ -283,6 +294,22 @@ function resizeCanvasToDisplaySize(renderer, cam2d, cam3d) {
   }
 }
 
+function update_orbit_controls_target() {
+  let top_height = 0;
+  for (let curve of curves) {
+    top_height = Math.max(top_height, curve.height);
+  }
+  controls.target.set(0, top_height / 2, 0);
+}
+
+export function update_orbit_controls_target_and_pos() {
+  let top_height = 0;
+  for (let curve of curves) {
+    top_height = Math.max(top_height, curve.height);
+  }
+  frameObject(camera3d, controls, designing_area, top_height, new THREE.Vector3(0, top_height / 2, 0));
+}
+
 function animate() {
   resizeCanvasToDisplaySize(renderer, camera2d, camera3d);
   if (params.preview_mode == "Preview") {
@@ -292,6 +319,7 @@ function animate() {
   if (mode === Mode.orthographic) {
     // scene.background = null;
     controls.enabled = false;
+    update_orbit_controls_target();
     orth_camera_controls.enabled = controls_enabled;
     orth_camera_controls.update();
     renderPass.camera = camera2d;

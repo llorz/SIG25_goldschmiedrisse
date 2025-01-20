@@ -97,7 +97,11 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
 
   set_top_height(height) {
     this.top_height = height;
+    let diff = height - this.curve.height;
     this.curve.height = height;
+    if (this.curve.vertical_line_top > 0) {
+      this.curve.vertical_line_top += diff;
+    }
     // set_level_height(this.level, this.top_height);
     let t = this.curve.prc_t;
     this.middle_height = this.get_middle_height();
@@ -108,7 +112,12 @@ export class ReconstructedBiArcCurve extends THREE.Curve {
     this.middle_height = height;
     let t = this.curve.prc_t;
     this.top_height = this.get_top_height_from_middle(height);
+
+    let diff = this.top_height - this.curve.height;
     this.curve.height = this.top_height
+    if (this.curve.vertical_line_top > 0) {
+      this.curve.vertical_line_top += diff;
+    }
     this.compute_biarc();
   }
 

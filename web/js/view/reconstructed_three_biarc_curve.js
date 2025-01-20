@@ -52,7 +52,7 @@ const sweep_plane_material = new THREE.MeshStandardMaterial({
 });
 
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
-const sphere_geom = new THREE.SphereGeometry(0.01, 32, 32);
+const sphere_geom = new THREE.SphereGeometry(0.025, 32, 32);
 let control_point_material = new THREE.MeshBasicMaterial({ color: 0x0 });
 let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 // let symmetry_curve_material = new THREE.MeshLambertMaterial({
@@ -60,9 +60,19 @@ let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side:
 //   opacity: 0.6, transparent: true
 // });
 let symmetry_curve_material = new THREE.MeshStandardMaterial({
-  // color: 0xFFD700, 
+  // color: 0xFFD700,
+
+  // Original purple.
   color: 0xc77dff,
+
+  // Light blue.
+  // color: 0x7FA7D8,
+
+  // Other shades of purple.
+  // color: 0x7e45a8,
+
   // color: 0xA1662F,
+  // color: 0xaaaaaa,
   side: THREE.DoubleSide,
   opacity: 1., transparent: true,
   // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5,
@@ -350,11 +360,14 @@ export class ReconstructedThreeBiArcCurve {
   update_vertical_lines() {
     if (this.curve.curve.vertical_line_top == 0) return;
     let last_pt = this.curve.getPoint(1);
+    if (this.curve.curve.vertical_line_top < last_pt.y + 1e-2) return;
     let top_pt = last_pt.clone();
     top_pt.y = this.curve.curve.vertical_line_top;
 
     let line_curve = new THREE.LineCurve3(last_pt, top_pt);
-    let filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    // let filling_tube = new THREE.Mesh(new THREE.TubeGeometry(line_curve, 32, params.tube_radius, 8, false), symmetry_curve_material);
+    let geom = sweep_geom_along_curve(this.get_sweep_geom(), line_curve, params.use_rmf);
+    let filling_tube = new THREE.Mesh(geom, symmetry_curve_material);
     for (let i = 0; i < this.rotation_symmetry; i++) {
       let filling_tube_clone = filling_tube.clone();
       filling_tube_clone.type = "ns_line";

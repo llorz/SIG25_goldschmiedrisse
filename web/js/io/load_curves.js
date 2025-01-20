@@ -100,6 +100,8 @@ export function load_state(txt) {
       last(curves).decoration_height = parseFloat(parts[1]);
     } else if (line.startsWith("layer_bottom")) {
       layers_bottom.push(parseFloat(parts[1]));
+    } else if (line.startsWith("vertical_line_top")) {
+      last(curves).vertical_line_top = parseFloat(parts[1]);
     }
   });
   for (let curve of curves) {
