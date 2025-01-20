@@ -261,7 +261,8 @@ export function set_design_area_visibility(visible) {
   for (let line of rotation_symmetry_lines) {
     line.visible = visible;
   }
-  background_image_plane.visible = visible;
+  if (background_image_plane)
+    background_image_plane.visible = visible;
 }
 export function update_rotation_symmetry_lines(rotation_symmetry) {
   for (let line of rotation_symmetry_lines) {

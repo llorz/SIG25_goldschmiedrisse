@@ -62,7 +62,7 @@ export function get_rmf_frame(curve, rmf, t) {
   let resolution = rmf.length;
   let l = Math.floor(t * (resolution - 1));
   let r = Math.min(l + 1, resolution - 1);
-  let tt = (t - rmf[l].t) / (rmf[r].t - rmf[l].t);
+  let tt = (r != l? ((t - rmf[l].t) / (rmf[r].t - rmf[l].t)) : 0);
   let tangent = rmf[l].tangent.clone().multiplyScalar(1 - tt).add(rmf[r].tangent.clone().multiplyScalar(tt));
   let normal = rmf[l].normal.clone().multiplyScalar(1 - tt).add(rmf[r].normal.clone().multiplyScalar(tt));
   let binormal = rmf[l].binormal.clone().multiplyScalar(1 - tt).add(rmf[r].binormal.clone().multiplyScalar(tt));
@@ -94,7 +94,7 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
   let size_x = geom.boundingBox.getSize(new THREE.Vector3()).x;
   for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
     v.fromBufferAttribute(geom.attributes.position, i);
-    let t = v.x / (size_x + 1e-2);
+    let t = v.x / size_x;
     let frame = use_rmf ? get_rmf_frame(curve, rmf, t) : get_simple_frame(t);
     let p = frame.position, n = frame.normal, b = frame.binormal;
     geom.attributes.position.setXYZ(i, p.x + n.x * v.z + b.x * v.y,

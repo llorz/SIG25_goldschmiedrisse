@@ -181,7 +181,7 @@ export class ReconstructedThreeBiArcCurve {
     let size_x = orig_geom.boundingBox.getSize(new THREE.Vector3()).x;
     for (let i = 0, l = orig_geom.attributes.position.count; i < l; i++) {
       v.fromBufferAttribute(orig_geom.attributes.position, i);
-      let t = v.x / (size_x + 1e-2);
+      let t = v.x / (size_x + 1e-4);
       let frame = params.use_rmf ? this.curve.get_rmf_frame(t) : this.curve.getFrame(t);
       let new_v = frame.position.clone().add(frame.normal.clone().multiplyScalar(v.z)).add(frame.binormal.clone().multiplyScalar(v.y));
       geom.attributes.position.setXYZ(i, new_v.x, new_v.y, new_v.z);
