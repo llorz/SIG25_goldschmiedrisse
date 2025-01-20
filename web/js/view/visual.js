@@ -24,7 +24,7 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { get_rotation_mat } from '../utils/intersect';
-import { frameObject } from '../utils/camerautils';
+import { frame_curves_ortho_cam, frameObject } from '../utils/camerautils';
 import { updated_color } from './reconstructed_three_biarc_curve';
 
 let rotation_line_material = new LineMaterial({
@@ -345,7 +345,7 @@ function animate() {
   scene.background = new THREE.Color(0x777777);
   scene.environment = pmremGenerator.fromScene(environment).texture;
 
-  if (params.preview_mode == 'Design' &&  background_image_plane && is_camera_vertical()) {
+  if (params.preview_mode == 'Design' && background_image_plane && is_camera_vertical()) {
     updated_color(0);
   } else {
     updated_color(parseInt(params.curves_color, 16));

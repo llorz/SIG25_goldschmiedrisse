@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { curves } from '../state/state';
+import { curves, layers_bottom } from '../state/state';
 
 export function frameObject(camera, controls, obj, height, center) {
   let box = new THREE.Box3().setFromObject(obj);
@@ -23,6 +23,9 @@ export function frame_curves_ortho_cam(camera, controls) {
   let top_height = 0;
   for (let curve of curves) {
     top_height = Math.max(top_height, curve.height);
+  }
+  for (let level of layers_bottom) {
+    top_height = Math.max(top_height, level);
   }
   let max_width = 0.01;
   for (let curve of curves) {
