@@ -226,7 +226,7 @@ export function update_supporting_pillars() {
       if (feature_pt.level >= curve.level) continue;
       if (Math.abs((curve.control_points[0].x - feature_pt.pt.x) ** 2 +
         (curve.control_points[0].z - feature_pt.pt.z) ** 2) < 1e-3 &&
-        feature_pt.pt.y >= highest) {
+        feature_pt.pt.y >= highest && feature_pt.pt.y < curve.control_points[0].y + 1e-2) {
         curve.supporting_pillar_point = feature_pt.pt;
         highest = feature_pt.pt.y;
       }
@@ -390,24 +390,37 @@ export function udpated_layer_bottom(level, bottom) {
 }
 
 export function updated_height(last_top_height, last_mid_height, curve) {
-  let new_top_height = curve.top_height;
-  let new_mid_height = curve.middle_height;
+  let new_top_height = curve.get_top_height();
+  let new_mid_height = curve.get_middle_height();
+  let height_diff = new_top_height - last_top_height;
   for (let recon_three_curve of recon_curves) {
     if (recon_three_curve.curve == curve) continue;
-    if (Math.abs(recon_three_curve.curve.top_height - last_top_height) < 1e-3) {
+    if (Math.abs(recon_three_curve.curve.get_top_height() - last_top_height) < 1e-3) {
       recon_three_curve.curve.set_top_height(new_top_height);
-      recon_three_curve.update_curve();
-    } else if (Math.abs(recon_three_curve.curve.middle_height - last_mid_height) < 1e-3) {
+      // recon_three_curve.update_curve();
+    } else if (Math.abs(recon_three_curve.curve.get_middle_height() - last_mid_height) < 1e-3) {
       recon_three_curve.curve.set_middle_height(new_mid_height);
-      recon_three_curve.update_curve();
+      // recon_three_curve.update_curve();
+    } else if (recon_three_curve.curve.get_top_height() >= last_top_height &&
+      get_level_bottom(recon_three_curve.curve.level) >= last_top_height
+    ) {
+      // The curve is above the curve which is being edited, adjust its height.
+      recon_three_curve.curve.set_top_height(recon_three_curve.curve.get_top_height() + height_diff);
+      // recon_three_curve.update_curve();
     }
   }
+  for (let level = 0; level < layers_bottom.length; level++) {
+    if (layers_bottom[level] >= last_top_height) {
+      layers_bottom[level] += height_diff;
+    }
+  }
+  for (let curve of curves) {
+    curve.update_control_points_height();
+  }
+  update_supporting_pillars();
   // The bottom might have changed, update the curves in the next level.
   for (let recon_three_curve of recon_curves) {
-    if (recon_three_curve.curve.level == curve.level + 1) {
-      recon_three_curve.curve.compute_biarc();
-      recon_three_curve.update_curve();
-    }
+    recon_three_curve.update_curve();
   }
   clear_all_surfaces();
 }
@@ -467,17 +480,6 @@ export function set_control_points_visibility(is_visible) {
   for (let curve of recon_curves) {
     curve.set_control_points_visibility(is_visible);
   }
-  // if (mode == Mode.orthographic) {
-  //   if (Math.abs(camera2d.position.y - 1) < 0.01) {
-  //     for (let curve of recon_curves) {
-  //       curve.set_control_points_visibility(false);
-  //     }
-  //   } else {
-  //     for (let curve of curves) {
-  //       curve.set_control_points_visibility(false);
-  //     }
-  //   }
-  // }
 }
 
 export function set_biarc_visibility(is_visible) {

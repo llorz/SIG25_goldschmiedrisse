@@ -52,7 +52,7 @@ const sweep_plane_material = new THREE.MeshStandardMaterial({
 });
 
 const tangent_line_material = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
-const sphere_geom = new THREE.SphereGeometry(0.025, 32, 32);
+const sphere_geom = new THREE.SphereGeometry(0.02, 32, 32);
 let control_point_material = new THREE.MeshBasicMaterial({ color: 0x0 });
 let main_curve_material = new THREE.MeshLambertMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 // let symmetry_curve_material = new THREE.MeshLambertMaterial({
@@ -160,8 +160,8 @@ export class ReconstructedThreeBiArcCurve {
   move_control_point(three_point_mesh, new_loc) {
     let idx = this.control_points.indexOf(three_point_mesh);
     if (idx == -1) return;
-    let last_mid_height = this.curve.middle_height;
-    let last_top_height = this.curve.top_height;
+    let last_mid_height = this.curve.get_middle_height();
+    let last_top_height = this.curve.get_top_height();
     if (idx == 0) {
       this.curve.set_middle_height(new_loc.y);
     } else if (idx == 1) {
