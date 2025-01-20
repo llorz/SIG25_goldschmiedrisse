@@ -9,7 +9,7 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { SAOPass } from 'three/addons/postprocessing/SAOPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
-import { curves, Mode, mode } from '../state/state';
+import { background_image_plane, curves, Mode, mode } from '../state/state';
 import { params } from '../state/params';
 import px from './environment_maps/less_fancy_church/nx.png';
 import ny from './environment_maps/less_fancy_church/ny.png';
@@ -25,6 +25,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { get_rotation_mat } from '../utils/intersect';
 import { frameObject } from '../utils/camerautils';
+import { updated_color } from './reconstructed_three_biarc_curve';
 
 let rotation_line_material = new LineMaterial({
   // color: 0x6666ff,
@@ -256,9 +257,10 @@ export function set_designing_area_height(height) {
 export function set_design_area_visibility(visible) {
   designing_area.visible = false;
   // designing_area.visible = visible;
-  // for (let line of rotation_symmetry_lines) {
-  //   line.visible = visible;
-  // }
+  for (let line of rotation_symmetry_lines) {
+    line.visible = visible;
+  }
+  background_image_plane.visible = visible;
 }
 export function update_rotation_symmetry_lines(rotation_symmetry) {
   for (let line of rotation_symmetry_lines) {
@@ -327,6 +329,10 @@ export function update_orbit_controls_target_and_pos() {
   frameObject(camera3d, controls, designing_area, top_height, new THREE.Vector3(0, top_height / 2, 0));
 }
 
+export function is_camera_vertical() {
+  return Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) < 1e-3;
+}
+
 function animate() {
   resizeCanvasToDisplaySize(renderer, camera2d, camera3d);
   if (params.preview_mode == "Preview") {
@@ -338,6 +344,12 @@ function animate() {
     1 / (canvas.offsetHeight * pixelRatio));
   scene.background = new THREE.Color(0x777777);
   scene.environment = pmremGenerator.fromScene(environment).texture;
+
+  if (params.preview_mode == 'Design' &&  background_image_plane && is_camera_vertical()) {
+    updated_color(0);
+  } else {
+    updated_color(parseInt(params.curves_color, 16));
+  }
 
   if (mode === Mode.orthographic) {
     controls.enabled = false;

@@ -67,7 +67,7 @@ let symmetry_curve_material = new THREE.MeshStandardMaterial({
 
   // Light blue.
   // color: 0x7FA7D8,
-  color: 0xa8a7a8,
+  color: 0xc4c4c4,
 
   // Other shades of purple.
   // color: 0x7e45a8,
