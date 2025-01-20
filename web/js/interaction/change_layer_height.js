@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import { params } from "../state/params";
-import { EditMode, get_available_layer_heights, get_level_bottom, set_control_points_visibility, set_edit_mode, set_level_bottom, udpated_layer_bottom } from "../state/state";
+import { EditMode, get_available_layer_heights, get_level_bottom, refresh, set_control_points_visibility, set_edit_mode, set_level_bottom, udpated_layer_bottom } from "../state/state";
 import { clear_all_intersection_points } from "../view/add_face_mode";
 import { scene, set_designing_area_height } from "../view/visual";
 import { clear_intersections, update_intersections } from "../view/intersections";
@@ -34,6 +34,7 @@ export function start_changing_height() {
   clear_intersections();
   params.control_points_visible = false;
   set_control_points_visibility(false);
+  refresh();
 
   snap_heights = get_available_layer_heights();
 

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene } from './visual';
 import { BezierSegmentsCurve, bezy } from '../geom/bezier_segments_curve';
 import { sync_module } from '../native/native';
-import { curves, get_level_bottom, get_level_height, reconstruct_biarcs } from '../state/state';
+import { curves, edit_mode, get_level_bottom, get_level_height, reconstruct_biarcs } from '../state/state';
 import { BiArcCurve } from '../geom/biarc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { update_intersections } from './intersections';
@@ -320,7 +320,7 @@ export class Curve {
       this.three_control_points_lines.push(mesh2);
     }
 
-    this.set_visibility(params.preview_mode != 'Preview' && this.level == params.current_level);
+    this.set_visibility(params.preview_mode != 'Preview' && this.level == params.current_level && edit_mode != 'change_layer_bottom');
     this.set_control_points_visibility(params.control_points_visible);
   }
 
