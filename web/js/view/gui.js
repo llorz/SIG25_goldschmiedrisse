@@ -1,6 +1,6 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos, designing_area } from "./visual.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos, designing_area, set_side_view, set_top_view } from "./visual.js";
 import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
@@ -31,7 +31,7 @@ function set_top_view_visibility(hidden) {
   }
 }
 
-pane.addBinding(params, 'view', {
+export let view_controller = pane.addBinding(params, 'view', {
   view: 'radiogrid',
   groupName: 'view',
   size: [2, 1],
@@ -49,6 +49,7 @@ pane.addBinding(params, 'view', {
     set_top_view_visibility(true);
   }
 });
+window.view_controller = view_controller;
 
 pane.addBinding(params, 'preview_mode', {
   view: 'radiogrid',
@@ -86,22 +87,9 @@ let ortho_view = pane.addBlade({
   label: 'View',
 }).on('click', (ev) => {
   if (ev.index[0] == 0) {
-    camera2d.position.set(0, 100, 0);
-    camera2d.up.set(0, 1, 0);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-    orth_camera_controls.update();
-    refresh();
+    set_top_view();
   } else {
-    camera2d.position.set(0, 0, 1);
-    camera2d.up.set(0, 0, 1);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-    frame_curves_ortho_cam(camera2d, orth_camera_controls);
-    orth_camera_controls.update();
-    refresh();
+    set_side_view();
   }
   set_control_points_visibility(params.control_points_visible);
 });

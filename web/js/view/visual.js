@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Quaternion, Vector3 } from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -9,7 +10,7 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { SAOPass } from 'three/addons/postprocessing/SAOPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
-import { background_image_plane, curves, Mode, mode } from '../state/state';
+import { background_image_plane, curves, Mode, mode, refresh } from '../state/state';
 import { params } from '../state/params';
 import px from './environment_maps/less_fancy_church/nx.png';
 import ny from './environment_maps/less_fancy_church/ny.png';
@@ -331,6 +332,27 @@ export function update_orbit_controls_target_and_pos() {
 
 export function is_camera_vertical() {
   return Math.abs(Math.abs(get_active_camera().getWorldDirection(new THREE.Vector3()).y) - 1) < 1e-3;
+}
+
+export function set_side_view() {
+  camera2d.position.set(0, 0, 1);
+  camera2d.up.set(0, 0, 1);
+  orth_camera_controls.target.set(0, 0, 0);
+  orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
+  orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+  frame_curves_ortho_cam(camera2d, orth_camera_controls);
+  orth_camera_controls.update();
+  refresh();
+}
+
+export function set_top_view() {
+  camera2d.position.set(0, 100, 0);
+  camera2d.up.set(0, 1, 0);
+  orth_camera_controls.target.set(0, 0, 0);
+  orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
+  orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
+  orth_camera_controls.update();
+  refresh();
 }
 
 function animate() {

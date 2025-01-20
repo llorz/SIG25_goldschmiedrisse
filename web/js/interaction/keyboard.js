@@ -9,6 +9,8 @@ import { accept_edit_prc_point, cancel_edit_prc_point, edit_prc_point } from './
 import { accept_edit_vertical_line_top, cancel_edit_vertical_line_top, edit_vertical_line_top, remove_vertical_line } from './add_vertical_line';
 import { accept_scale, init_scale } from './scale_background_image';
 import { params } from '../state/params';
+import { set_side_view, set_top_view } from '../view/visual';
+import { view_controller } from '../view/gui';
 
 addEventListener('keydown', (event) => {
   if (event.key == "Escape") {
@@ -58,5 +60,13 @@ addEventListener('keydown', (event) => {
     start_changing_height();
   } else if (event.key == 's' && background_image_plane) {
     set_edit_mode(EditMode.start_scale_background_image);
+  } else if (event.key == '1') {
+    view_controller.controller.value.setRawValue('Ortho');
+    set_top_view();
+  } else if (event.key == '2') {
+    view_controller.controller.value.setRawValue('Ortho');
+    set_side_view();
+  } else if (event.key == '3') {
+    view_controller.controller.value.setRawValue('Perspective');
   }
 });
