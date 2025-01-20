@@ -7,6 +7,7 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { SAOPass } from 'three/addons/postprocessing/SAOPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
 import { curves, Mode, mode } from '../state/state';
 import { params } from '../state/params';
@@ -63,9 +64,9 @@ export let scene = new THREE.Scene();
 export let renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   powerPreference: "high-performance",
-  antialias: false,
-  stencil: false,
-  depth: false
+  antialias: true,
+  // stencil: false,
+  // depth: false
 });
 renderer.setSize(w, h);
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -179,6 +180,7 @@ composer.addPass(renderPass);
 // ssaoPass.maxDistance = 0.1;
 // composer.addPass(ssaoPass);
 
+
 export const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera2d);
 outlinePass.edgeThickness = 3.0;
 outlinePass.edgeStrength = 5.0;
@@ -197,6 +199,7 @@ selectedOutlinePass.hiddenEdgeColor = new THREE.Color(0xffa71b);
 selectedOutlinePass.overlayMaterial.blending = THREE.CustomBlending;
 composer.addPass(selectedOutlinePass);
 // Output pass.
+
 const outputPass = new OutputPass();
 composer.addPass(outputPass);
 
@@ -317,6 +320,9 @@ function animate() {
     resizeCanvasToDisplaySize(top_view_renderer, top_view_cam, null);
     resizeCanvasToDisplaySize(front_view_renderer, front_view_cam, null);
   }
+  fxaaPass.material.uniforms['resolution'].value.set(
+    1 / (canvas.offsetWidth * pixelRatio),
+    1 / (canvas.offsetHeight * pixelRatio));
   if (mode === Mode.orthographic) {
     // scene.background = null;
     controls.enabled = false;

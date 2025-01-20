@@ -217,6 +217,9 @@ export function get_all_feature_points() {
 }
 
 export function update_supporting_pillars() {
+  for (let curve of curves) {
+    curve.update_control_points_height();
+  }
   let feature_points = get_all_feature_points();
   for (let curve of curves) {
     if (curve.level == 0) continue;
@@ -386,6 +389,7 @@ export function udpated_layer_bottom(level, bottom) {
     recon_three_curve.curve.compute_biarc();
     recon_three_curve.update_curve();
   }
+  set_designing_area_height(get_level_bottom(params.current_level));
   update_supporting_pillars();
 }
 
@@ -414,8 +418,11 @@ export function updated_height(last_top_height, last_mid_height, curve) {
       layers_bottom[level] += height_diff;
     }
   }
+  set_designing_area_height(get_level_bottom(params.current_level));
   for (let curve of curves) {
-    curve.update_control_points_height();
+    if (curve.level == params.current_level) {
+      curve.draw_curve();
+    }
   }
   update_supporting_pillars();
   // The bottom might have changed, update the curves in the next level.
@@ -468,9 +475,6 @@ export function load_from_curves_file(txt) {
   level_controller.controller.valueController.sliderController.props.set('max', max_level());
   level_controller.controller.valueController.value.rawValue = 0;
   reconstruct_biarcs();
-  for (let curve of curves) {
-    curve.update_control_points_height();
-  }
   update_supporting_pillars();
   refresh();
   update_orbit_controls_target_and_pos();

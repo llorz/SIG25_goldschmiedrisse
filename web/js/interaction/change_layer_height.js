@@ -51,7 +51,6 @@ function exit_mode() {
   scene.remove(edit_point);
   edit_point = null;
   update_intersections();
-  set_designing_area_height(get_level_bottom(params.current_level));
   udpated_layer_bottom(params.current_level);
 }
 
