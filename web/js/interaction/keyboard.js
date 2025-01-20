@@ -60,13 +60,13 @@ addEventListener('keydown', (event) => {
     start_changing_height();
   } else if (event.key == 's' && background_image_plane) {
     set_edit_mode(EditMode.start_scale_background_image);
-  } else if (event.key == '1') {
+  } else if (event.key == 'q') {
     view_controller.controller.value.setRawValue('Ortho');
     set_top_view();
-  } else if (event.key == '2') {
+  } else if (event.key == 'w') {
     view_controller.controller.value.setRawValue('Ortho');
     set_side_view();
-  } else if (event.key == '3') {
+  } else if (event.key == 'e') {
     view_controller.controller.value.setRawValue('Perspective');
   }
 });
