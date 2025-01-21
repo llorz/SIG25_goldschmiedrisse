@@ -115,22 +115,27 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
       y = p.y + n.y * v.z + b.y * v.y,
       z = p.z + n.z * v.z + b.z * v.y;
 
-    if (params.cut_intersections) {
+    let cube_diag = (1 / Math.sqrt(2)) * params.tube_radius;
+
+    if (params.cut_intersections && Math.abs(orig_side) > 1e-2) {
       let side = end_flat_point.y * x - end_flat_point.x * z;
       if (side * orig_side <= 0) {
         let line = end_flat_point;
-        let proj = line.clone().multiplyScalar(Math.min(end_flat_point_len + params.tube_radius,
+        let proj = line.clone().multiplyScalar(Math.min(end_flat_point_len + cube_diag,
           x * line.x + z * line.y));
         x = proj.x;
         z = proj.y;
       }
-      side = orig_flat_point.y * x - orig_flat_point.x * z;
-      if (side * orig_side >= 0) {
-        let line = orig_flat_point;
-        let proj = line.clone().multiplyScalar(
-          Math.min(orig_flat_len + params.tube_radius, x * line.x + z * line.y));
-        x = proj.x;
-        z = proj.y;
+      if /** Hacky to avoid cutting intersection if there's a decoration curve */
+        (!curve.curve || !curve.curve.decoration_t) {
+        side = orig_flat_point.y * x - orig_flat_point.x * z;
+        if (side * orig_side >= 0) {
+          let line = orig_flat_point;
+          let proj = line.clone().multiplyScalar(
+            Math.min(orig_flat_len + cube_diag, x * line.x + z * line.y));
+          x = proj.x;
+          z = proj.y;
+        }
       }
 
     }

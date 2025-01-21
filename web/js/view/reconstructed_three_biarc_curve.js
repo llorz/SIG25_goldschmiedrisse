@@ -92,16 +92,6 @@ let symmetry_curve_material = new THREE.MeshStandardMaterial({
   opacity: 1., transparent: true,
   // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5,
 });
-let symmetry_reflection_curve_material = new THREE.MeshStandardMaterial({
-  color: 0xFFD700, side: THREE.DoubleSide,
-  opacity: 1., transparent: true,
-  // metalness: 0.6, roughness: 0.3, reflectivity: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.5
-});
-// let symmetry_reflection_curve_material = new THREE.MeshLambertMaterial({
-//   color: 0x000000, side: THREE.DoubleSide,
-//   opacity: 0.6, transparent: true
-// });
-
 function last_elem(arr) {
   return arr[arr.length - 1];
 }
