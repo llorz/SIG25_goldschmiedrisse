@@ -255,11 +255,16 @@ function sort_intersections(intersections) {
       if (!curves_inters.has(inter.curve)) {
         curves_inters.set(inter.curve, [{ t: inter.t, inter: merged_intersection }]);
       } else {
-        curves_inters.get(inter.curve).push({ t: inter.t, inter: merged_intersection });
+        let inters = curves_inters.get(inter.curve);
+        // Check if inter.t already exists
+        if (inters.find(x => Math.abs(x.t - inter.t) < 1e-3))
+          continue;
+        inters.push({ t: inter.t, inter: merged_intersection });
       }
     }
   }
   for (let [curve, inters] of curves_inters) {
+    // Only keep distinct t values.
     inters.sort((a, b) => a.t - b.t);
   }
   return curves_inters;
