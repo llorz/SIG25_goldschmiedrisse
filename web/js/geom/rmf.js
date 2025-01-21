@@ -94,6 +94,7 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
   let orig_flat_point = curve.getPoint(0);
   orig_flat_point = new THREE.Vector2(orig_flat_point.x, orig_flat_point.z);
   let orig_flat_len = orig_flat_point.length();
+  orig_flat_point.normalize();
   let end_flat_point = curve.getPoint(1);
   end_flat_point = new THREE.Vector2(end_flat_point.x, end_flat_point.z);
   let end_flat_point_len = end_flat_point.length();
@@ -116,7 +117,7 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
 
     if (params.cut_intersections) {
       let side = end_flat_point.y * x - end_flat_point.x * z;
-      if (side * orig_side < 0) {
+      if (side * orig_side <= 0) {
         let line = end_flat_point;
         let proj = line.clone().multiplyScalar(Math.min(end_flat_point_len + params.tube_radius,
           x * line.x + z * line.y));
@@ -124,13 +125,14 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
         z = proj.y;
       }
       side = orig_flat_point.y * x - orig_flat_point.x * z;
-      if (side * orig_side > 0) {
+      if (side * orig_side >= 0) {
         let line = orig_flat_point;
-        let proj = line.clone().multiplyScalar(Math.min(orig_flat_len + params.tube_radius,
-          x * line.x + z * line.y));
+        let proj = line.clone().multiplyScalar(
+          Math.min(orig_flat_len + params.tube_radius, x * line.x + z * line.y));
         x = proj.x;
         z = proj.y;
       }
+
     }
 
     geom.attributes.position.setXYZ(i, x, y, z);
