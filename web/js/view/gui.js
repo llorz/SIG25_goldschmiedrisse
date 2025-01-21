@@ -10,7 +10,7 @@ import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
 import { find_all_faces, init_add_new_face, reconstructed_surface_material } from "./add_face_mode.js";
-import { set_wire_frame, updated_color } from "./reconstructed_three_biarc_curve.js";
+import { ribbon_surface_material, set_wire_frame, updated_color } from "./reconstructed_three_biarc_curve.js";
 import { frame_curves_ortho_cam } from "../utils/camerautils.js";
 
 export let pane = new Pane({
@@ -150,7 +150,7 @@ view_options_folder.addBlade({
 });
 
 let surface_params = pane.addFolder({
-  title: "Surface parameters",
+  title: "View parameters",
   expanded: false
 });
 surface_params.addBinding(params, "curves_color", {
@@ -164,9 +164,15 @@ surface_params.addBinding(params, "surface_color", {
   label: 'Surface Color'
 }).on('change', (ev) => {
   reconstructed_surface_material.color.set(ev.value);
+  ribbon_surface_material.color.set(ev.value);
 });
 surface_params.addBinding(params, "use_rmf", {
   label: 'Use RMF'
+}).on('change', (ev) => {
+  refresh();
+});
+surface_params.addBinding(params, "cut_intersections", {
+  label: 'Cut intersections'
 }).on('change', (ev) => {
   refresh();
 });

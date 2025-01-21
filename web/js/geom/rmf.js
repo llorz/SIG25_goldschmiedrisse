@@ -1,3 +1,4 @@
+import { params } from "../state/params";
 
 
 export function compute_rmf(curve, options = {}) {
@@ -62,7 +63,7 @@ export function get_rmf_frame(curve, rmf, t) {
   let resolution = rmf.length;
   let l = Math.floor(t * (resolution - 1));
   let r = Math.min(l + 1, resolution - 1);
-  let tt = (r != l? ((t - rmf[l].t) / (rmf[r].t - rmf[l].t)) : 0);
+  let tt = (r != l ? ((t - rmf[l].t) / (rmf[r].t - rmf[l].t)) : 0);
   let tangent = rmf[l].tangent.clone().multiplyScalar(1 - tt).add(rmf[r].tangent.clone().multiplyScalar(tt));
   let normal = rmf[l].normal.clone().multiplyScalar(1 - tt).add(rmf[r].normal.clone().multiplyScalar(tt));
   let binormal = rmf[l].binormal.clone().multiplyScalar(1 - tt).add(rmf[r].binormal.clone().multiplyScalar(tt));
@@ -90,6 +91,17 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
     return { position: pos, tangent: tangent, normal: normal, binormal: binormal };
   }
 
+  let orig_flat_point = curve.getPoint(0);
+  orig_flat_point = new THREE.Vector2(orig_flat_point.x, orig_flat_point.z);
+  let orig_flat_len = orig_flat_point.length();
+  let end_flat_point = curve.getPoint(1);
+  end_flat_point = new THREE.Vector2(end_flat_point.x, end_flat_point.z);
+  let end_flat_point_len = end_flat_point.length();
+  end_flat_point.normalize();
+  // As long as points remain on this side, don't change them. 
+  // When they change side - project them on the line connecting the origin to the end point.
+  let orig_side = end_flat_point.y * orig_flat_point.x - end_flat_point.x * orig_flat_point.y;
+
   let v = new THREE.Vector3();
   let size_x = geom.boundingBox.getSize(new THREE.Vector3()).x;
   for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
@@ -97,8 +109,31 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
     let t = v.x / size_x;
     let frame = use_rmf ? get_rmf_frame(curve, rmf, t) : get_simple_frame(t);
     let p = frame.position, n = frame.normal, b = frame.binormal;
-    geom.attributes.position.setXYZ(i, p.x + n.x * v.z + b.x * v.y,
-      p.y + n.y * v.z + b.y * v.y, p.z + n.z * v.z + b.z * v.y);
+
+    let x = p.x + n.x * v.z + b.x * v.y,
+      y = p.y + n.y * v.z + b.y * v.y,
+      z = p.z + n.z * v.z + b.z * v.y;
+
+    if (params.cut_intersections) {
+      let side = end_flat_point.y * x - end_flat_point.x * z;
+      if (side * orig_side < 0) {
+        let line = end_flat_point;
+        let proj = line.clone().multiplyScalar(Math.min(end_flat_point_len + params.tube_radius,
+          x * line.x + z * line.y));
+        x = proj.x;
+        z = proj.y;
+      }
+      side = orig_flat_point.y * x - orig_flat_point.x * z;
+      if (side * orig_side > 0) {
+        let line = orig_flat_point;
+        let proj = line.clone().multiplyScalar(Math.min(orig_flat_len + params.tube_radius,
+          x * line.x + z * line.y));
+        x = proj.x;
+        z = proj.y;
+      }
+    }
+
+    geom.attributes.position.setXYZ(i, x, y, z);
   }
   geom.computeVertexNormals();
   return geom;

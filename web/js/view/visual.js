@@ -371,7 +371,7 @@ function animate() {
   if (params.preview_mode == 'Design' && background_image_plane && is_camera_vertical()) {
     updated_color(0);
   } else {
-    updated_color(parseInt(params.curves_color, 16));
+    updated_color(parseInt(params.curves_color.substring(1, params.curves_color.length), 16));
   }
 
   if (mode === Mode.orthographic) {

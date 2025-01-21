@@ -9,13 +9,15 @@ import { get_curve_color, get_curve_color_material } from '../state/color_genera
 import { DecorationArcCurve } from '../geom/decoration_arc_curve';
 import { ArcCurve } from '../geom/arc_curve';
 import { compute_rmf, sweep_geom_along_curve } from '../geom/rmf';
+import { reconstructed_surface_material } from './add_face_mode';
 
 let sweep_plane_geom =// new THREE.BoxGeometry(100, 0.1, 0.002, 500, 4, 3);
   new THREE.PlaneGeometry(100, 0.1, 200, 1);
 sweep_plane_geom.computeBoundingBox();
 var size = new THREE.Vector3();
 sweep_plane_geom.boundingBox.getSize(size);
-sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y - size.y / 2,
+// Add - size.y / 2 to translate the geometry to the center.
+sweep_plane_geom.translate(-sweep_plane_geom.boundingBox.min.x, -sweep_plane_geom.boundingBox.min.y,
   -sweep_plane_geom.boundingBox.min.z - size.z / 2);
 
 let cylinder_geom = new THREE.CylinderGeometry(0.007, 0.007, 10, 32, 200, true);
@@ -37,6 +39,18 @@ cylinder_geom2.translate(0, -size.y / 2, 0);
 
 let cylinder_geom3 = cylinder_geom2.clone();
 cylinder_geom3.translate(0, size.y, 0);
+
+// Other version - size.y & -size.y translation.
+const ribbon_sweep1_translation = new THREE.Vector3(0, size.y, 0);
+const ribbon_sweep2_translation = new THREE.Vector3(0, 0 , 0);
+
+export const ribbon_surface_material = new THREE.MeshStandardMaterial({
+  side: THREE.DoubleSide,
+  color: 0xbde0fe,
+  roughness: 0.9,
+  metalness: 0.1,
+  // wireframe: true,
+});
 
 
 const sweep_plane_material = new THREE.MeshStandardMaterial({
@@ -190,13 +204,16 @@ export class ReconstructedThreeBiArcCurve {
     return geom;
   }
 
-  get_sweep_cube_geom() {
+  get_sweep_cube_geom(translation = new THREE.Vector3(0, 0, 0)) {
     let sweep_cube_geom = new THREE.BoxGeometry(10, params.tube_radius, params.tube_radius, 200, 1, 1);
     sweep_cube_geom.computeBoundingBox();
     let size_cube = new THREE.Vector3();
     sweep_cube_geom.boundingBox.getSize(size_cube);
     sweep_cube_geom.translate(-sweep_cube_geom.boundingBox.min.x, -sweep_cube_geom.boundingBox.min.y - size_cube.y / 2,
       -sweep_cube_geom.boundingBox.min.z - size_cube.z / 2);
+    if (translation.length() > 1e-3) {
+      sweep_cube_geom.translate(translation.x, translation.y, translation.z);
+    }
     return sweep_cube_geom;
   }
 
@@ -234,9 +251,18 @@ export class ReconstructedThreeBiArcCurve {
       // obj.add(new THREE.Mesh(
       //   new THREE.TubeGeometry(this.curve, params.tube_height_segments, params.tube_radius, params.tube_circular_segments, false), symmetry_curve_material));
     } else if (params.biarcs_visualization == 'ribbon') {
-      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
-      obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
-      obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom2), symmetry_curve_material));
+      // obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom3), symmetry_curve_material));
+      // obj.add(new THREE.Mesh(this.sweep_geom(sweep_plane_geom), sweep_plane_material));
+      // obj.add(new THREE.Mesh(this.sweep_geom(cylinder_geom2), symmetry_curve_material));
+      obj.add(new THREE.Mesh(
+        sweep_geom_along_curve(this.get_sweep_cube_geom(ribbon_sweep1_translation), this.curve, params.use_rmf),
+        symmetry_curve_material));
+      obj.add(new THREE.Mesh(
+        sweep_geom_along_curve(sweep_plane_geom.clone(), this.curve, params.use_rmf),
+        ribbon_surface_material));
+      obj.add(new THREE.Mesh(
+        sweep_geom_along_curve(this.get_sweep_cube_geom(ribbon_sweep2_translation), this.curve, params.use_rmf),
+        symmetry_curve_material));
     }
     return obj;
   }

@@ -16,12 +16,14 @@ export let params = {
   reconstructed_surfaces_visible: true,
   reconstructed_biarc_visible: true,
   surface_color: "0xbde0fe",
-  curves_color: "0xc4c4c4",
+  curves_color: "#c4c4c4",
   save_curve_name: "tmp_unit_curve",
   current_level: 0,
   biarcs_visualization: 'cube',
 
   theme: 'Light',
+
+  cut_intersections: true,
 
   use_rmf: true,
 };
