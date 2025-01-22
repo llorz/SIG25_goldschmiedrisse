@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { finish_curve, edit_mode, EditMode, delete_selected_curve, mode, set_edit_mode, background_image_plane } from '../state/state';
-import { abort_new_face, finish_face } from '../view/add_face_mode';
+import { abort_new_face, find_all_faces, finish_face } from '../view/add_face_mode';
 import { selected_obj } from './mouse';
 import { accept_edit_decoration_point, cancel_edit_decoration_point, delete_decoration_point, edit_decoration_point } from './edit_decoration_point';
 import { accept_height_change, cancel_height_change, start_changing_height } from './change_layer_height';
@@ -62,6 +62,8 @@ addEventListener('keydown', (event) => {
     edit_vertical_line_top();
   } else if (is_body_active() && event.key == 'g' && params.preview_mode == 'Design' && edit_mode == EditMode.none) {
     start_changing_height();
+  } else if (is_body_active() && event.key == 'f') {
+    find_all_faces();
   } else if (is_body_active() && event.key == 's' && background_image_plane) {
     set_edit_mode(EditMode.start_scale_background_image);
   } else if (is_body_active() && event.key == '1') {

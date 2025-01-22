@@ -329,6 +329,8 @@ let button = left_menu.addButton({
     fetch("data/" + curve_list.value + ".uc").then(res => res.text()).then(text => load_from_curves_file(text));
   else
     load_from_curves_file(localStorage.getItem(curve_list.value));
+  // Set the focus back on the body.
+  document.activeElement.blur();
 });
 left_menu.addButton({
   title: 'Load from file',
@@ -344,6 +346,8 @@ left_menu.addButton({
       load_from_curves_file(e.target.result);
     };
     reader.readAsText(file);
+    // Set the focus back on the body.
+    document.activeElement.blur();
   };
 });
 left_menu.addButton({
@@ -356,6 +360,8 @@ left_menu.addButton({
   input.onchange = (e) => {
     var file = e.target.files[0];
     load_background_image(file);
+    // Set the focus back on the body.
+    document.activeElement.blur();
     // var reader = new FileReader();
     // reader.onload = function (e) {
     //   load_from_curves_file(e.target.result);
@@ -363,21 +369,6 @@ left_menu.addButton({
     // reader.readAsDataURL(file);
   };
 });
-// left_menu.addButton({
-//   title: 'Delete',
-// }).on('click', (ev) => {
-//   let names = get_saved_curves_names();
-//   let idx = names.indexOf(curve_list.value);
-//   if (idx >= 0) {
-//     names.splice(idx, 1);
-//     localStorage.setItem("saved_curves_names", names.join(","));
-//     localStorage.removeItem(curve_list.value);
-//     let api_state = curve_list.exportState();
-//     let options = get_curves_list();
-//     api_state.options = options;
-//     curve_list.importState(api_state);
-//   }
-// });
 left_menu.addBlade({
   view: 'separator',
 });

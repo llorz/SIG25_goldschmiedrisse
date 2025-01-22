@@ -400,7 +400,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     // Determine the next curve and direction.
     let res = next_curve_and_dir_v2(sorted, curve, curve_inter, dir);
     if (res == null) {
-      finished_face = false;
+      finished_face = true;
       break;
     }
     curve = res.curve;
@@ -408,7 +408,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     ind = res.ind;
     curve_inter = sorted.get(curve)[ind];
   }
-  if (finished_face) {
+  if (finished_face && face_verts.length > 2) {
     for (let seg of tmp_used_segs) {
       if (!used_segments.has(seg.inter)) {
         used_segments.set(seg.inter, new Set());
@@ -447,12 +447,12 @@ export function find_all_faces() {
   for (let curve of all_curves_with_symmetries) {
     for (let i = 0, l = sorted.get(curve).length; i < l; i++) {
       let poly_verts = trace_face(sorted, curve, i, used_segments, 1);
-      if (poly_verts.length > 0) {
+      if (poly_verts.length > 2) {
         let [poly, fixed] = build_polygon(poly_verts);
         add_face(poly, fixed);
       }
       poly_verts = trace_face(sorted, curve, i, used_segments, -1);
-      if (poly_verts.length > 0) {
+      if (poly_verts.length > 2) {
         let [poly, fixed] = build_polygon(poly_verts);
         add_face(poly, fixed);
       }
