@@ -284,6 +284,9 @@ function next_curve_and_dir_v2(sorted, curve, curve_inter, dir) {
   pt.normalize();
   let tan = curve.getTangent(curve_inter.t - dir * 1e-3);
   tan.normalize();
+  if (tan.y < 0) {
+    pt.negate();
+  }
   if (dir < 0) {
     tan.negate();
   }
