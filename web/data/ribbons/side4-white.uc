@@ -1,0 +1,26 @@
+numCurves 2
+unitCurve 2 1
+reflectionPoint 0 1
+ref_symmetry_type y axis
+ptPos -0.46290214195194684 0.5081215207525266
+ptPos -0.14854695978119672 0.5653951304790852
+ptPos 0.8483104717167702 -2.077761407742248e-16
+level 0
+height 1.5863316500568243
+prc_t 0.567794182256215
+decoration_t 0
+decoration_height 0
+vertical_line_top 0
+unitCurve 2 1
+reflectionPoint 0 1
+ref_symmetry_type y axis
+ptPos -0.4629021419519468 -0.5081215207525267
+ptPos -0.7826070391422206 -0.45390955103852093
+ptPos -0.8483104717167702 1.038880703871124e-16
+level 0
+height 0.7978170133748462
+prc_t 0.24178870286862872
+decoration_t 0
+decoration_height 0
+vertical_line_top 1.2950165877085738
+layer_bottom 0

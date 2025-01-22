@@ -99,6 +99,13 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
   end_flat_point = new THREE.Vector2(end_flat_point.x, end_flat_point.z);
   let end_flat_point_len = end_flat_point.length();
   end_flat_point.normalize();
+  let end_tan_outside = true, start_tan_outside = true;
+  if (curve.arc_curve) {
+    let end_tan = curve.arc_curve.getTangent(1);
+    end_tan = new THREE.Vector2(end_tan.x, end_tan.z);
+    console.info(end_tan.dot(end_flat_point));
+    end_tan_outside = end_tan.dot(end_flat_point) > 0;
+  }
   // As long as points remain on this side, don't change them. 
   // When they change side - project them on the line connecting the origin to the end point.
   let orig_side = end_flat_point.y * orig_flat_point.x - end_flat_point.x * orig_flat_point.y;
@@ -121,8 +128,10 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
       let side = end_flat_point.y * x - end_flat_point.x * z;
       if (side * orig_side <= 0) {
         let line = end_flat_point;
-        let proj = line.clone().multiplyScalar(Math.min(end_flat_point_len + cube_diag,
-          x * line.x + z * line.y));
+        let coef = end_tan_outside
+          ? Math.min(end_flat_point_len + cube_diag, x * line.x + z * line.y)
+          : Math.max(end_flat_point_len - cube_diag, x * line.x + z * line.y)
+        let proj = line.clone().multiplyScalar(coef);
         x = proj.x;
         z = proj.y;
       }
