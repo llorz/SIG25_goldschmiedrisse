@@ -287,9 +287,6 @@ function next_curve_and_dir_v2(sorted, curve, curve_inter, dir) {
   if (dir < 0) {
     tan.negate();
   }
-  if (tan.y < 0) {
-    pt.negate();
-  }
   let other_axis = pt.cross(tan);
 
   let best_curve = null;
