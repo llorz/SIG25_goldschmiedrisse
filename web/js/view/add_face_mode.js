@@ -191,7 +191,7 @@ function build_polygon(poly_verts) {
         let t = k / 20;
         // let pt = arc.getPoint(t);
         if (k == 0 || !are_same_height) {
-          fixed.push(polygon.length);  
+          fixed.push(polygon.length);
         }
         // fixed.push(polygon.length);
         polygon.push(pt1.clone().lerp(pt2, t));
@@ -255,14 +255,70 @@ function sort_intersections(intersections) {
       if (!curves_inters.has(inter.curve)) {
         curves_inters.set(inter.curve, [{ t: inter.t, inter: merged_intersection }]);
       } else {
-        curves_inters.get(inter.curve).push({ t: inter.t, inter: merged_intersection });
+        let inters = curves_inters.get(inter.curve);
+        // Check if inter.t already exists
+        if (inters.find(x => Math.abs(x.t - inter.t) < 1e-3))
+          continue;
+        inters.push({ t: inter.t, inter: merged_intersection });
       }
     }
   }
   for (let [curve, inters] of curves_inters) {
+    // Only keep distinct t values.
     inters.sort((a, b) => a.t - b.t);
   }
   return curves_inters;
+}
+
+/**
+ * 
+ * @param {*} sorted 
+ * @param {*} curve 
+ * @param {*} curve_inter 
+ * @param {*} dir 
+ * @returns 
+ */
+function next_curve_and_dir_v2(sorted, curve, curve_inter, dir) {
+  let pt = curve.getPoint(curve_inter.t);
+  pt.y = 0;
+  pt.normalize();
+  let tan = curve.getTangent(curve_inter.t - dir * 1e-3);
+  tan.normalize();
+  if (tan.y < 0) {
+    pt.negate();
+  }
+  if (dir < 0) {
+    tan.negate();
+  }
+  let other_axis = pt.cross(tan);
+
+  let best_curve = null;
+  let largest_ang = -Math.PI;
+  let new_dir = dir;
+  let test_curve = (other_curve, other_tan, cdir) => {
+    let ang = Math.atan2(other_tan.dot(other_axis), other_tan.dot(tan));
+    if (ang > largest_ang) {
+      largest_ang = ang;
+      best_curve = other_curve;
+      new_dir = cdir;
+    }
+  };
+  for (let other_curve of curve_inter.inter.intersections) {
+    if (other_curve.curve == curve) continue;
+    let other_curve_t = other_curve.t;
+    if (other_curve_t > 1e-3) {
+      let other_tan = other_curve.curve.getTangent(other_curve_t - 1e-3);
+      other_tan.negate();
+      test_curve(other_curve.curve, other_tan, -1);
+    }
+    if (other_curve_t < 1 - 1e-3) {
+      let other_tan = other_curve.curve.getTangent(other_curve_t + 1e-3);
+      test_curve(other_curve.curve, other_tan, 1);
+    }
+  }
+  let ind = sorted.get(best_curve).findIndex(x => x.inter == curve_inter.inter);
+  if (best_curve == null || largest_ang < 0) return null;
+  return { curve: best_curve, dir: new_dir, ind: ind };
 }
 
 function next_curve_and_dir(sorted, curve, curve_inter, dir) {
@@ -322,7 +378,7 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     if (ind < 0 || ind >= sorted.get(curve).length) {
       if (face_verts.length > 1 &&
         Math.abs(face_verts[0].get_point().y - face_verts[face_verts.length - 1].get_point().y) < 1e-3) {
-          // Change to true to do bottom and top faces.
+        // Change to true to do bottom and top faces.
         finished_face = false;
       }
       break;
@@ -345,13 +401,17 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     }
     face_verts.push(curve_inter.inter);
     // Determine the next curve and direction.
-    let res = next_curve_and_dir(sorted, curve, curve_inter, dir);
+    let res = next_curve_and_dir_v2(sorted, curve, curve_inter, dir);
+    if (res == null) {
+      finished_face = true;
+      break;
+    }
     curve = res.curve;
     dir = res.dir;
     ind = res.ind;
     curve_inter = sorted.get(curve)[ind];
   }
-  if (finished_face) {
+  if (finished_face && face_verts.length > 2) {
     for (let seg of tmp_used_segs) {
       if (!used_segments.has(seg.inter)) {
         used_segments.set(seg.inter, new Set());
@@ -390,12 +450,12 @@ export function find_all_faces() {
   for (let curve of all_curves_with_symmetries) {
     for (let i = 0, l = sorted.get(curve).length; i < l; i++) {
       let poly_verts = trace_face(sorted, curve, i, used_segments, 1);
-      if (poly_verts.length > 0) {
+      if (poly_verts.length > 2) {
         let [poly, fixed] = build_polygon(poly_verts);
         add_face(poly, fixed);
       }
       poly_verts = trace_face(sorted, curve, i, used_segments, -1);
-      if (poly_verts.length > 0) {
+      if (poly_verts.length > 2) {
         let [poly, fixed] = build_polygon(poly_verts);
         add_face(poly, fixed);
       }

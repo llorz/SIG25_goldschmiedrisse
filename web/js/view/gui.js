@@ -1,6 +1,6 @@
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
-import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos } from "./visual.js";
+import { camera2d, scene, orth_camera_controls, update_rotation_symmetry_lines, set_design_area_visibility, update_front_view_cam, set_viewer_theme, update_orbit_controls_target_and_pos, designing_area, set_side_view, set_top_view } from "./visual.js";
 import { add_level, curves, export_recon_obj, load_background_image, load_from_curves_file, recon_curves, refresh, set_biarc_visibility, set_control_points_visibility, set_edit_mode, set_mode, set_reconstructed_surface_visibility } from "../state/state.js";
 import { params } from "../state/params.js";
 import { Quaternion, Vector3 } from "three";
@@ -10,7 +10,7 @@ import { sync_module } from "../native/native.js";
 
 import * as THREE from "three";
 import { find_all_faces, init_add_new_face, reconstructed_surface_material } from "./add_face_mode.js";
-import { set_wire_frame } from "./reconstructed_three_biarc_curve.js";
+import { ribbon_surface_material, set_wire_frame, updated_color } from "./reconstructed_three_biarc_curve.js";
 import { frame_curves_ortho_cam } from "../utils/camerautils.js";
 
 export let pane = new Pane({
@@ -31,7 +31,7 @@ function set_top_view_visibility(hidden) {
   }
 }
 
-pane.addBinding(params, 'view', {
+export let view_controller = pane.addBinding(params, 'view', {
   view: 'radiogrid',
   groupName: 'view',
   size: [2, 1],
@@ -49,6 +49,7 @@ pane.addBinding(params, 'view', {
     set_top_view_visibility(true);
   }
 });
+window.view_controller = view_controller;
 
 pane.addBinding(params, 'preview_mode', {
   view: 'radiogrid',
@@ -86,22 +87,9 @@ let ortho_view = pane.addBlade({
   label: 'View',
 }).on('click', (ev) => {
   if (ev.index[0] == 0) {
-    camera2d.position.set(0, 100, 0);
-    camera2d.up.set(0, 1, 0);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-    orth_camera_controls.update();
-    refresh();
+    set_top_view();
   } else {
-    camera2d.position.set(0, 0, 1);
-    camera2d.up.set(0, 0, 1);
-    orth_camera_controls.target.set(0, 0, 0);
-    orth_camera_controls._quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(0, 1, 0));
-    orth_camera_controls._quatInverse = orth_camera_controls._quat.clone().invert();
-    frame_curves_ortho_cam(camera2d, orth_camera_controls);
-    orth_camera_controls.update();
-    refresh();
+    set_side_view();
   }
   set_control_points_visibility(params.control_points_visible);
 });
@@ -162,17 +150,29 @@ view_options_folder.addBlade({
 });
 
 let surface_params = pane.addFolder({
-  title: "Surface parameters",
+  title: "View parameters",
   expanded: false
+});
+surface_params.addBinding(params, "curves_color", {
+  view: 'color',
+  label: 'Curves color'
+}).on('change', (ev) => {
+  updated_color(ev.value);
 });
 surface_params.addBinding(params, "surface_color", {
   view: 'color',
   label: 'Surface Color'
 }).on('change', (ev) => {
-  surface_material.color.set(ev.value);
+  reconstructed_surface_material.color.set(ev.value);
+  ribbon_surface_material.color.set(ev.value);
 });
 surface_params.addBinding(params, "use_rmf", {
   label: 'Use RMF'
+}).on('change', (ev) => {
+  refresh();
+});
+surface_params.addBinding(params, "cut_intersections", {
+  label: 'Cut intersections'
 }).on('change', (ev) => {
   refresh();
 });
@@ -329,6 +329,8 @@ let button = left_menu.addButton({
     fetch("data/" + curve_list.value + ".uc").then(res => res.text()).then(text => load_from_curves_file(text));
   else
     load_from_curves_file(localStorage.getItem(curve_list.value));
+  // Set the focus back on the body.
+  document.activeElement.blur();
 });
 left_menu.addButton({
   title: 'Load from file',
@@ -344,6 +346,8 @@ left_menu.addButton({
       load_from_curves_file(e.target.result);
     };
     reader.readAsText(file);
+    // Set the focus back on the body.
+    document.activeElement.blur();
   };
 });
 left_menu.addButton({
@@ -356,6 +360,8 @@ left_menu.addButton({
   input.onchange = (e) => {
     var file = e.target.files[0];
     load_background_image(file);
+    // Set the focus back on the body.
+    document.activeElement.blur();
     // var reader = new FileReader();
     // reader.onload = function (e) {
     //   load_from_curves_file(e.target.result);
@@ -363,21 +369,6 @@ left_menu.addButton({
     // reader.readAsDataURL(file);
   };
 });
-// left_menu.addButton({
-//   title: 'Delete',
-// }).on('click', (ev) => {
-//   let names = get_saved_curves_names();
-//   let idx = names.indexOf(curve_list.value);
-//   if (idx >= 0) {
-//     names.splice(idx, 1);
-//     localStorage.setItem("saved_curves_names", names.join(","));
-//     localStorage.removeItem(curve_list.value);
-//     let api_state = curve_list.exportState();
-//     let options = get_curves_list();
-//     api_state.options = options;
-//     curve_list.importState(api_state);
-//   }
-// });
 left_menu.addBlade({
   view: 'separator',
 });
