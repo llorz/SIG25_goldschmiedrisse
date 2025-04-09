@@ -7,7 +7,7 @@ The term Gothic microarchitecture, as used by art historians, refers to a phenom
 This design phenomenon reached its apogee in the 15th century, particularly (if not exclusively) manifested in religious contexts, above all in church furnishings and liturgical objects. See below for some examples.
 | Main Altarpiece <br> 1502, *wood* <br> Magdalensberg Church, Austria | Sacrament House <br> early 15th cenury, *lime stone* <br> Parish Church, Austria| Tower Monstrance <br> 1490, *silver* <br> Historisches Museum Basel, Swiss|
 | :---: | :---: | :---: |
-| <img src="./fig/eg1.jpg" height="300" /> |  <img src="./fig/eg2.jpg"   height="300" />  |  <img src="./fig/eg3.jpg"  height="300"  />   |
+| <img src="./fig/eg1.jpg" style=" height=400 width: auto;" /> |  <img src="./fig/eg2.jpg"   style=" height=300 width: auto;" />  |  <img src="./fig/eg3.jpg" style=" height=300 width: auto;" />   |
 
 The design and construction processes of Gothic microarchitecture were *never* formally documented, but instead passed down through master-appretice relationships, so that much of this knowledge has been lost :(
 
@@ -16,11 +16,11 @@ The Basel goldsmith drawings (“Basler Goldschmiedrisse”), a collection of ov
 
 | Inv.U.XI.18 | Inv.U.XI.19 | Inv.U.XI.24 |Inv.U.XI.28| Inv.U.XI.31 | Inv.U.XI.35|
 |----------|----------|----------|----------|----------|----------|
-| <img src="./fig/uxi18.jpg" height="150" /> | <img src="./fig/uxi19.jpg" height="150" /> | <img src="./fig/uxi24.jpg" height="150" /> | <img src="./fig/uxi28.jpg" height="150" /> | <img src="./fig/uxi31.jpg" height="150" /> | <img src="./fig/uxi35.jpg" height="150" /> | 
+| <img src="./fig/uxi18.jpg" style=" height=150 width: auto;" /> | <img src="./fig/uxi19.jpg" style=" height=150 width: auto;"  /> | <img src="./fig/uxi24.jpg" style=" height=150 width: auto;"  /> | <img src="./fig/uxi28.jpg" style=" height=150 width: auto;"  /> | <img src="./fig/uxi31.jpg" style=" height=150 width: auto;"  /> | <img src="./fig/uxi35.jpg" style=" height=150 width: auto;"  /> | 
 
 | Inv.U.XI.46      | Inv.U.XI.86   |  Inv.U.XI.94   |
 | :---: | :---: | :---: |
-| <img src="./fig/uxi46.jpg" height="220" /> | <img src="./fig/uxi86.jpg" height="220" /> |<img src="./fig/uxi94.jpg" height="220" /> |
+| <img src="./fig/uxi46.jpg" style=" height=220 width: auto;"  /> | <img src="./fig/uxi86.jpg" style=" height=220 width: auto;"  /> |<img src="./fig/uxi94.jpg" style=" height=220 width: auto;"  /> |
 
 ### Design process
 Somewhat counter to modern intuition, the above top-view schemes represent the *initial stage* of the Gothic design process. Starting with the ground plan allowed the designer to define the rotational and reflectional symmetries that shaped the overall structural configuration. The next step in the design process involved generating a side view or elevation of the structure. Medieval German sources revealingly refer to this stage as *“Auszug”* (extraction process). This term denotes the extrusion of the design along the $z$-axis, yielding the side view of a given ground plan. 
@@ -43,7 +43,7 @@ See illustrative explanations for each of the above observations, demonstrated t
 
 | observation 1 | observation 2| observation 3 | 
 | :---: | :---: | :---: |
-| <img src="./fig/tn_ob1.png" height="300" /> | <img src="./fig/tn_ob2.png" height="300" /> |<img src="./fig/tn_ob3.png" height="300" /> |
+| <img src="./fig/tn_ob1.png" style=" height=300 width: auto;"  /> | <img src="./fig/tn_ob2.png" tyle=" height=300 width: auto;" /> |<img src="./fig/tn_ob3.png" tyle=" height=300 width: auto;" /> |
 
 
 
