@@ -5,7 +5,7 @@ This is an example code for our SIGGRAPH 2025 paper "Computational Modeling of G
 ## Gothic Microarchitecture
 The term Gothic microarchitecture, as used by art historians, refers to a phenomenon widely observed in the design of late medieval European art: sculptural works that emulate the forms and structural composition of large-scale Gothic architecture.
 This design phenomenon reached its apogee in the 15th century, particularly (if not exclusively) manifested in religious contexts, above all in church furnishings and liturgical objects. See below for some examples.
-| Main Altarpiece <br> 1502, wood <br> Magdalensberg Church, Austria | Sacrament House <br> early 15th cenury, lime stone <br> Parish Church, Austria| Tower Monstrance <br> 1490, silver <br> Historisches Museum Basel, Swiss|
+| Main Altarpiece <br> 1502, *wood* <br> Magdalensberg Church, Austria | Sacrament House <br> early 15th cenury, *lime stone* <br> Parish Church, Austria| Tower Monstrance <br> 1490, *silver* <br> Historisches Museum Basel, Swiss|
 | :---: | :---: | :---: |
 | <img src="./fig/eg1.jpg" height="300" /> |  <img src="./fig/eg2.jpg"   height="300" />  |  <img src="./fig/eg3.jpg"  height="300"  />   |
 
@@ -22,8 +22,14 @@ The Basel goldsmith drawings (“Basler Goldschmiedrisse”), a collection of ov
 | :---: | :---: | :---: |
 | <img src="./fig/uxi46.jpg" height="220" /> | <img src="./fig/uxi86.jpg" height="220" /> |<img src="./fig/uxi94.jpg" height="220" /> |
 
-Understanding these 2D drawings and reconstructing the 3D objects they represent has long posed a significant challenge due to the lack of documentation and the complexity of the designs. 
+### Design process
+Somewhat counter to modern intuition, the above top-view schemes represent the *initial stage* of the Gothic design process. Starting with the ground plan allowed the designer to define the rotational and reflectional symmetries that shaped the overall structural configuration. The next step in the design process involved generating a side view or elevation of the structure. Medieval German sources revealingly refer to this stage as *“Auszug”* (extraction process). This term denotes the extrusion of the design along the $z$-axis, yielding the side view of a given ground plan. 
+Certain geometry-based rules and formal constraints guided the translation of the ground plan into an elevation, but the few historical treatises in existence supply little information on the exact procedure
 
+Today, understanding these 2D top view drawings and reconstructing the 3D objects they represent has long posed a significant challenge due to the lack of documentation and the complexity of the designs. 
+
+### Teaching Sheet (Lehrblatt)
+<img src="./fig/teaching_notes_full.jpg" height="150" /> 
 ## Methodology
 In this work, we propose a framework of simple yet expressive geometric principles to model Gothic microarchitecture as 3D curve networks, using limited input such as historical 2D drawings. Our approach formalizes a historically informed design space, constrained to tools traditionally available to artisans–namely compass and straightedge–and enables faithful reproduction of Gothic microarchitecture that conforms to physical artifacts. Our framework is intuitive and effcient, allowing users to interactively create 3D Gothic microarchitecture with minimal effort. It bridges the gap between historical artistry and modern computational design, while also shedding light on a lost chapter of Gothic craftsmanship.
 
