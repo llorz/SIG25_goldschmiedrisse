@@ -3,7 +3,12 @@ This is an example code for our SIGGRAPH 2025 paper "Computational Modeling of G
 
 
 ## Gothic microarchitecture
-Gothic microarchitecture is a design phenomenon widely observed in late medieval European art, comprising sculptural works that emulate the forms and structural composition of monumental Gothic architecture. Despite its prevalence in preserved artifacts, the design and construction methods of Gothic microarchitecture used by artisans remain a mystery, as these processes were orally transmitted and rarely documented. 
+The term Gothic microarchitecture, as used by art historians, refers to a phenomenon widely observed in the design of late medieval European art: sculptural works that emulate the forms and structural composition of large-scale Gothic architecture.
+This design phenomenon reached its apogee in the 15th century, particularly (if not exclusively) manifested in religious contexts, above all in church furnishings and liturgical objects. See below for some examples.
+| Main Altarpiece <br> 1502, wood <br> Magdalensberg Church, Austria | Sacrament House <br> early 15th cenury, lime stone <br> Parish Church, Austria| Tower Monstrance <br> 1490, silver <br> Historisches Museum Basel, Swiss|
+| :---: | :---: | :---: |
+| <img src="./fig/eg1.jpg" height="300" /> |  <img src="./fig/eg2.jpg"   height="300" />  |  <img src="./fig/eg3.jpg"  height="300"  />   |
+
 
 
 ## Basler Goldschmiedrisse 
