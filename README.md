@@ -29,15 +29,38 @@ Certain geometry-based rules and formal constraints guided the translation of th
 Today, understanding these 2D top view drawings and reconstructing the 3D objects they represent has long posed a significant challenge due to the lack of documentation and the complexity of the designs. 
 
 ### Teaching Sheet (Lehrblatt)
-<img src="./fig/teaching_notes_full.jpg" height="150" /> 
-## Methodology
-In this work, we propose a framework of simple yet expressive geometric principles to model Gothic microarchitecture as 3D curve networks, using limited input such as historical 2D drawings. Our approach formalizes a historically informed design space, constrained to tools traditionally available to artisans–namely compass and straightedge–and enables faithful reproduction of Gothic microarchitecture that conforms to physical artifacts. Our framework is intuitive and effcient, allowing users to interactively create 3D Gothic microarchitecture with minimal effort. It bridges the gap between historical artistry and modern computational design, while also shedding light on a lost chapter of Gothic craftsmanship.
+
+<div style="text-align: center;">
+  <img src="./fig/teaching_notes_full.jpg" alt="Description" style="margin: 0 auto; max-width: 100%;" />
+  <p><em>The so-called Lehrblatt or teaching sheet (ca. 1500, ink on paper, 19.8 x 30.2 cm, Basel, Kunstmuseum): It may have served the instruction of apprentices in the workshop. For each top view drawing, shown in the 2nd and 4th rows, the corresponding front views are also illustrated.</em></p>
+</div>
+
+**This teaching sheet serves as our Rosetta stone, providing the following insights**:
+1. **Marked points** on the top view **are ground points** with zero height in its corresponding side view
+2. Endpoints have **vertical tangents**
+3. Side view resembles **ogee arc**, and the **point with reverse curvatures (PRC)** in the side view is an **intersection point** in the top view
+See illustrative explanations for each of the above observations, demonstrated through two examples from the teaching sheet:
+
+| observation 1 | observation 2| observation 3 | 
+| :---: | :---: | :---: |
+| <img src="./fig/tn_ob1.png" height="300" /> | <img src="./fig/tn_ob2.png" height="300" /> |<img src="./fig/tn_ob3.png" height="300" /> |
 
 
 
+
+## Our contributions 
+1. We formulate the Gothic microarchitecture modeling problem as reconstructing 3D curve networks from given top view projections, which may originate from digitized historical drawings or user-provided sketches.
+2. We formalize the design space for Gothic microarchitecture, incorporating positional and tangential constraints to ensure that the side view resembles the ogee arches–an important characteristic we observe in historical drawings and physical artifacts. Our curve parameterization enables interactive editing in the side view while maintaining a fixed top view, ensuring that all edits remain within the defined design space.
+3. We demonstrate that our method reliably and faithfully reproduces 3D Gothic microarchitecture from the Basel goldsmith drawings, maintaining consistency with the style and features of Gothic artistic products, as verified by art historians.
+4. Our formulation can be interpreted as a simple yet expressive modeling language for curve-dominant architecture: using basic curves and specified symmetries, multi-layered and intricate structures can be created from a single drawing. This approach extends beyond modeling Gothic microarchitecture and can be applied in a broader context, such as free-form architectural design.
+
+In the repository, we provide the MATLAB prototye and web implemantation. You can find the web interactive userinterface [here]()
 
 ## Comments
 ### Acknowledgements
+<div style="text-align: center;">
+  <img src="./fig/2dino.png" alt="Description" style="margin: 0 auto; max-width: 100%;" />
+</div>
 The authors express gratitude to the anonymous reviewers for their valuable feedback. 
 Special thanks to ***Marcel Padilla*** for his spiritual guidance and to ***Ningfeng Zhou*** for proofreading.
 The authors also extend their thanks to ***all IGL members*** for their time and support. 
