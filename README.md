@@ -7,7 +7,7 @@ The term Gothic microarchitecture, as used by art historians, refers to a phenom
 This design phenomenon reached its apogee in the 15th century, particularly (if not exclusively) manifested in religious contexts, above all in church furnishings and liturgical objects. See below for some examples.
 | Main Altarpiece <br> 1502, *wood* <br> Magdalensberg Church, Austria | Sacrament House <br> early 15th cenury, *lime stone* <br> Parish Church, Austria| Tower Monstrance <br> 1490, *silver* <br> Historisches Museum Basel, Swiss|
 | :---: | :---: | :---: |
-| <img src="./fig/eg1.jpg" style=" height=400 width: auto;" /> |  <img src="./fig/eg2.jpg"   style=" height=300 width: auto;" />  |  <img src="./fig/eg3.jpg" style=" height=300 width: auto;" />   |
+| <img src="./fig/eg1.jpg" style=" height=300 width: auto;" /> |  <img src="./fig/eg2.jpg"   style=" height=300 width: auto;" />  |  <img src="./fig/eg3.jpg" style=" height=300 width: auto;" />   |
 
 The design and construction processes of Gothic microarchitecture were *never* formally documented, but instead passed down through master-appretice relationships, so that much of this knowledge has been lost :(
 
