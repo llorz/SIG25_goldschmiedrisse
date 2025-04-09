@@ -54,13 +54,14 @@ See illustrative explanations for each of the above observations, demonstrated t
 3. We demonstrate that our method reliably and faithfully reproduces 3D Gothic microarchitecture from the Basel goldsmith drawings, maintaining consistency with the style and features of Gothic artistic products, as verified by art historians.
 4. Our formulation can be interpreted as a simple yet expressive modeling language for curve-dominant architecture: using basic curves and specified symmetries, multi-layered and intricate structures can be created from a single drawing. This approach extends beyond modeling Gothic microarchitecture and can be applied in a broader context, such as free-form architectural design.
 
-In the repository, we provide the MATLAB prototye and web implemantation. You can find the web interactive userinterface [here]()
+In the repository, we provide the MATLAB prototye and web implemantation. You can find the web interactive user interface [here]().
 
 ## Comments
 ### Acknowledgements
 <div style="text-align: center;">
   <img src="./fig/2dino.png" alt="Description" style="margin: 0 auto; max-width: 100%;" />
 </div>
+
 The authors express gratitude to the anonymous reviewers for their valuable feedback. 
 Special thanks to ***Marcel Padilla*** for his spiritual guidance and to ***Ningfeng Zhou*** for proofreading.
 The authors also extend their thanks to ***all IGL members*** for their time and support. 
