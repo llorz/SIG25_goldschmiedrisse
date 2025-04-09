@@ -14,6 +14,14 @@ This design phenomenon reached its apogee in the 15th century, particularly (if 
 ## Basler Goldschmiedrisse 
 The Basel goldsmith drawings (“Basler Goldschmiedrisse”), a collection of over 200 late 15th-century design drawings from the Upper Rhine region, provide a rare glimpse into the workshop practices of Gothic artisans. This collection consists of unpaired 2D drawings, including top-view and side-view projections of Gothic microarchitecture, featuring nested curve networks without annotations or explicitly articulated design principles. Understanding these 2D drawings and reconstructing the 3D objects they represent has long posed a significant challenge due to the lack of documentation and the complexity of the designs. 
 
+| Inv.U.XI.18 | Inv.U.XI.19 | Inv.U.XI.24 |Inv.U.XI.28| Inv.U.XI.31 | Inv.U.XI.35|
+|----------|----------|----------|----------|----------|----------|
+| <img src="./fig/uxi18.jpg" height="150" /> | <img src="./fig/uxi19.jpg" height="150" /> | <img src="./fig/uxi24.jpg" height="150" /> | <img src="./fig/uxi28.jpg" height="150" /> | <img src="./fig/uxi31.jpg" height="150" /> | <img src="./fig/uxi35.jpg" height="150" /> | 
+
+| Inv.U.XI.46      | Inv.U.XI.86   |  Inv.U.XI.94   |
+| :---: | :---: | :---: |
+| <img src="./fig/uxi46.jpg" height="220" /> | <img src="./fig/uxi86.jpg" height="220" /> |<img src="./fig/uxi94.jpg" height="220" /> |
+
 ## Methodology
 In this work, we propose a framework of simple yet expressive geometric principles to model Gothic microarchitecture as 3D curve networks, using limited input such as historical 2D drawings. Our approach formalizes a historically informed design space, constrained to tools traditionally available to artisans–namely compass and straightedge–and enables faithful reproduction of Gothic microarchitecture that conforms to physical artifacts. Our framework is intuitive and effcient, allowing users to interactively create 3D Gothic microarchitecture with minimal effort. It bridges the gap between historical artistry and modern computational design, while also shedding light on a lost chapter of Gothic craftsmanship.
 
