@@ -24,6 +24,8 @@ The Basel goldsmith drawings (“Basler Goldschmiedrisse”), a collection of ov
 | :---: | :---: | :---: |
 | <img src="./fig/uxi46.jpg" style=" height=220 width: auto;"  /> | <img src="./fig/uxi86.jpg" style=" height=220 width: auto;"  /> |<img src="./fig/uxi94.jpg" style=" height=220 width: auto;"  /> |
 
+These images are in the public domain and were accessed via [Kunstmuseum Basel’s online collection](https://download.kunstmuseumbasel.ch/#/). The original images can be retrieved by searching with the inventory ID or the keyword "Basler Goldschmiedrisse".
+
 ### Design process
 Somewhat counter to modern intuition, the above top-view schemes represent the *initial stage* of the Gothic design process. Starting with the ground plan allowed the designer to define the rotational and reflectional symmetries that shaped the overall structural configuration. The next step in the design process involved generating a side view or elevation of the structure. Medieval German sources revealingly refer to this stage as *“Auszug”* (extraction process). This term denotes the extrusion of the design along the $z$-axis, yielding the side view of a given ground plan. 
 Certain geometry-based rules and formal constraints guided the translation of the ground plan into an elevation, but the few historical treatises in existence supply little information on the exact procedure
