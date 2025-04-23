@@ -66,10 +66,8 @@ In the repository, we provide the MATLAB prototye and web implemantation. You ca
   <img src="./fig/2dino.png" alt="Description" style="margin: 0 auto; max-width: 100%;" />
 </div>
 
-The authors express gratitude to the anonymous reviewers for their valuable feedback. 
-Special thanks to ***Marcel Padilla*** for his spiritual guidance and to ***Ningfeng Zhou*** for proofreading.
-The authors also extend their thanks to ***all IGL members*** for their time and support. 
-This work was supported in part by the ERC Consolidator Grant No. 101003104 (MYCLOTH).
+The authors express gratitude to the anonymous reviewers for their valuable feedback. The authors are deeply grateful to the Kunstmuseum Basel, especially to ***Ariane Mensger***, for facilitating access to study the drawings in person. Special thanks to ***Ningfeng Zhou*** for proofreading and to ***Marcel Padilla*** for his spiritual guidance. The authors also extend their thanks to ***all IGL members** for the discussions and support. This work was supported in part by the ERC Consolidator Grant No. 101003104 (MYCLOTH).
+
 
 ### Contact
 Please let us know (aviv.segall, jing.ren@inf.ethz.ch) if you have any question regarding the algorithms/paper or you find any bugs in the code ε-(´∀｀; )
