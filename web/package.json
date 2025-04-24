@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "vite",
-    "build": "vite build --base=https://llorz.github.io/SIG25_goldschmiedrisse/",
+    "build": "vite build --base=https://ren-jing.com/SIG25_goldschmiedrisse/",
     "publish": "gh-pages -d dist"
   },
   "author": "",
