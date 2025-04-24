@@ -102,3 +102,8 @@ body {
   transition: width 0.4s, height 0.4s;
   z-index: 1;
 }
+
+h4 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}

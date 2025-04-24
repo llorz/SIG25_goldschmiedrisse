@@ -20,8 +20,8 @@ export function show_help() {
   let help_stuff = document.getElementById("help");
   if (help_stuff.style.width == "0px" || help_stuff.style.width == "") {
     document.getElementById("help").style.visibility = "visible";
-    document.getElementById("help").style.width = "40vw"
-    document.getElementById("help").style.height = "60vh"
+    document.getElementById("help").style.width = "35vw"
+    document.getElementById("help").style.height = "55vh"
     return;
   }
   help_stuff.style.width = "0px"
