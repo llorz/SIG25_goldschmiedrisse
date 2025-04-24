@@ -39,3 +39,6 @@ em/
 
 paper_figs/*
 references/*
+
+.DS_Store
+.vscode/

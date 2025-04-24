@@ -193,9 +193,19 @@ surface_params.addBlade({
   label: 'Tube radius',
   min: 0.001,
   max: 0.1,
-  value: 0.02,
+  value: params.tube_radius,
 }).on('change', (ev) => {
   params.tube_radius = ev.value;
+  refresh();
+});
+surface_params.addBlade({
+  view: 'slider',
+  label: 'Ribbon width',
+  min: 0.02,
+  max: 0.5,
+  value: params.ribbon_width,
+}).on('change', (ev) => {
+  params.ribbon_width = ev.value;
   refresh();
 });
 surface_params.addBinding(params, 'tube_height_segments', {
@@ -266,7 +276,7 @@ new_curve_options_folder.addBlade({
 });
 
 pane.addButton({
-  title: 'add level',
+  title: 'add layer',
 }).on('click', (ev) => {
   add_level();
   // update_current_level();

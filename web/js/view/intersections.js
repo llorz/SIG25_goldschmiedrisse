@@ -5,7 +5,7 @@ import { curves, edit_mode, EditMode, find_intersections, get_level_bottom, inte
 import { params } from '../state/params';
 
 let intersection_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const intersection_sphere_geometry = new THREE.SphereGeometry(0.01);
+const intersection_sphere_geometry = new THREE.SphereGeometry(0.014);
 
 let intersection_meshes = [];
 
