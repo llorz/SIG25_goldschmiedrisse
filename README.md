@@ -1,7 +1,11 @@
 # Computational Modeling of Gothic Microarchitecture
 This is an example code for our SIGGRAPH 2025 paper "Computational Modeling of Gothic Microarchitecture", by [Aviv Segall](https://igl.ethz.ch/people/), [Jing Ren](https://ren-jing.com/), [Martin Schwarz](https://kunstgeschichte.philhist.unibas.ch/de/personen/martin-schwarz/) and [Olga Sorkine-Hornung](https://igl.ethz.ch/people/sorkine). 
 
-More details can be found at: [[web demo]](http://ren-jing.com/SIG25_goldschmiedrisse/) (works for Chrome and Edge, but not so well on Safari), [[project page]](https://igl.ethz.ch/projects/gothic/) | [[paper]]() | [[suppl. video]](https://youtu.be/hNhnC6d3hAY) 
+More details can be found at: [[project page]](https://igl.ethz.ch/projects/gothic/) | [[paper]]() | [[suppl. video]](https://youtu.be/hNhnC6d3hAY) 
+
+For our [[web demo]](http://ren-jing.com/SIG25_goldschmiedrisse/):
+- it works for Chrome and Edge, but not so well on Safari
+- you can download some of the Basel Goldschmidrisse drawings from [here](https://github.com/llorz/SIG25_goldschmiedrisse/tree/main/data_2D_drawings) and load them into the web demo (top left panel)
 
 
 ## Gothic Microarchitecture
