@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vite",
     "build": "vite build --base=https://llorz.github.io/SIG25_goldschmiedrisse/",
-    "publish": "gh-pages -d web/dist"
+    "publish": "gh-pages -d dist"
   },
   "author": "",
   "license": "ISC",
