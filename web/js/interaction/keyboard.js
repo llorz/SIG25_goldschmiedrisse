@@ -11,6 +11,7 @@ import { accept_scale, init_scale } from './scale_background_image';
 import { params } from '../state/params';
 import { set_side_view, set_top_view } from '../view/visual';
 import { view_controller } from '../view/gui';
+import { show_help } from '..';
 
 function is_body_active() {
   return document.activeElement.tagName == 'BODY';
@@ -60,6 +61,8 @@ addEventListener('keydown', (event) => {
     edit_prc_point();
   } else if (is_body_active() && event.key == 'h' && selected_obj && selected_obj.type == 'unit_curve') {
     edit_vertical_line_top();
+  } else if (is_body_active() && event.key == 'h') {
+    show_help();
   } else if (is_body_active() && event.key == 'g' && params.preview_mode == 'Design' && edit_mode == EditMode.none) {
     start_changing_height();
   } else if (is_body_active() && event.key == 'f') {

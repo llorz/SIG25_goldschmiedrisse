@@ -7,6 +7,7 @@ export let params = {
   rotation_symmetry: 4,
   // tube_radius: 0.007,
   tube_radius: 0.02,
+  ribbon_width: 0.1,
   flat_curve_radius: 0.01,
   tube_height_segments: 200,
   tube_circular_segments: 40,

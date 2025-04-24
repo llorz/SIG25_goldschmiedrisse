@@ -101,6 +101,8 @@ function get_all_real_inters_with_symmetries() {
   let inters = [];
   for (let i = 0; i < all_curves_with_symmetries.length; i++) {
     let curve1 = all_curves_with_symmetries[i];
+    inters.push(new SymCurveIntersection(curve1, 0, curve1, 0));
+    inters.push(new SymCurveIntersection(curve1, 1, curve1, 1));
     for (let j = i + 1; j < all_curves_with_symmetries.length; j++) {
       let curve2 = all_curves_with_symmetries[j];
       let res = curve1.arc_curve.intersect(curve2.arc_curve);
@@ -316,8 +318,8 @@ function next_curve_and_dir_v2(sorted, curve, curve_inter, dir) {
       test_curve(other_curve.curve, other_tan, 1);
     }
   }
-  let ind = sorted.get(best_curve).findIndex(x => x.inter == curve_inter.inter);
   if (best_curve == null || largest_ang < 0) return null;
+  let ind = sorted.get(best_curve).findIndex(x => x.inter == curve_inter.inter);
   return { curve: best_curve, dir: new_dir, ind: ind };
 }
 
@@ -403,7 +405,9 @@ function trace_face(sorted, curve, i, used_segments, start_dir = 1) {
     // Determine the next curve and direction.
     let res = next_curve_and_dir_v2(sorted, curve, curve_inter, dir);
     if (res == null) {
-      finished_face = true;
+      // finished_face = true;
+      finished_face = Math.abs(face_verts[face_verts.length - 1].get_point().y - face_verts[0].get_point().y) < 1e-3;
+      // finished_face = face_verts[face_verts.length - 1].get_point().y < 1e-3;
       break;
     }
     curve = res.curve;

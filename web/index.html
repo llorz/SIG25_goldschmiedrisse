@@ -9,13 +9,6 @@
 <script src="js/index.js" type="module"></script>
 
 <body>
-  <!-- <div id="help">(?)
-    <span class="tooltiptext">
-      Click on empty space to start a line. <br>
-      Escape to finish a line. <br>
-      Click on a control point to move it.
-    </span>
-  </div> -->
   <div id="left_menu"></div>
   <div id="design_preview_area">
     <div id="preview_area">
@@ -30,6 +23,36 @@
       <canvas id="canvas"></canvas>
     </div>
   </div>
+  
+  <div id="help">
+    <div class="tooltiptext">
+      <h4>Create</h4>
+      &nbsp;&nbsp;&nbsp;• Click <b>2 points + 'Escape'</b> to create a simple unit curve... <br>
+      &nbsp;&nbsp;&nbsp;• or click 3 points to create a unit curve with a free end decoration. <br>
+      &nbsp;&nbsp;&nbsp;• You can draw multiple unit curves in each layer. <br> 
+      &nbsp;&nbsp;&nbsp;• Click on <b>"Add layer"</b> to add a new layer. <br> 
+      &nbsp;&nbsp;&nbsp;• Adjust the <b>height of the layer</b> by clicking <b>'g'</b> in the side view <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;or perspective view, and <b>dragging the orange point</b> up or down. <br>
+      &nbsp;&nbsp;&nbsp; <b>'Escape' to abort</b> the edit, <b>'Enter' to accept</b> it. <br>
+      &nbsp;&nbsp;&nbsp;• Select a unit curve and press 'h' to add a vertical line at the end of the biarc. <br>
+      &nbsp;&nbsp;&nbsp;• Press <b>'f'</b> to fill all the <b>faces</b>. <br>
+      <h4>Edit</h4>
+      &nbsp;&nbsp;&nbsp;• <b>Control points are marked in black</b>. Move them to adjust the curve. <br>
+      &nbsp;&nbsp;&nbsp;• To edit a unit curve at a specific layer, <b>select the layer first</b>. <br>
+      &nbsp;&nbsp;&nbsp;• <u>Select a unit curve</u> and press <b>'r'</b> to change the position of the <b>PRC point</b> of the biarc. <br>
+      &nbsp;&nbsp;&nbsp;• <u>Select a unit curve</u> and press <b>'d'</b> to add a <b>decoration</b> to the lower part of the biarc. <br>
+      &nbsp;&nbsp;&nbsp;• <u>Select a unit curve</u> and press <b>'delete'</b> to delete it. <br>
+      <h4>View</h4>
+      &nbsp;&nbsp;&nbsp;• Press <b>'1', '2', '3'</b> to switch between the <b>top, side and perspective</b> views. <br>
+      &nbsp;&nbsp;&nbsp;• Press <b>'h'</b> show or hide this dialog. <br>
+      <br>
+    </div>
+  </div>
+
+  <div id="help_icon">
+    <img src="assets/question_mark_icon.png" alt="Help" />
+  </div>
+
 </body>
 
 </html>

@@ -73,7 +73,7 @@ export function get_rmf_frame(curve, rmf, t) {
   };
 }
 
-export function sweep_geom_along_curve(geom, curve, use_rmf) {
+export function sweep_geom_along_curve(geom, curve, use_rmf, cut_inters_at_top = true) {
   let rmf = null;
   if (curve.rmf && curve.rmf.length > 0) {
     rmf = curve.rmf;
@@ -114,7 +114,7 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
   let size_x = geom.boundingBox.getSize(new THREE.Vector3()).x;
   for (let i = 0, l = geom.attributes.position.count; i < l; i++) {
     v.fromBufferAttribute(geom.attributes.position, i);
-    let t = v.x / size_x;
+    let t = v.x / (params.biarcs_visualization == 'ribbon'? (size_x + 1e-3) : size_x);
     let frame = use_rmf ? get_rmf_frame(curve, rmf, t) : get_simple_frame(t);
     let p = frame.position, n = frame.normal, b = frame.binormal;
 
@@ -124,7 +124,7 @@ export function sweep_geom_along_curve(geom, curve, use_rmf) {
 
     let cube_diag = (1 / Math.sqrt(2)) * params.tube_radius;
 
-    if (params.cut_intersections && Math.abs(orig_side) > 1e-2) {
+    if (params.cut_intersections && cut_inters_at_top && Math.abs(orig_side) > 1e-2) {
       let side = end_flat_point.y * x - end_flat_point.x * z;
       if (side * orig_side <= 0) {
         let line = end_flat_point;

@@ -41,3 +41,5 @@ paper_figs/*
 references/*
 
 matlab/useless/*
+.DS_Store
+.vscode/
