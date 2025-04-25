@@ -1,0 +1,9 @@
+numCurves	1
+unitCurve	4	1
+reflectionPoint	-0.800000	0.000000
+ptPos	-0.800000000000	0.000000000000
+ptPos -0.5600  -0.1500
+ptPos	0.000000000000	-0.500000000000
+level 0
+height 2.28
+prc_t 0.5
