@@ -1,7 +1,13 @@
-numCurves	1
-unitCurve	4	1
-reflectionPoint	-1.000000	0.000000
-ptPos	-1.000000000000	0.000000000000
-ptLab	1
-ptPos	0.700000000000	-0.700000000000
-ptLab	0
+numCurves 1
+unitCurve 4 1
+reflectionPoint -0.6071907903773655 -0.6071907903773656
+ref_symmetry_type first point
+ptPos -0.6071907903773655 -0.6071907903773656
+ptPos -0.3032554433728542 -0.4857526323018925
+ptPos 0.9124859446451907 0
+level 0
+height 1.8216572932489614
+prc_t 0.3995525998286426
+decoration_t 0
+decoration_height 0
+layer_bottom 0
